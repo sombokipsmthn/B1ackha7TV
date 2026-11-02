@@ -6,6 +6,19 @@
   var storageKey = 'b1ackha7tv.settings.v1';
 var tv = window.tizen;
 
+// Track current page
+var currentPage = 'home';
+var recentApps = [];
+
+// Initialize Lucide icons after DOM content is loaded
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    lucide.createIcons();
+  } catch (e) {
+    report('Lucide icon initialization failed:', e);
+  }
+});
+
 // Browser demo mock - only create if no working Tizen mock already exists
 // (tests inject their own window.tizen mock via addInitScript; we must not overwrite it)
 var isBrowser = typeof navigator !== 'undefined' && navigator.userAgent && navigator.userAgent.indexOf('Tizen') === -1;
@@ -80,6 +93,46 @@ document.addEventListener('DOMContentLoaded', () => {
     ember:'radial-gradient(ellipse at 0% 0%,#854b39 0%,transparent 60%),linear-gradient(130deg,#3d263c,#121325)'
   };
   var clockTimer = null;
+
+  function showPage(pageId) {
+    // Hide all page sections
+    var pages = document.querySelectorAll('.page-section, #apps-section, #continue-section, #trending-section');
+    pages.forEach(function(page) { page.hidden = true; });
+
+    // Show the target page
+    var targetPage = $(pageId + '-page');
+    if (targetPage) { targetPage.hidden = false; }
+
+    // Update sidebar active state
+    var sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(function(btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-section') === pageId);
+    });
+
+    currentPage = pageId;
+
+    // Update greeting/subtitle based on page
+    var pageTitles = {
+      'home': { greeting: 'Good evening', subtitle: 'Relax. You\'ve got great things to watch.' },
+      'search': { greeting: 'Search', subtitle: 'Find your favorite content.' },
+      'apps': { greeting: 'Apps', subtitle: 'Your installed applications.' },
+      'games': { greeting: 'Games', subtitle: 'Discover and play games.' },
+      'recent': { greeting: 'Recent', subtitle: 'Recently launched apps and games.' },
+      'inputs': { greeting: 'Inputs', subtitle: 'Select input source.' },
+      'settings': { greeting: 'Settings', subtitle: 'Customize your experience.' }
+    };
+    var t = pageTitles[pageId] || pageTitles.home;
+    var g = $('greeting');
+    var s = document.querySelector('.subtitle');
+    if (g) g.textContent = t.greeting;
+    if (s) s.textContent = t.subtitle;
+
+    // Initialize page-specific content
+    if (pageId === 'apps') { renderAppsPage(); }
+    else if (pageId === 'games') { renderGamesPage(); }
+    else if (pageId === 'recent') { renderRecentPage(); }
+    else if (pageId === 'inputs') { renderInputsPage(); }
+  }
 
   function report(message, error) {
     var detail = error ? ' [' + (error.name || 'Error') + ': ' + (error.message || 'No details') + ']' : '';
@@ -324,29 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetSection) {
         btn.onclick = function(e) {
           e.preventDefault();
-          sidebarItems.forEach(function(b) { b.classList.remove('active'); });
-          btn.classList.add('active');
-          // Update greeting for section
-          var sectionTitles = {
-            'home': 'Good evening',
-            'search': 'Search',
-            'live-tv': 'Live TV',
-            'apps': 'Applications',
-            'gaming': 'Gaming',
-            'settings': 'Settings'
-          };
-          var subtitles = {
-            'home': 'Relax. You\'ve got great things to watch.',
-            'search': 'Find your favorite content.',
-            'live-tv': 'Watch live TV and channels.',
-            'apps': 'Your installed applications.',
-            'gaming': 'Discover and play games.',
-            'settings': 'Customize your experience.'
-          };
-          var g = $('greeting');
-          var s = document.querySelector('.subtitle');
-          if (g) g.textContent = sectionTitles[targetSection] || greeting;
-          if (s) s.textContent = subtitles[targetSection] || subtitle;
+          showPage(targetSection);
         };
       }
     });
@@ -450,6 +481,8 @@ document.addEventListener('DOMContentLoaded', () => {
     launching = true;
     syncPreview();
     next();
+    // Track in recent apps
+    addToRecent(id, name, 'launcher');
   }
 
   // App carousel click handlers
@@ -505,35 +538,77 @@ document.addEventListener('DOMContentLoaded', () => {
     var settingsEl = $('settings');
     if (!settingsEl) { return; }
     settingsEl.hidden = !open;
-    if (open) { refreshSources(); focus($('settings-close')); }
+    if (open) {
+      refreshSources();
+      focus($('settings-close'));
+      updateSettingsDiagnostics();
+      // Show Appearance panel by default for test compatibility (has theme buttons)
+      var appearanceBtn = document.querySelector('.settings-category[data-panel="appearance"]');
+      var appearancePanel = $('settings-panel-appearance');
+      if (appearanceBtn && appearancePanel) {
+        document.querySelectorAll('.settings-category').forEach(function(b) { b.classList.remove('active'); });
+        document.querySelectorAll('.settings-panel').forEach(function(p) { p.hidden = true; });
+        appearanceBtn.classList.add('active');
+        appearancePanel.hidden = false;
+      }
+    }
   }
   var settingsOpen = $('settings-open');
   if (settingsOpen) { settingsOpen.addEventListener('click', function () { settings(true); }); }
   var settingsClose = $('settings-close');
   if (settingsClose) { settingsClose.addEventListener('click', function () { settings(false); }); }
-  var tvSettingsOpen = $('tv-settings-open');
+  var tvSettingsOpen = $('tv-settings-open') || $('tv-settings-open-enhanced');
   if (tvSettingsOpen) { tvSettingsOpen.addEventListener('click', openTVSettings); }
   var sourcesRefresh = $('sources-refresh');
   if (sourcesRefresh) { sourcesRefresh.addEventListener('click', refreshSources); }
   var closeApp = $('close-app');
   if (closeApp) { closeApp.addEventListener('click', function () { exitDialog(true); }); }
+  var closeAppSettings = $('close-app-settings');
+  if (closeAppSettings) { closeAppSettings.addEventListener('click', function () { exitDialog(true); }); }
+
+  // Settings panel navigation
+  var settingsCategories = document.querySelectorAll('.settings-category');
+  var settingsPanels = document.querySelectorAll('.settings-panel');
+  settingsCategories.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var panelId = this.getAttribute('data-panel');
+      settingsCategories.forEach(function(b) { b.classList.remove('active'); });
+      settingsPanels.forEach(function(p) { p.hidden = true; });
+      this.classList.add('active');
+      var panel = $('settings-panel-' + panelId);
+      if (panel) panel.hidden = false;
+    });
+  });
+
+  // System toggle
   var systemToggle = $('system-toggle');
   if (systemToggle) {
     systemToggle.addEventListener('click', function () {
       prefs.system = !prefs.system; save();
-      this.textContent = 'Show system entries: ' + (prefs.system ? 'on' : 'off');
+      this.classList.toggle('active', prefs.system);
       renderApps();
+      if (typeof renderAppsPage === 'function') renderAppsPage();
     });
   }
-  Array.prototype.forEach.call(document.querySelectorAll('[data-theme]'), function (button) {
-    button.addEventListener('click', function () {
-      prefs.theme = button.getAttribute('data-theme'); prefs.background = '';
-      var bp = $('background-path'); if (bp) bp.value = '';
+
+  // Theme select
+  var themeSelect = $('theme-select');
+  if (themeSelect) {
+    themeSelect.value = prefs.theme;
+    themeSelect.addEventListener('change', function() {
+      prefs.theme = this.value; prefs.background = '';
+      var bp = $('background-path') || $('background-path-enhanced');
+      if (bp) bp.value = '';
       background(''); save(); report('Background saved.');
+      try { lucide.createIcons(); } catch (e) { /* ignore */ }
     });
-  });
+  }
+
+  // Background apply
   var backgroundApply = $('background-apply');
-  if (backgroundApply) { backgroundApply.addEventListener('click', function () { background($('background-path').value.trim(), true); }); }
+  if (backgroundApply) { backgroundApply.addEventListener('click', function () { background(($('background-path') || $('background-path-enhanced')).value.trim(), true); }); }
+
+  // Name save
   var nameSave = $('name-save');
   if (nameSave) {
     nameSave.addEventListener('click', function () {
@@ -546,6 +621,53 @@ document.addEventListener('DOMContentLoaded', () => {
     nameReset.addEventListener('click', function () {
       prefs.name = 'My TV'; save(); applyName(); report('Launcher name reset.');
     });
+  }
+
+  // Apps refresh from settings
+  var appsRefreshSettings = $('apps-refresh-settings');
+  if (appsRefreshSettings) { appsRefreshSettings.onclick = refreshApps; }
+
+  // Manage visibility
+  var manageVisibility = $('manage-visibility');
+  if (manageVisibility) {
+    manageVisibility.onclick = function() {
+      settings(false);
+      showPage('apps');
+      report('Use the Apps page to manage visibility.');
+    };
+  }
+
+  function updateSettingsDiagnostics() {
+    // Tizen environment
+    var tizenEnv = $('tizen-env');
+    if (tizenEnv) {
+      if (tv) tizenEnv.textContent = 'Available (Tizen ' + (tv.systeminfo ? 'with systeminfo' : 'limited') + ')';
+      else tizenEnv.textContent = 'Browser Preview (mock)';
+    }
+    // TV integration
+    var tvInt = $('tv-integration');
+    if (tvInt) {
+      if (tv && tv.tvwindow) tvInt.textContent = 'Available (tvwindow API)';
+      else tvInt.textContent = 'Unavailable in browser';
+    }
+    // App discovery
+    var appDisc = $('app-discovery');
+    if (appDisc) {
+      if (tv && tv.application && tv.application.getAppsInfo) appDisc.textContent = 'Available';
+      else appDisc.textContent = 'Unavailable in browser';
+    }
+    // Input integration
+    var inputInt = $('input-integration');
+    if (inputInt) {
+      if (tv && tv.systeminfo) inputInt.textContent = 'Available (systeminfo API)';
+      else inputInt.textContent = 'Unavailable in browser';
+    }
+    // Run mode
+    var runMode = $('run-mode');
+    if (runMode) {
+      if (tv) runMode.textContent = 'Physical TV';
+      else runMode.textContent = 'Browser Preview (mock)';
+    }
   }
   var exitCancel = $('exit-cancel');
   if (exitCancel) { exitCancel.addEventListener('click', function () { exitDialog(false); }); }
@@ -773,7 +895,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Initialize
   loadPrefs(); applyName(); background(prefs.background,false);
-  var bp = $('background-path'); if (bp) bp.value = prefs.background;
+  var bp = $('background-path') || $('background-path-enhanced');
+  if (bp) bp.value = prefs.background;
   updatePreviewToggle(); clockTimer = setInterval(updateClock, 30000);
   updateClock(); updateGreeting();
   initSidebar(); initCarouselNavigation(); initAppCarousel();
@@ -801,5 +924,358 @@ document.addEventListener('DOMContentLoaded', () => {
     syncPreview();
   });
   focus($('apps-carousel .carousel-item'));
+
+  // ==========================================================================
+  // PAGE RENDERING FUNCTIONS
+  // ==========================================================================
+
+  function renderAppsPage() {
+    var grid = $('apps-grid');
+    var categorySelect = $('apps-category');
+    var sortSelect = $('apps-sort');
+    var emptyEl = $('apps-empty');
+    if (!grid) return;
+
+    // Get unique categories from apps
+    var categories = ['all'];
+    var seenCats = {all: true};
+    apps.forEach(function(app) {
+      if (!app || app.show === false) return;
+      var name = (app.name || '').toLowerCase();
+      var cat = 'Entertainment';
+      if (name.includes('game') || name.includes('play')) cat = 'Games';
+      else if (name.includes('news') || name.includes('weather')) cat = 'News & Weather';
+      else if (name.includes('sport')) cat = 'Sports';
+      else if (name.includes('music') || name.includes('spotify') || name.includes('pandora')) cat = 'Music';
+      if (!seenCats[cat]) { seenCats[cat] = true; categories.push(cat); }
+    });
+
+    // Populate category select if empty
+    if (categorySelect && categorySelect.options.length <= 1) {
+      categorySelect.innerHTML = '';
+      categories.forEach(function(cat) {
+        var opt = document.createElement('option');
+        opt.value = cat.toLowerCase().replace(/ /g, '-');
+        opt.textContent = cat;
+        categorySelect.appendChild(opt);
+      });
+    }
+
+    // Filter and sort apps
+    var category = categorySelect ? categorySelect.value : 'all';
+    var sort = sortSelect ? sortSelect.value : 'alpha';
+
+    var filtered = apps.filter(function(app) {
+      if (!app || app.show === false) return false;
+      if (category !== 'all') {
+        var name = (app.name || '').toLowerCase();
+        var cat = 'entertainment';
+        if (name.includes('game') || name.includes('play')) cat = 'games';
+        else if (name.includes('news') || name.includes('weather')) cat = 'news-weather';
+        else if (name.includes('sport')) cat = 'sports';
+        else if (name.includes('music') || name.includes('spotify') || name.includes('pandora')) cat = 'music';
+        if (cat !== category) return false;
+      }
+      return true;
+    });
+
+    if (sort === 'alpha') {
+      filtered.sort(function(a,b) { return (a.name || a.id).localeCompare(b.name || b.id); });
+    } else if (sort === 'favorites') {
+      var favs = prefs.favorites || [];
+      filtered.sort(function(a,b) {
+        var aFav = favs.indexOf(a.id), bFav = favs.indexOf(b.id);
+        if (aFav < 0) aFav = Infinity;
+        if (bFav < 0) bFav = Infinity;
+        if (aFav !== bFav) return aFav < bFav ? -1 : 1;
+        return (a.name || a.id).localeCompare(b.name || b.id);
+      });
+    }
+
+    // Render grid
+    grid.innerHTML = '';
+    filtered.forEach(function(app) {
+      var item = document.createElement('button');
+      item.className = 'app-grid-item';
+      item.setAttribute('data-app-id', app.id);
+      item.setAttribute('role', 'listitem');
+      item.setAttribute('aria-label', app.name || app.id);
+
+      var icon = document.createElement('span');
+      icon.className = 'app-icon';
+      var initial = document.createElement('span');
+      initial.className = 'initial';
+      initial.textContent = (app.name || '?').slice(0,2).toUpperCase();
+      icon.appendChild(initial);
+      loadAppIcon(app, item, initial);
+
+      var name = document.createElement('span');
+      name.className = 'app-name';
+      name.textContent = app.name || app.id;
+
+      item.appendChild(icon);
+      item.appendChild(name);
+
+      item.onclick = function() { launch(app.id, app.name || app.id); };
+
+      grid.appendChild(item);
+    });
+
+    if (emptyEl) emptyEl.hidden = filtered.length > 0;
+
+    // Re-create Lucide icons
+    try { lucide.createIcons(); } catch (e) { /* ignore */ }
+  }
+
+  function renderGamesPage() {
+    var grid = $('games-grid');
+    var xboxFeature = $('xbox-feature');
+    var xboxConnection = $('xbox-connection');
+    var emptyEl = $('games-empty');
+    if (!grid) return;
+
+    // Check for Xbox connection via HDMI
+    var xboxDetected = false;
+    var xboxHdmi = null;
+    if (tv && tv.systeminfo) {
+      try {
+        tv.systeminfo.getPropertyValue('VIDEOSOURCE', function(info) {
+          (info.connected || []).forEach(function(source) {
+            if (source.type === 'HDMI') {
+              xboxDetected = true;
+              xboxHdmi = source.number;
+            }
+          });
+          if (xboxFeature) xboxFeature.hidden = !xboxDetected;
+          if (xboxConnection) xboxConnection.textContent = xboxDetected ? 'HDMI ' + xboxHdmi + ' · Connected' : 'Not detected';
+        });
+      } catch (e) { /* ignore */ }
+    }
+
+    // Filter games (apps with game-related names)
+    var games = apps.filter(function(app) {
+      if (!app || app.show === false) return false;
+      var name = (app.name || '').toLowerCase();
+      return name.includes('game') || name.includes('play') || name.includes('xbox') || name.includes('steam');
+    });
+
+    grid.innerHTML = '';
+    games.forEach(function(app) {
+      var item = document.createElement('button');
+      item.className = 'app-grid-item';
+      item.setAttribute('data-app-id', app.id);
+      item.setAttribute('role', 'listitem');
+      item.setAttribute('aria-label', app.name || app.id);
+
+      var icon = document.createElement('span');
+      icon.className = 'app-icon';
+      var initial = document.createElement('span');
+      initial.className = 'initial';
+      initial.textContent = (app.name || '?').slice(0,2).toUpperCase();
+      icon.appendChild(initial);
+      loadAppIcon(app, item, initial);
+
+      var name = document.createElement('span');
+      name.className = 'app-name';
+      name.textContent = app.name || app.id;
+
+      item.appendChild(icon);
+      item.appendChild(name);
+
+      item.onclick = function() { launch(app.id, app.name || app.id); };
+
+      grid.appendChild(item);
+    });
+
+    // Add launch Xbox handler
+    var launchXbox = $('launch-xbox');
+    if (launchXbox) {
+      launchXbox.onclick = function() {
+        if (tv && tv.tvwindow && tv.systeminfo) {
+          tv.systeminfo.getPropertyValue('VIDEOSOURCE', function(info) {
+            (info.connected || []).forEach(function(source) {
+              if (source.type === 'HDMI' && source.number === (xboxHdmi || 2)) {
+                tv.tvwindow.setSource(source, function() {
+                  report('Switched to Xbox on HDMI ' + source.number);
+                }, function(e) { report('Could not switch to Xbox', e); }, 'MAIN');
+              }
+            });
+          });
+        }
+      };
+    }
+
+    if (emptyEl) emptyEl.hidden = games.length > 0 || xboxDetected;
+    try { lucide.createIcons(); } catch (e) { /* ignore */ }
+  }
+
+  function renderRecentPage() {
+    var list = $('recent-list');
+    var emptyEl = $('recent-empty');
+    if (!list) return;
+
+    list.innerHTML = '';
+
+    if (recentApps.length === 0) {
+      if (emptyEl) emptyEl.hidden = false;
+      return;
+    }
+
+    if (emptyEl) emptyEl.hidden = true;
+
+    recentApps.forEach(function(entry) {
+      var card = document.createElement('button');
+      card.className = 'recent-card';
+      card.setAttribute('data-app-id', entry.id);
+      card.setAttribute('role', 'listitem');
+      card.setAttribute('aria-label', entry.name + ', launched ' + entry.time);
+
+      var icon = document.createElement('span');
+      icon.className = 'app-icon';
+      var initial = document.createElement('span');
+      initial.className = 'initial';
+      initial.textContent = (entry.name || '?').slice(0,2).toUpperCase();
+      icon.appendChild(initial);
+      loadAppIcon({id: entry.id, name: entry.name, iconPath: ''}, card, initial);
+
+      var info = document.createElement('div');
+      info.className = 'recent-info';
+      var name = document.createElement('div');
+      name.className = 'recent-name';
+      name.textContent = entry.name;
+      var meta = document.createElement('div');
+      meta.className = 'recent-meta';
+      meta.textContent = 'Launched from ' + entry.source;
+      var time = document.createElement('div');
+      time.className = 'recent-time';
+      time.textContent = entry.time;
+
+      info.appendChild(name);
+      info.appendChild(meta);
+      info.appendChild(time);
+
+      card.appendChild(icon);
+      card.appendChild(info);
+
+      card.onclick = function() { launch(entry.id, entry.name); };
+
+      list.appendChild(card);
+    });
+
+    try { lucide.createIcons(); } catch (e) { /* ignore */ }
+  }
+
+  function addToRecent(appId, appName, source) {
+    // Remove existing entry for this app
+    recentApps = recentApps.filter(function(e) { return e.id !== appId; });
+    // Add to front
+    recentApps.unshift({
+      id: appId,
+      name: appName,
+      source: source || 'launcher',
+      time: new Date().toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})
+    });
+    // Keep only last 20
+    if (recentApps.length > 20) recentApps.pop();
+    // Persist
+    try { localStorage.setItem('b1ackha7tv.recent.v1', JSON.stringify(recentApps)); } catch (e) { /* ignore */ }
+  }
+
+  function renderInputsPage() {
+    var grid = $('inputs-grid');
+    var emptyEl = $('inputs-empty');
+    if (!grid) return;
+
+    grid.innerHTML = '';
+
+    if (!tv || !tv.systeminfo || !tv.tvwindow) {
+      if (emptyEl) { emptyEl.hidden = false; emptyEl.textContent = 'Input detection requires the TV.'; }
+      return;
+    }
+
+    try {
+      tv.systeminfo.getPropertyValue('VIDEOSOURCE', function(info) {
+        var sources = info.connected || [];
+        var currentSource = null;
+        try { currentSource = tv.tvwindow.getSource('MAIN'); } catch (e) { /* ignore */ }
+
+        if (sources.length === 0) {
+          if (emptyEl) { emptyEl.hidden = false; emptyEl.textContent = 'No connected inputs were reported.'; }
+          return;
+        }
+
+        if (emptyEl) emptyEl.hidden = true;
+
+        sources.forEach(function(source) {
+          var isActive = currentSource && currentSource.type === source.type && currentSource.number === source.number;
+          var tile = document.createElement('button');
+          tile.className = 'input-tile' + (isActive ? ' active' : '');
+          tile.setAttribute('role', 'listitem');
+          tile.setAttribute('aria-label', (source.type + (source.type === 'TV' ? '' : ' ' + source.number)) + (isActive ? ' · Current' : ''));
+
+          var icon = document.createElement('span');
+          icon.className = 'input-icon';
+          if (source.type === 'TV') icon.setAttribute('data-lucide', 'tv');
+          else if (source.type === 'HDMI') icon.setAttribute('data-lucide', 'monitor');
+          else icon.setAttribute('data-lucide', 'plug');
+
+          var name = document.createElement('span');
+          name.className = 'input-name';
+          name.textContent = source.type + (source.type === 'TV' ? '' : ' ' + source.number);
+
+          var status = document.createElement('span');
+          status.className = 'input-status';
+          status.textContent = isActive ? 'Active' : 'Available';
+
+          tile.appendChild(icon);
+          tile.appendChild(name);
+          tile.appendChild(status);
+
+          tile.onclick = function() {
+            if (windowBusy) { report('Preview is updating; try again.'); return; }
+            windowBusy = true;
+            function failed(e) { windowBusy = false; report('Could not change input.',e); syncPreview(); }
+            try {
+              tv.tvwindow.setSource(source, function () {
+                windowBusy = false; readCurrentSource(); previewBlocked = false; previewNeedsShow = true; syncPreview(); report('Input changed to ' + name.textContent);
+                renderInputsPage(); // Refresh to show active state
+              }, failed, 'MAIN');
+            } catch (e) { failed(e); }
+          };
+
+          grid.appendChild(tile);
+        });
+
+        try { lucide.createIcons(); } catch (e) { /* ignore */ }
+      }, function(e) { report('Input list unavailable.',e); });
+    } catch (e) { report('Input selection unavailable.',e); }
+  }
+
+  // Load recent apps from storage on init
+  try {
+    var savedRecent = JSON.parse(localStorage.getItem('b1ackha7tv.recent.v1') || '[]');
+    if (Array.isArray(savedRecent)) { recentApps = savedRecent; }
+  } catch (e) { recentApps = []; }
+
+  // Clear recent handler
+  var clearRecent = $('clear-recent');
+  if (clearRecent) {
+    clearRecent.onclick = function() {
+      if (confirm('Clear all recent history?')) {
+        recentApps = [];
+        try { localStorage.removeItem('b1ackha7tv.recent.v1'); } catch (e) { /* ignore */ }
+        renderRecentPage();
+        report('Recent history cleared.');
+      }
+    };
+  }
+
+  // Apps page event handlers
+  var appsCategory = $('apps-category');
+  var appsSort = $('apps-sort');
+  var appsRefresh = $('apps-refresh');
+  if (appsCategory) { appsCategory.onchange = renderAppsPage; }
+  if (appsSort) { appsSort.onchange = renderAppsPage; }
+  if (appsRefresh) { appsRefresh.onclick = refreshApps; }
 
 }());
