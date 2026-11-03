@@ -1,7 +1,7 @@
 // Settings persistence utility
 // Centralizes all preferences and provides load/save with defaults
 
-const STORAGE_KEY = 'kipsmthntheme.settings.v1';
+const STORAGE_KEY = 'b1ackha7tv.settings.v1';
 
 // Default preferences matching the specification
 const DEFAULTS = {
