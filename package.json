@@ -5,27 +5,18 @@
   "description": "Browser regression tests for a Samsung Tizen TV launcher",
   "license": "MIT",
   "scripts": {
-    "test": "node tests/dedup.cjs && node tests/exit.cjs && node tests/tv-settings.cjs && node tests/background.cjs && node tests/launch.cjs && node tests/name.cjs"
+    "test": "node tests/project-structure.cjs && node tests/settings.cjs && node tests/dedup.cjs && node tests/exit.cjs && node tests/tv-settings.cjs && node tests/background.cjs && node tests/launch.cjs && node tests/name.cjs"
   },
   "devDependencies": {
     "playwright": "^1.56.0"
   },
-  "main": "index.js",
-  "directories": {
-    "doc": "docs",
-    "test": "tests"
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/djwalks/B1ackha7TV.git"
+    "url": "git+https://github.com/sombokipsmthn/B1ackha7TV.git"
   },
-  "keywords": [],
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/djwalks/B1ackha7TV/issues"
+    "url": "https://github.com/sombokipsmthn/B1ackha7TV/issues"
   },
-  "homepage": "https://github.com/djwalks/B1ackha7TV#readme",
-  "dependencies": {
-    "lucide": "^1.66.0"
-  }
+  "homepage": "https://github.com/sombokipsmthn/B1ackha7TV#readme"
 }

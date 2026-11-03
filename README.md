@@ -19,6 +19,17 @@ Developed against a Samsung 2020 TU-series TV running Tizen 5.5. The launcher an
 
 Only apps returned and launchable through public APIs can appear and open. Some hidden/system apps and icons are inaccessible. The preview uses the tuner or HDMI source retained by the TV; it cannot reproduce a streaming app's picture, and restoring yesterday's channel is controlled by the TV. This app cannot replace Samsung Home or guarantee startup. System Settings support varies by device.
 
+
+## Project structure
+
+- `app/` is the **only active Samsung Tizen web application**. Import this folder into Tizen Studio and build from its `config.xml` and `tizen_web_project.yaml`.
+- `tests/` contains browser regression tests for the active app.
+- `docs/` contains project documentation and preview assets.
+- `archive/legacy-MyTvTheme/` preserves the older experimental app tree for reference only. Do not import or package it.
+- `B1ackha7TV.code-workspace` opens the repository root without adding the archived app as a second project.
+
+The app is intentionally still a single HTML/CSS/JavaScript Tizen web app. The older `components/`, `pages/` and `services/` files were not wired into the active `index.html` entry point, so they remain archived rather than being mixed into the runtime.
+
 ## Install on your own Samsung TV
 
 This repository contains source only. There are no personal certificates, device identifiers, IP addresses, account files, or signed installation packages. Each user must sign with their own certificate and authorize their own TV.
@@ -50,7 +61,7 @@ Use **Edit apps** to add/remove Home shortcuts (not uninstall apps). Use **TV & 
 
 ## Browser preview and tests
 
-Open `app/index.html` to preview the layout. Real installed apps, live TV, input switching, and app launching require a Samsung TV; the browser does not mirror your TV.
+Open `app/index.html` to preview the layout. From the repository root, run `npm test` to check the active app; the archived project is not part of the test or build path. Real installed apps, live TV, input switching, and app launching require a Samsung TV; the browser does not mirror your TV.
 
 ```text
 npm install

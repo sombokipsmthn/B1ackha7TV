@@ -12,8 +12,8 @@ const assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),p
    },tvwindow:{getSource:()=>({type:'TV',number:0}),show:yes=>{window.shown++;yes();},hide:yes=>yes()}};
    if(mode==='missing')delete window.tizen.application.findAppControl;
   },mode);
-  const p=await c.newPage();await p.goto(pathToFileURL(path.resolve('MyTvTheme/index.html')).href);
-  await p.locator('#settings-open').click();await p.locator('#tv-settings-open').click();
+  const p=await c.newPage();await p.goto(pathToFileURL(path.resolve('app/index.html')).href);
+  await p.locator('#settings-open').click();await p.locator('[data-panel="about"]').click();await p.locator('#tv-settings-open').click();
   if(mode==='timeout')await p.waitForTimeout(5200);
   assert.equal(await p.locator('#tv-settings-open').isEnabled(),true);
   const calls=await p.evaluate(()=>window.calls);

@@ -13,7 +13,7 @@ const assert=require('node:assert/strict'),path=require('node:path'),{pathToFile
    },tvwindow:{getSource:()=>({type:'TV',number:0}),show:yes=>yes(),hide:()=>{}}};
   },mode);
   const p=await context.newPage();await p.clock.install();
-  await p.goto(pathToFileURL(path.resolve(process.env.LAUNCH_TEST_PAGE || 'MyTvTheme/index.html')).href);
+  await p.goto(pathToFileURL(path.resolve(process.env.LAUNCH_TEST_PAGE || 'app/index.html')).href);
   await p.clock.runFor(50);
   await p.locator('.app').click();
   assert.equal(await p.evaluate(()=>calls.length),1,'preview cleanup must not block app launch');
