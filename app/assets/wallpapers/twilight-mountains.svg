@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0a1222"/>
+      <stop offset="30%" stop-color="#1a1a3a"/>
+      <stop offset="60%" stop-color="#2d1b3d"/>
+      <stop offset="100%" stop-color="#050810"/>
+    </linearGradient>
+    <radialGradient id="moon-glow" cx="50%" cy="30%" r="50%">
+      <stop offset="0%" stop-color="rgba(75, 40, 100, 0.3)"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+    <radialGradient id="horizon-glow" cx="50%" cy="100%" r="40%">
+      <stop offset="0%" stop-color="rgba(20, 10, 30, 0.4)"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Sky gradient -->
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+
+  <!-- Moon glow -->
+  <ellipse cx="384" cy="324" rx="200" ry="150" fill="url(#moon-glow)"/>
+
+  <!-- Mountains layer 1 (back) -->
+  <path d="M0,850 Q480,400 960,650 Q1440,400 1920,850 L1920,1080 L0,1080 Z" fill="#0f141c" opacity="0.6"/>
+
+  <!-- Mountains layer 2 (mid) -->
+  <path d="M0,900 Q480,550 960,750 Q1440,550 1920,900 L1920,1080 L0,1080 Z" fill="#151a2a" opacity="0.8"/>
+
+  <!-- Mountains layer 3 (front) -->
+  <path d="M0,950 Q480,700 960,850 Q1440,700 1920,950 L1920,1080 L0,1080 Z" fill="#1a1f2e"/>
+
+  <!-- Lake reflection -->
+  <ellipse cx="960" cy="1200" rx="1200" ry="300" fill="url(#horizon-glow)"/>
+
+  <!-- Stars -->
+  <g fill="white" opacity="0.7">
+    <circle cx="150" cy="120" r="1"/>
+    <circle cx="400" cy="80" r="0.5"/>
+    <circle cx="600" cy="180" r="1"/>
+    <circle cx="850" cy="60" r="0.5"/>
+    <circle cx="1100" cy="140" r="1"/>
+    <circle cx="1350" cy="90" r="0.5"/>
+    <circle cx="1600" cy="160" r="1"/>
+    <circle cx="1800" cy="70" r="0.5"/>
+    <circle cx="200" cy="220" r="0.5"/>
+    <circle cx="500" cy="200" r="1"/>
+    <circle cx="750" cy="240" r="0.5"/>
+    <circle cx="1000" cy="210" r="1"/>
+    <circle cx="1250" cy="190" r="0.5"/>
+    <circle cx="1500" cy="230" r="1"/>
+    <circle cx="1750" cy="250" r="0.5"/>
+  </g>
+
+  <!-- Moon -->
+  <circle cx="384" cy="324" r="60" fill="#f5f0e1" opacity="0.9" filter="url(#glow)"/>
+</svg>

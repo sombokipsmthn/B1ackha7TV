@@ -6,6 +6,70 @@ import { tizen } from '../services/tizen/index.js';
 import { loadPrefs, savePrefs } from '../utils/storage.js';
 import { useTheme } from '../hooks/use-theme.js';
 
+// Reusable components
+export function Brand() {
+  return (
+    <div className="brand">
+      <span className="mark" id="launcher-mark">MT</span>
+      <span id="launcher-title">My TV</span>
+    </div>
+  );
+}
+
+export function Clock() {
+  return (
+    <div className="clock-group">
+      <time id="clock" aria-live="polite"></time>
+      <span id="date"></span>
+    </div>
+  );
+}
+
+export function WifiIcon() {
+  return (
+    <span className="icon wifi-icon" data-lucide="wifi" aria-label="Wi-Fi connected" />
+  );
+}
+
+export function SettingsButton() {
+  return (
+    <button className="icon-btn" aria-label="Settings">
+      <span className="icon" data-lucide="settings-2" />
+    </button>
+  );
+}
+
+export function PreviewPanel({ sources, onSelect }) {
+  return (
+    <div className="preview-panel">
+      <div className="preview-placeholder">TV Preview</div>
+      <div className="preview-sources">
+        {sources.map(source => (
+          <SourceCard
+            key={`${source.type}-${source.number}`}
+            source={source}
+            onSelect={onSelect}
+            isActive={source.type === 'TV'}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function SourceCard({ source, onSelect, isActive }) {
+  return (
+    <button
+      className={`source-card ${isActive ? 'active' : ''}`}
+      onClick={() => onSelect(source)}
+    >
+      <span className="source-icon">{source.type === 'TV' ? '📺' : '🔌'}</span>
+      <span className="source-name">{source.type} {source.number}</span>
+      {isActive && <span className="source-active">Active</span>}
+    </button>
+  );
+}
+
 export default function HomePage() {
   const [apps, setApps] = useState([]);
   const [favorites, setFavorites] = useState([]);
