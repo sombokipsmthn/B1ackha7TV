@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="aurora-sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#051015"/>
+      <stop offset="30%" stop-color="#0a1a25"/>
+      <stop offset="60%" stop-color="#0d2028"/>
+      <stop offset="100%" stop-color="#030810"/>
+    </linearGradient>
+    <linearGradient id="aurora-1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgba(34, 197, 94, 0.4)"/>
+      <stop offset="50%" stop-color="rgba(16, 185, 129, 0.6)"/>
+      <stop offset="100%" stop-color="rgba(52, 211, 153, 0.3)"/>
+    </linearGradient>
+    <linearGradient id="aurora-2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="rgba(56, 189, 248, 0.3)"/>
+      <stop offset="50%" stop-color="rgba(14, 165, 233, 0.5)"/>
+      <stop offset="100%" stop-color="rgba(59, 130, 246, 0.2)"/>
+    </linearGradient>
+    <radialGradient id="star-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="white"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#aurora-sky)"/>
+
+  <!-- Aurora waves -->
+  <path d="M0,300 Q480,200 960,320 Q1440,200 1920,350 Q1920,400 1440,450 Q960,400 480,450 Q0,400 0,300 Z" fill="url(#aurora-1)" filter="url(#blur)"/>
+  <path d="M0,400 Q480,280 960,400 Q1440,280 1920,450 Q1920,500 1440,550 Q960,500 480,550 Q0,500 0,400 Z" fill="url(#aurora-2)" filter="url(#blur)"/>
+  <path d="M0,450 Q480,350 960,480 Q1440,350 1920,520 Q1920,580 1440,620 Q960,580 480,620 Q0,580 0,450 Z" fill="url(#aurora-1)" filter="url(#blur)" opacity="0.5"/>
+
+  <!-- Ground silhouette -->
+  <path d="M0,850 Q320,800 640,880 Q960,780 1280,880 Q1600,780 1920,850 L1920,1080 L0,1080 Z" fill="#030810"/>
+
+  <!-- Trees -->
+  <g fill="#020508">
+    <path d="M150,900 L170,750 L190,900 Z"/>
+    <path d="M300,920 L325,780 L350,920 Z"/>
+    <path d="M500,910 L525,770 L550,910 Z"/>
+    <path d="M1400,910 L1425,770 L1450,910 Z"/>
+    <path d="M1600,920 L1625,780 L1650,920 Z"/>
+    <path d="M1750,900 L1775,750 L1800,900 Z"/>
+  </g>
+
+  <!-- Stars -->
+  <g fill="white">
+    <circle cx="100" cy="80" r="1" opacity="0.8"/>
+    <circle cx="250" cy="120" r="0.5" opacity="0.9"/>
+    <circle cx="450" cy="60" r="1" opacity="0.7"/>
+    <circle cx="600" cy="180" r="0.5" opacity="0.8"/>
+    <circle cx="800" cy="90" r="1" opacity="0.6"/>
+    <circle cx="1000" cy="140" r="0.5" opacity="0.9"/>
+    <circle cx="1200" cy="80" r="1" opacity="0.7"/>
+    <circle cx="1400" cy="160" r="0.5" opacity="0.8"/>
+    <circle cx="1600" cy="110" r="1" opacity="0.6"/>
+    <circle cx="1800" cy="70" r="0.5" opacity="0.9"/>
+    <circle cx="150" cy="250" r="0.5" opacity="0.8"/>
+    <circle cx="350" cy="220" r="1" opacity="0.7"/>
+    <circle cx="550" cy="280" r="0.5" opacity="0.9"/>
+    <circle cx="750" cy="240" r="1" opacity="0.6"/>
+    <circle cx="950" cy="260" r="0.5" opacity="0.8"/>
+    <circle cx="1150" cy="230" r="1" opacity="0.7"/>
+    <circle cx="1350" cy="270" r="0.5" opacity="0.9"/>
+    <circle cx="1550" cy="210" r="1" opacity="0.6"/>
+    <circle cx="1750" cy="250" r="0.5" opacity="0.8"/>
+  </g>
+</svg>
