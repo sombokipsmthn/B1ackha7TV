@@ -9,7 +9,7 @@ api_version: "10.0"
 build_type: Debug
 
 # Output name for application
-output_name: MyTvTheme
+output_name: B1ackha7TV
 
 # Output path for build
 output_path: ""
@@ -31,6 +31,8 @@ files:
   - icon.png
   - index.html
   - main.js
+
+  - assets/prime-video.svg
 
 # list of files to exclude based on the matched patterns
 excludes:
@@ -59,4 +61,7 @@ excludes:
 
 # project dependencies
 deps: []
+
+
+
 
