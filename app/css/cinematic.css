@@ -1,10 +1,10 @@
-/* Cinematic Samsung Smart TV Launcher - 重构为单色图标 + 响应式设计 */
+/* Cinematic Samsung Smart TV Launcher - Premium Design System */
 
 /* ==========================================================================
-   DESIGN TOKENS - 主题适配
+   DESIGN TOKENS
    ========================================================================== */
 :root {
-  /* 颜色 - 深模式优先 */
+  /* Colors */
   --bg-deep: #050810;
   --bg-navy: #0a1018;
   --bg-charcoal: #0f141c;
@@ -29,13 +29,13 @@
   --border-focus: rgba(59, 130, 246, 0.5);
   --border-card: rgba(255, 255, 255, 0.12);
 
-  /* 阴影 */
+  /* Shadows */
   --shadow-card: 0 8px 32px rgba(0, 0, 0, 0.5);
   --shadow-card-hover: 0 16px 48px rgba(0, 0, 0, 0.6);
   --shadow-focus: 0 0 0 2px var(--accent-blue), 0 0 24px var(--accent-blue-glow);
   --shadow-glow: 0 0 32px var(--accent-blue-glow);
 
-  /* 间距 */
+  /* Spacing */
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
@@ -44,7 +44,7 @@
   --space-2xl: 48px;
   --space-3xl: 64px;
 
-  /* 圆角 */
+  /* Border Radius */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -52,19 +52,19 @@
   --radius-2xl: 24px;
   --radius-pill: 999px;
 
-  /* 过渡 */
+  /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* 排版 */
+  /* Typography */
   --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI Variable", "Segoe UI", system-ui, sans-serif;
   --font-weight-light: 300;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
 
-  /* 布局 */
+  /* Layout */
   --sidebar-width: 98px;
   --header-height: 120px;
   --content-max-width: 1720px;
@@ -73,24 +73,67 @@
 }
 
 /* ==========================================================================
-   图标系统 - 单色描边图标 + 焦点态 */
-.icon {
-  font-family: 'Material Symbols Outlined';
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+   RESET & BASE
+   ========================================================================== */
+
+/* Monochrome Lucide icons with refined stroke width */
+[data-lucide] {
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: all var(--transition-normal);
 }
 
-.icon.focused {
-  font-variation-settings: 'FILL' 1, 'wght' 600;
-  text-shadow: 0 0 8px var(--accent-blue-glow);
+/* Default muted, brighter on focus */
+.sidebar-icon, .icon-btn > span {
+  color: var(--text-muted);
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.3));
 }
 
-.icon.disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+.sidebar-item:hover .sidebar-icon, .icon-btn:hover span {
+  color: var(--text-secondary);
+  transform: scale(1.1);
 }
 
-/* ==========================================================================
-   全局样式 - 响应式布局 */
+.sidebar-item.active .sidebar-icon {
+  color: var(--text-primary);
+  filter: drop-shadow(0 0 12px var(--accent-blue-glow));
+  stroke: var(--accent-blue);
+}
+
+/* Status icons */
+.wifi-icon {
+  font-size: 22px;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: var(--text-secondary);
+  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.3));
+}
+
+.icon-btn:hover span {
+  color: var(--text-primary);
+  filter: drop-shadow(0 0 8px var(--accent-blue-glow));
+}
+
+/* App tiles icons */
+.app-icon {
+  font-size: 48px;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 4px 16px rgba(0,0,0,0.4));
+}
+
+.youtube-tile .app-icon { color: #ff0000; stroke: #ff0000; }
+.netflix-tile .app-icon { color: #e50914; stroke: #e50914; }
+.prime-tile .app-icon { color: #ffffff; stroke: #ffffff; }
+.glass-tile .app-icon { color: var(--text-secondary); stroke: var(--text-secondary); }
+
+/* Keep brand logos separate - no Lucide replacement for YouTube/Netflix/Prime */
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body {
@@ -129,7 +172,7 @@ a:focus-visible,
   box-shadow: none;
 }
 
-/* 滚动条 */
+/* Scrollbar */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
@@ -158,111 +201,128 @@ a:focus-visible,
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  width: 100%;
 }
 
 .sidebar-item {
-  width: 100%;
-  height: 68px;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: var(--radius-lg);
   background: transparent;
-  border: none;
-  color: var(--text-secondary);
-  transition: var(--transition-fast);
+  color: var(--text-muted);
+  transition: all var(--transition-normal);
+  position: relative;
 }
 
 .sidebar-item:hover {
-  background: var(--bg-glass-hover);
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+  transform: scale(1.05);
 }
 
 .sidebar-item.active {
-  color: var(--text-primary);
   background: var(--bg-glass-active);
+  color: var(--text-primary);
+  box-shadow:
+    inset 0 0 0 1px var(--border-focus),
+    0 0 24px var(--accent-blue-glow),
+    0 0 48px rgba(59, 130, 246, 0.2);
+}
+
+.sidebar-item.active::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: calc(var(--radius-lg) + 2px);
+  background: linear-gradient(135deg, var(--accent-blue) 0%, #60a5fa 50%, #93c5fd 100%);
+  filter: blur(12px);
+  opacity: 0.4;
+  z-index: -1;
 }
 
 .sidebar-icon {
-  font-size: 24px;
-  opacity: 0.8;
-  transition: var(--transition-fast);
+  font-size: 26px;
+  line-height: 1;
+  transition: transform var(--transition-fast);
+}
+
+.sidebar-item:hover .sidebar-icon {
+  transform: scale(1.1);
 }
 
 .sidebar-item.active .sidebar-icon {
-  opacity: 1;
-  text-shadow: 0 0 8px var(--accent-blue-glow);
+  filter: drop-shadow(0 0 8px var(--accent-blue-glow));
 }
 
-.sidebar-label {
-  display: none;
-  margin-left: var(--space-sm);
-  font-size: 12px;
-  font-weight: 500;
-}
-
-@media (min-width: 768px) {
-  .sidebar-label { display: block; }
-}
-
-.main-content {
-  flex: 1;
-  overflow: hidden;
+/* ==========================================================================
+   MAIN CONTENT AREA
+   ========================================================================== */
+#content {
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-xl) var(--space-2xl) var(--space-3xl);
   display: flex;
   flex-direction: column;
+  gap: var(--section-gap);
 }
 
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
 .header {
-  height: var(--header-height);
-  padding: var(--space-md) var(--space-lg);
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  background: var(--bg-charcoal);
-  border-bottom: 1px solid var(--border-subtle);
+  align-items: flex-start;
+  padding-top: var(--space-sm);
+  margin-bottom: var(--space-lg);
+  flex-shrink: 0;
+  gap: var(--space-xl);
 }
 
 .header-left {
   flex: 1;
-  min-width: 0;
-}
-
-.brand {
+  max-width: 750px;
   display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  font-weight: 600;
-  font-size: 20px;
-  letter-spacing: 0.08em;
-}
-
-.mark {
-  display: inline-flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: #b4f1d8;
-  color: #142b2d;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  padding-top: var(--space-sm);
 }
 
 .greeting {
-  font-size: 32px;
-  letter-spacing: -0.045em;
-  margin: var(--space-xs) 0 var(--space-xxs);
+  font-size: clamp(32px, 3.5vw, 44px);
+  font-weight: var(--font-weight-light);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: var(--space-xs) 0;
+  color: var(--text-primary);
 }
 
 .subtitle {
-  font-size: 14px;
-  color: var(--text-muted);
+  font-size: clamp(15px, 1.6vw, 20px);
+  font-weight: var(--font-weight-regular);
   line-height: 1.4;
+  margin: 0;
+  color: var(--text-secondary);
+  max-width: 500px;
 }
 
 .header-right {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: var(--space-sm);
+  flex-shrink: 0;
+  width: min(560px, 38vw);
 }
 
 .header-top-bar {

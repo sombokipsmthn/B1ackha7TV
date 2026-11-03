@@ -9,5 +9,23 @@
   },
   "devDependencies": {
     "playwright": "^1.56.0"
+  },
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/djwalks/B1ackha7TV.git"
+  },
+  "keywords": [],
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/djwalks/B1ackha7TV/issues"
+  },
+  "homepage": "https://github.com/djwalks/B1ackha7TV#readme",
+  "dependencies": {
+    "lucide": "^1.66.0"
   }
 }

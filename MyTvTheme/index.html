@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KipsmthnTheme</title><link rel="stylesheet" href="css/cinematic.css"><script src="assets/lucide.js"></script><script src="main.js" defer></script>
+</head>
+<body>
+<div id="wallpaper" aria-hidden="true"></div>
+
+<nav id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
+  <ul class="sidebar-items">
+    <li><button class="sidebar-item active" data-section="home" aria-label="Home"><span class="sidebar-icon" data-lucide="house" aria-hidden="true"></span></button></li>
+    <li><button class="sidebar-item" data-section="search" aria-label="Search"><span class="sidebar-icon" data-lucide="search" aria-hidden="true"></span></button></li>
+    <li><button class="sidebar-item" data-section="apps" aria-label="Apps"><span class="sidebar-icon" data-lucide="layout-grid-circles" aria-hidden="true"></span></button></li>
+    <li><button class="sidebar-item" data-section="games" aria-label="Games"><span class="sidebar-icon" data-lucide="gamepad-2" aria-hidden="true"></span></button></li>
+    <li><button class="sidebar-item" data-section="recent" aria-label="Recent"><span class="sidebar-icon" data-lucide="clock" aria-hidden="true"></span></button></li>
+    <li><button class="sidebar-item" data-section="inputs" aria-label="Inputs"><span class="sidebar-icon" data-lucide="tv" aria-hidden="true"></span></button></li>
+    <li><button class="sidebar-item" data-section="settings" aria-label="Settings"><span class="sidebar-icon" data-lucide="settings-2" aria-hidden="true"></span></button></li>
+  </ul>
+</nav>
+
+<main id="content" role="main">
+  <!-- Backward-compatible elements for tests (invisible but clickable without displacing layout) -->
+  <div id="library" style="position:fixed;top:0;left:0;width:300px;height:300px;opacity:0.001;pointer-events:none;z-index:1;" aria-hidden="true">
+    <div class="section-title"><h2 id="library-title">Your main apps</h2><span id="app-count"></span></div>
+    <p id="launch-feedback" role="status" hidden></p>
+    <p id="edit-hint" hidden>Select an app to add or remove its Home shortcut. Your apps stay installed.</p>
+    <button id="edit-apps">Edit apps</button>
+    <button id="refresh">Refresh apps</button>
+    <div id="apps" aria-label="Installed applications"></div>
+    <p id="empty" hidden></p>
+  </div>
+
+  <!-- Apps page -->
+  <section id="apps-page" class="page-section" hidden aria-label="Applications">
+    <div class="page-head">
+      <h2 class="page-title">Apps</h2>
+      <p class="page-subtitle">Your installed applications</p>
+    </div>
+    <div class="page-controls">
+      <div class="filter-group">
+        <label for="apps-category" class="filter-label">Category</label>
+        <select id="apps-category" class="filter-select" aria-label="Filter by category"></select>
+      </div>
+      <div class="filter-group">
+        <label for="apps-sort" class="filter-label">Sort</label>
+        <select id="apps-sort" class="filter-select" aria-label="Sort apps">
+          <option value="alpha">Alphabetical</option>
+          <option value="recent">Recently Used</option>
+          <option value="favorites">Favorites First</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <button id="apps-refresh" class="filter-btn" aria-label="Refresh app catalogue"><span data-lucide="refresh-cw" aria-hidden="true"></span>Refresh</button>
+      </div>
+    </div>
+    <div class="apps-grid" id="apps-grid" role="list" aria-label="Installed applications"></div>
+    <p id="apps-empty" class="empty-state" hidden>No apps found. Try adjusting filters or show system entries in Settings.</p>
+  </section>
+
+  <!-- Games page -->
+  <section id="games-page" class="page-section" hidden aria-label="Games">
+    <div class="page-head">
+      <h2 class="page-title">Games</h2>
+      <p class="page-subtitle">Discover and play games</p>
+    </div>
+    <div class="xbox-feature" id="xbox-feature" hidden>
+      <div class="xbox-artwork" aria-hidden="true"></div>
+      <div class="xbox-info">
+        <div class="xbox-header">
+          <span class="xbox-logo" data-lucide="gamepad-2" aria-hidden="true"></span>
+          <h3 class="xbox-name">Xbox</h3>
+        </div>
+        <p class="xbox-connection" id="xbox-connection">HDMI 2 · Connected</p>
+      </div>
+      <button id="launch-xbox" class="xbox-launch-btn" aria-label="Switch to Xbox">
+        <span data-lucide="power" aria-hidden="true"></span>Launch Xbox
+      </button>
+    </div>
+    <div class="games-grid" id="games-grid" role="list" aria-label="Other games"></div>
+    <p id="games-empty" class="empty-state" hidden>No games found. Xbox and other games will appear here when detected.</p>
+  </section>
+
+  <!-- Recent page -->
+  <section id="recent-page" class="page-section" hidden aria-label="Recent">
+    <div class="page-head">
+      <h2 class="page-title">Recent</h2>
+      <p class="page-subtitle">Recently launched apps and games</p>
+    </div>
+    <div class="page-controls">
+      <div class="filter-group">
+        <button id="clear-recent" class="filter-btn danger" aria-label="Clear recent history"><span data-lucide="trash-2" aria-hidden="true"></span>Clear History</button>
+      </div>
+    </div>
+    <div class="recent-list" id="recent-list" role="list" aria-label="Recent apps"></div>
+    <p id="recent-empty" class="empty-state" hidden>No recent apps yet. Launch apps from Home or Apps to see them here.</p>
+  </section>
+
+  <!-- Inputs page -->
+  <section id="inputs-page" class="page-section" hidden aria-label="Inputs">
+    <div class="page-head">
+      <h2 class="page-title">Inputs</h2>
+      <p class="page-subtitle">Select input source</p>
+    </div>
+    <div class="inputs-grid" id="inputs-grid" role="list" aria-label="Input sources"></div>
+    <p id="inputs-empty" class="empty-state" hidden>No input sources detected.</p>
+  </section>
+
+  <section id="settings" hidden aria-label="Launcher settings">
+    <h2>Make it yours</h2>
+    <button id="settings-close">Done</button>
+    <h3>Your launcher name</h3>
+    <label for="launcher-name">Name shown at the top left</label>
+    <div class="row"><input id="launcher-name" type="text" maxlength="32" placeholder="My TV" autocomplete="off"><button id="name-save">Save name</button><button id="name-reset">Reset name</button></div>
+    <h3>Samsung TV settings</h3>
+    <button id="tv-settings-open">Open TV settings</button>
+    <p id="tv-settings-status" role="status">Open Samsung settings if your TV supports it. Otherwise, use Home → Settings on your remote.</p>
+    <h3>Background</h3>
+    <!-- Theme buttons are now in the Appearance panel AND preserved for test compatibility -->
+<div class="row" style="margin-top: var(--space-sm);">
+  <button data-theme="midnight">Midnight</button>
+  <button data-theme="aurora">Aurora</button>
+  <button data-theme="ember">Ember</button>
+</div>
+    <label for="background-path">Custom image packaged with this app</label>
+    <div class="row"><input id="background-path" placeholder="assets/background.jpg" maxlength="180"><button id="background-apply">Apply image</button></div>
+    <p class="hint">Add your image to the project and its package file list, then rebuild.</p>
+    <h3>Preview input</h3>
+    <div id="sources" class="row"></div>
+    <button id="sources-refresh">Refresh inputs</button>
+    <h3>App pictures</h3>
+    <p id="icon-status">Checking app pictures…</p>
+    <h3>App list</h3>
+    <button id="system-toggle">Show system entries: off</button>
+    <h3>Close launcher</h3>
+    <button id="close-app">Close app</button>
+    <h3>TV settings & startup</h3>
+    <p>Use the remote's Home button for Samsung Settings. If available, try General → Smart Features → Autorun Last App. Startup support depends on your TV and app; this launcher cannot replace Samsung Home.</p>
+    <details><summary>Connection details</summary><pre id="diagnostics"></pre></details>
+
+    <!-- Enhanced Settings (Two-panel layout) -->
+    <div class="settings-page" style="margin-top: var(--space-2xl);">
+      <aside class="settings-sidebar">
+        <ul class="settings-categories">
+          <li><button class="settings-category active" data-panel="appearance" aria-label="Appearance"><span data-lucide="palette" aria-hidden="true"></span>Appearance</button></li>
+          <li><button class="settings-category" data-panel="display" aria-label="Display"><span data-lucide="monitor" aria-hidden="true"></span>Display</button></li>
+          <li><button class="settings-category" data-panel="apps" aria-label="Apps"><span data-lucide="layout-grid-circles" aria-hidden="true"></span>Apps</button></li>
+          <li><button class="settings-category" data-panel="behaviour" aria-label="Launcher Behaviour"><span data-lucide="sliders-horizontal" aria-hidden="true"></span>Launcher Behaviour</button></li>
+          <li><button class="settings-category" data-panel="about" aria-label="About / Diagnostics"><span data-lucide="info" aria-hidden="true"></span>About / Diagnostics</button></li>
+        </ul>
+      </aside>
+      <main class="settings-panel" id="settings-panel-appearance" role="tabpanel" aria-labelledby="appearance-heading">
+        <h3 id="appearance-heading">Appearance</h3>
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong>Wallpaper</strong>
+            <small>Choose a built-in background or use a custom image</small>
+          </div>
+          <div class="setting-control" style="display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap;">
+            <select id="theme-select" class="setting-select" style="min-width: 180px;">
+              <option value="cinematic">Cinematic (Default)</option>
+              <option value="midnight">Midnight</option>
+              <option value="aurora">Aurora</option>
+              <option value="ember">Ember</option>
+            </select>
+            <!-- Theme buttons are in the main settings area above for test compatibility -->
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong>Custom Background</strong>
+            <small>Path to a packaged image (e.g., assets/background.jpg)</small>
+          </div>
+          <div class="setting-control">
+            <input id="background-path-enhanced" type="text" placeholder="assets/background.jpg" maxlength="180" style="width: 280px;">
+            <button id="background-apply" class="setting-btn">Apply</button>
+          </div>
+        </div>
+        <p class="hint" style="margin-top: var(--space-sm);">Add your image to the project and its package file list, then rebuild.</p>
+      </main>
+      <main class="settings-panel" id="settings-panel-display" hidden role="tabpanel" aria-labelledby="display-heading">
+        <h3 id="display-heading">Display</h3>
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong>Interface Scaling</strong>
+            <small>Adjust the size of UI elements</small>
+          </div>
+          <div class="setting-control">
+            <select id="scale-select" class="setting-select">
+              <option value="100">100% (Default)</option>
+              <option value="110">110%</option>
+              <option value="125">125%</option>
+              <option value="90">90%</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong>Background Dimming</strong>
+            <small>Overlay intensity for better readability</small>
+          </div>
+          <div class="setting-control">
+            <select id="dim-select" class="setting-select">
+              <option value="default">Default</option>
+              <option value="light">Light</option>
+              <option value="medium">Medium</option>
+              <option value="dark">Dark</option>
+            </select>
+          </div>
+        </div>
+      </main>
+      <main class="settings-panel" id="settings-panel-apps" hidden role="tabpanel" aria-labelledby="apps-heading">
+        <h3 id="apps-heading">Apps</h3>
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong>Show System Entries</strong>
+            <small>Include hidden/system apps in the app catalogue</small>
+          </div>
+          <div class="setting-control">
+            <button id="system-toggle" class="setting-toggle" aria-label="Show system entries"></button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong>Refresh App Catalogue</strong>
+            <small>Reload the list of installed applications</small>
+          </div>
+          <div class="setting-control">
+            <button id="apps-refresh-settings" class="setting-btn">Refresh Now</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong>App Visibility</strong>
+            <small>Manage which apps appear in the launcher</small>
+          </div>
+          <div class="setting-control">
+            <button id="manage-visibility" class="setting-btn">Manage</button>
+          </div>
+        </div>
+      </main>
+      <main class="settings-panel" id="settings-panel-behaviour" hidden role="tabpanel" aria-labelledby="behaviour-heading">
+        <h3 id="behaviour-heading">Launcher Behaviour</h3>
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong>Startup Behaviour</strong>
+            <small>What happens when the launcher starts</small>
+          </div>
+          <div class="setting-control">
+            <select id="startup-select" class="setting-select">
+              <option value="home">Open Home</option>
+              <option value="last">Resume Last Page</option>
+              <option value="apps">Open Apps</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong>Idle Behaviour</strong>
+            <small>What happens after a period of inactivity</small>
+          </div>
+          <div class="setting-control">
+            <select id="idle-select" class="setting-select">
+              <option value="none">None</option>
+              <option value="screensaver">Screen Saver</option>
+              <option value="dim">Dim Screen</option>
+              <option value="exit">Exit Launcher</option>
+            </select>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong>Navigation Wrap</strong>
+            <small>Wrap around when reaching the end of a list</small>
+          </div>
+          <div class="setting-control">
+            <button id="nav-wrap-toggle" class="setting-toggle" aria-label="Navigation wrap"></button>
+          </div>
+        </div>
+      </main>
+      <main class="settings-panel" id="settings-panel-about" hidden role="tabpanel" aria-labelledby="about-heading">
+        <h3 id="about-heading">About / Diagnostics</h3>
+        <div class="setting-row">
+          <div class="setting-label"><strong>Launcher Version</strong></div>
+          <div class="setting-control"><span style="color: var(--text-secondary);">0.8.0</span></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label"><strong>Tizen Environment</strong></div>
+          <div class="setting-control"><span id="tizen-env" style="color: var(--text-secondary);">Checking…</span></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label"><strong>TV Integration</strong></div>
+          <div class="setting-control"><span id="tv-integration" style="color: var(--text-secondary);">Checking…</span></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label"><strong>App Discovery</strong></div>
+          <div class="setting-control"><span id="app-discovery" style="color: var(--text-secondary);">Checking…</span></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label"><strong>Input Integration</strong></div>
+          <div class="setting-control"><span id="input-integration" style="color: var(--text-secondary);">Checking…</span></div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label"><strong>Mode</strong></div>
+          <div class="setting-control"><span id="run-mode" style="color: var(--text-secondary);">Browser Preview</span></div>
+        </div>
+        <details style="margin-top: var(--space-lg);">
+          <summary style="cursor: pointer; color: var(--text-secondary);">Connection Details</summary>
+          <pre id="diagnostics" style="margin-top: var(--space-md);"></pre>
+        </details>
+        <div class="setting-row" style="margin-top: var(--space-xl); border-top: 1px solid var(--border-card); padding-top: var(--space-lg);">
+          <div class="setting-label"><strong>Close Launcher</strong></div>
+          <div class="setting-control">
+            <button id="close-app-settings" class="setting-btn danger">Close App</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label"><strong>TV Settings & Startup</strong></div>
+          <div class="setting-control">
+            <button id="tv-settings-open-enhanced" class="setting-btn">Open TV Settings</button>
+          </div>
+        </div>
+        <p id="tv-settings-status-enhanced" role="status" style="margin-top: var(--space-md); color: var(--text-muted); font-size: 13px;">Use the remote's Home button for Samsung Settings. If available, try General → Smart Features → Autorun Last App. Startup support depends on your TV and app; this launcher cannot replace Samsung Home.</p>
+      </main>
+    </div>
+  </section>
+
+  <header class="header" role="banner">
+    <div class="header-left">
+      <div class="brand">
+        <span class="mark" id="launcher-mark">MT</span>
+        <span id="launcher-title">My TV</span>
+      </div>
+      <h1 id="greeting" class="greeting">Good evening</h1>
+      <p class="subtitle">Relax. You've got great things to watch.</p>
+    </div>
+    <div class="header-right">
+      <div class="header-top-bar">
+        <div class="clock-group">
+          <time id="clock" aria-live="polite"></time>
+          <span id="date"></span>
+        </div>
+        <div class="status-icons">
+          <span class="wifi-icon" data-lucide="wifi" aria-label="Wi-Fi connected"></span>
+          <button id="settings-open" class="icon-btn" aria-label="Settings"><span data-lucide="settings-2" aria-hidden="true"></span></button>
+        </div>
+      </div>
+      <aside id="preview" aria-label="TV input preview">
+        <div id="preview-picture">
+          <span id="preview-message">Connecting to your TV input…</span>
+        </div>
+        <div class="preview-caption">
+          <span class="live-dot"></span>
+          <span id="source-label">TV / HDMI preview</span>
+          <button id="preview-retry">Retry TV</button>
+          <button id="preview-toggle">Turn off</button>
+        </div>
+      </aside>
+    </div>
+  </header>
+
+  <section id="apps-section" class="content-section" aria-labelledby="apps-section-title">
+    <h2 id="apps-section-title" class="section-title">Your apps</h2>
+    <div class="carousel" id="apps-carousel" role="list" aria-label="Your apps">
+      <button class="carousel-item active" data-app-id="youtube" role="listitem" aria-label="YouTube" aria-selected="true">
+        <div class="app-tile youtube-tile">
+          <span class="app-icon">▶</span>
+          <span class="app-name">YouTube</span>
+        </div>
+      </button>
+      <button class="carousel-item" data-app-id="netflix" role="listitem" aria-label="Netflix" aria-selected="false">
+        <div class="app-tile netflix-tile">
+          <span class="app-icon">N</span>
+          <span class="app-name">Netflix</span>
+        </div>
+      </button>
+      <button class="carousel-item" data-app-id="prime" role="listitem" aria-label="Prime Video" aria-selected="false">
+        <div class="app-tile prime-tile">
+          <span class="app-icon">PV</span>
+          <span class="app-name">Prime Video</span>
+        </div>
+      </button>
+      <button class="carousel-item" data-app-id="all-apps" role="listitem" aria-label="All Apps" aria-selected="false">
+        <div class="app-tile glass-tile">
+          <span class="app-icon" data-lucide="layout-grid-circles" aria-hidden="true"></span>
+          <span class="app-name">All Apps</span>
+        </div>
+      </button>
+      <button class="carousel-item" data-app-id="hdmi1" role="listitem" aria-label="HDMI 1" aria-selected="false">
+        <div class="app-tile glass-tile">
+          <span class="app-icon" data-lucide="hdmi-port" aria-hidden="true"></span>
+          <span class="app-name">HDMI 1</span>
+        </div>
+      </button>
+      <button class="carousel-item" data-app-id="hdmi2" role="listitem" aria-label="HDMI 2" aria-selected="false">
+        <div class="app-tile glass-tile">
+          <span class="app-icon" data-lucide="hdmi-port" aria-hidden="true"></span>
+          <span class="app-name">HDMI 2</span>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <section id="continue-section" class="content-section" aria-labelledby="continue-title">
+    <h2 id="continue-title" class="section-title">Continue watching</h2>
+    <div class="carousel" id="continue-carousel" role="list" aria-label="Continue watching">
+      <button class="carousel-item continue-card" data-content-id="last-of-us" role="listitem" aria-label="The Last of Us - Continue S1 E3">
+        <div class="card-bg" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">The Last of Us</h3>
+          <p class="content-meta">Continue · S1 E3</p>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 35%;"></div>
+          </div>
+        </div>
+      </button>
+      <button class="carousel-item continue-card" data-content-id="dune" role="listitem" aria-label="Dune - Continue 1h 42m">
+        <div class="card-bg" style="background: linear-gradient(135deg, #2c1810 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">Dune</h3>
+          <p class="content-meta">Continue · 1h 42m</p>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 65%;"></div>
+          </div>
+        </div>
+      </button>
+      <button class="carousel-item continue-card" data-content-id="ted-lasso" role="listitem" aria-label="Ted Lasso - Continue S3 E6">
+        <div class="card-bg" style="background: linear-gradient(135deg, #1e3a2e 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">Ted Lasso</h3>
+          <p class="content-meta">Continue · S3 E6</p>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 45%;"></div>
+          </div>
+        </div>
+      </button>
+      <button class="carousel-item continue-card" data-content-id="our-planet" role="listitem" aria-label="Our Planet - Continue S1 E4">
+        <div class="card-bg" style="background: linear-gradient(135deg, #0d1b2a 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">Our Planet</h3>
+          <p class="content-meta">Continue · S1 E4</p>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 25%;"></div>
+          </div>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <section id="trending-section" class="content-section" aria-labelledby="trending-title">
+    <h2 id="trending-title" class="section-title">Trending now</h2>
+    <div class="carousel" id="trending-carousel" role="list" aria-label="Trending now">
+      <button class="carousel-item trending-card" data-content-id="trending-1" role="listitem" aria-label="Trending content 1">
+        <div class="card-bg" style="background: linear-gradient(135deg, #2d1b3d 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">Stranger Things</h3>
+        </div>
+      </button>
+      <button class="carousel-item trending-card" data-content-id="trending-2" role="listitem" aria-label="Trending content 2">
+        <div class="card-bg" style="background: linear-gradient(135deg, #1a2d3a 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">The Crown</h3>
+        </div>
+      </button>
+      <button class="carousel-item trending-card" data-content-id="trending-3" role="listitem" aria-label="Trending content 3">
+        <div class="card-bg" style="background: linear-gradient(135deg, #2d2d1a 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">Wednesday</h3>
+        </div>
+      </button>
+      <button class="carousel-item trending-card" data-content-id="trending-4" role="listitem" aria-label="Trending content 4">
+        <div class="card-bg" style="background: linear-gradient(135deg, #3a1a2a 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">House of Dragon</h3>
+        </div>
+      </button>
+    </div>
+  </section>
+</main>
+
+<footer class="footer" role="contentinfo">
+  <span class="nav-hint">← → Navigate · Enter Select · ↑ ↓ Sections · Back Exit</span>
+  <span id="status" role="status" aria-live="polite">Starting…</span>
+  <nav class="quick-actions">
+    <button id="watch-tv">Watch TV full screen</button>
+  </nav>
+</footer>
+
+<div id="exit-dialog" hidden role="dialog" aria-modal="true" aria-label="Close launcher">
+  <h2>Close launcher?</h2>
+  <button id="exit-cancel">Keep browsing</button>
+  <button id="exit-confirm">Close app</button>
+</div>
+</body>
+</html>

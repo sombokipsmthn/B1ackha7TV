@@ -31,7 +31,7 @@ files:
   - icon.png
   - index.html
   - main.js
-
+  - assets/lucide.js
   - assets/prime-video.svg
 
 # list of files to exclude based on the matched patterns
