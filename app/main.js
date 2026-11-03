@@ -150,7 +150,13 @@ document.addEventListener('DOMContentLoaded', () => {
   function focus(el) { if (el && !el.disabled) { el.focus(); } }
   function loadPrefs() {
     try {
-      var saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
+      var stored = localStorage.getItem(storageKey);
+      var migratedLegacy = false;
+      if (!stored) {
+        stored = localStorage.getItem('kipsmthntheme.settings.v1');
+        migratedLegacy = !!stored;
+      }
+      var saved = JSON.parse(stored || '{}');
       if (saved && typeof saved === 'object') {
         if (typeof saved.name === 'string') { prefs.name = cleanName(saved.name); }
         if (Object.prototype.hasOwnProperty.call(themes, saved.theme)) { prefs.theme = saved.theme; }
@@ -158,7 +164,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof saved.preview === 'boolean') { prefs.preview = saved.preview; }
         if (typeof saved.system === 'boolean') { prefs.system = saved.system; }
         if (Array.isArray(saved.favorites)) { prefs.favorites = saved.favorites.filter(function (id) { return typeof id === 'string'; }); }
-        if (saved.backgroundVersion !== 2) { prefs.background = ''; save(); }
+        if (saved.backgroundVersion !== 2) {
+          prefs.background = '';
+          save();
+        } else if (migratedLegacy) {
+          // Move preferences from the earlier MyTvTheme storage key without losing favourites.
+          save();
+        }
       }
     } catch (e) { report('Saved settings could not be read; using defaults.', e); }
   }
@@ -581,11 +593,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // System toggle
+  function updateSystemToggle() {
+    var systemToggle = $('system-toggle');
+    if (!systemToggle) { return; }
+    systemToggle.classList.toggle('active', prefs.system);
+    systemToggle.setAttribute('aria-pressed', String(prefs.system));
+    systemToggle.title = 'Show system entries: ' + (prefs.system ? 'On' : 'Off');
+  }
   var systemToggle = $('system-toggle');
   if (systemToggle) {
     systemToggle.addEventListener('click', function () {
-      prefs.system = !prefs.system; save();
-      this.classList.toggle('active', prefs.system);
+      prefs.system = !prefs.system;
+      save();
+      updateSystemToggle();
       renderApps();
       if (typeof renderAppsPage === 'function') renderAppsPage();
     });
@@ -772,7 +792,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function sourceName(source) { return source.type + (source.type === 'TV' ? '' : ' ' + source.number); }
   function readCurrentSource() {
-    try { var label = $('source-label'); if (label) label.textContent = sourceName(tv.tvwindow.getSource('MAIN')); }
+    try { var current = sourceName(tv.tvwindow.getSource('MAIN')); var label = $('source-label'); var settingsLabel = $('settings-source-label'); if (label) label.textContent = current; if (settingsLabel) settingsLabel.textContent = current; }
     catch (e) { report('Current input could not be read.', e); }
   }
   function refreshSources() {
@@ -894,7 +914,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Initialize
-  loadPrefs(); applyName(); background(prefs.background,false);
+  loadPrefs(); applyName(); updateSystemToggle(); background(prefs.background,false);
   var bp = $('background-path') || $('background-path-enhanced');
   if (bp) bp.value = prefs.background;
   updatePreviewToggle(); clockTimer = setInterval(updateClock, 30000);

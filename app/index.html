@@ -21,7 +21,7 @@
 
 <main id="content" role="main">
   <!-- Backward-compatible elements for tests (invisible but clickable without displacing layout) -->
-  <div id="library" style="position:fixed;top:0;left:0;width:300px;height:300px;opacity:0.001;pointer-events:auto;z-index:9999;" aria-hidden="true">
+  <div id="library" style="position:fixed;top:0;left:0;width:300px;height:300px;opacity:0;pointer-events:none;z-index:-1;" aria-hidden="true">
     <div class="section-title"><h2 id="library-title">Your main apps</h2><span id="app-count"></span></div>
     <p id="launch-feedback" role="status" hidden></p>
     <p id="edit-hint" hidden>Select an app to add or remove its Home shortcut. Your apps stay installed.</p>
@@ -107,224 +107,158 @@
   </section>
 
   <section id="settings" hidden aria-label="Launcher settings">
-    <h2>Make it yours</h2>
-    <button id="settings-close">Done</button>
-    <h3>Your launcher name</h3>
-    <label for="launcher-name">Name shown at the top left</label>
-    <div class="row"><input id="launcher-name" type="text" maxlength="32" placeholder="My TV" autocomplete="off"><button id="name-save">Save name</button><button id="name-reset">Reset name</button></div>
-    <h3>Samsung TV settings</h3>
-    <button id="tv-settings-open">Open TV settings</button>
-    <p id="tv-settings-status" role="status">Open Samsung settings if your TV supports it. Otherwise, use Home → Settings on your remote.</p>
-    <h3>Background</h3>
-    <!-- Theme buttons are now in the Appearance panel AND preserved for test compatibility -->
-<div class="row" style="margin-top: var(--space-sm);">
-  <button data-theme="midnight">Midnight</button>
-  <button data-theme="aurora">Aurora</button>
-  <button data-theme="ember">Ember</button>
-</div>
-    <label for="background-path">Custom image packaged with this app</label>
-    <div class="row"><input id="background-path" placeholder="assets/background.jpg" maxlength="180"><button id="background-apply">Apply image</button></div>
-    <p class="hint">Add your image to the project and its package file list, then rebuild.</p>
-    <h3>Preview input</h3>
-    <div id="sources" class="row"></div>
-    <button id="sources-refresh">Refresh inputs</button>
-    <h3>App pictures</h3>
-    <p id="icon-status">Checking app pictures…</p>
-    <h3>App list</h3>
-    <button id="system-toggle">Show system entries: off</button>
-    <h3>Close launcher</h3>
-    <button id="close-app">Close app</button>
-    <h3>TV settings & startup</h3>
-    <p>Use the remote's Home button for Samsung Settings. If available, try General → Smart Features → Autorun Last App. Startup support depends on your TV and app; this launcher cannot replace Samsung Home.</p>
-    <details><summary>Connection details</summary><pre id="diagnostics"></pre></details>
+    <header class="settings-header">
+      <div class="header-left">
+        <h2>Make it yours</h2>
+        <p class="subtitle">Customize your launcher and TV integration.</p>
+      </div>
+      <button id="settings-close" class="setting-btn">Done</button>
+    </header>
 
-    <!-- Enhanced Settings (Two-panel layout) -->
-    <div class="settings-page" style="margin-top: var(--space-2xl);">
-      <aside class="settings-sidebar">
+    <div class="settings-page">
+      <aside class="settings-sidebar" aria-label="Settings categories">
         <ul class="settings-categories">
           <li><button class="settings-category active" data-panel="appearance" aria-label="Appearance"><span data-lucide="palette" aria-hidden="true"></span>Appearance</button></li>
-          <li><button class="settings-category" data-panel="display" aria-label="Display"><span data-lucide="monitor" aria-hidden="true"></span>Display</button></li>
-          <li><button class="settings-category" data-panel="apps" aria-label="Apps"><span data-lucide="layout-grid-circles" aria-hidden="true"></span>Apps</button></li>
-          <li><button class="settings-category" data-panel="behaviour" aria-label="Launcher Behaviour"><span data-lucide="sliders-horizontal" aria-hidden="true"></span>Launcher Behaviour</button></li>
-          <li><button class="settings-category" data-panel="about" aria-label="About / Diagnostics"><span data-lucide="info" aria-hidden="true"></span>About / Diagnostics</button></li>
+          <li><button class="settings-category" data-panel="display" aria-label="Display"><span data-lucide="monitor" aria-hidden="true"></span>Display & Inputs</button></li>
+          <li><button class="settings-category" data-panel="apps" aria-label="Apps"><span data-lucide="layout-grid" aria-hidden="true"></span>Apps</button></li>
+          <li><button class="settings-category" data-panel="behaviour" aria-label="Launcher Behaviour"><span data-lucide="sliders-horizontal" aria-hidden="true"></span>Behaviour</button></li>
+          <li><button class="settings-category" data-panel="about" aria-label="About / Diagnostics"><span data-lucide="info" aria-hidden="true"></span>About & Diagnostics</button></li>
         </ul>
       </aside>
+
       <main class="settings-panel" id="settings-panel-appearance" role="tabpanel" aria-labelledby="appearance-heading">
         <h3 id="appearance-heading">Appearance</h3>
         <div class="setting-row">
           <div class="setting-label">
-            <strong>Wallpaper</strong>
-            <small>Choose a built-in background or use a custom image</small>
+            <strong>Launcher name</strong>
+            <small>Name shown in the top-left corner</small>
           </div>
-          <div class="setting-control" style="display: flex; align-items: center; gap: var(--space-sm); flex-wrap: wrap;">
-            <select id="theme-select" class="setting-select" style="min-width: 180px;">
+          <div class="setting-control">
+            <input id="launcher-name" type="text" maxlength="32" placeholder="My TV" autocomplete="off">
+            <button id="name-save" class="setting-btn">Save name</button>
+            <button id="name-reset" class="setting-btn">Reset</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label">
+            <strong>Wallpaper theme</strong>
+            <small>Choose the launcher's built-in background</small>
+          </div>
+          <div class="setting-control">
+            <select id="theme-select" class="setting-select" aria-label="Wallpaper theme">
               <option value="cinematic">Cinematic (Default)</option>
               <option value="midnight">Midnight</option>
               <option value="aurora">Aurora</option>
               <option value="ember">Ember</option>
             </select>
-            <div style="display: flex; gap: var(--space-xs);">
-              <button data-theme="midnight" class="setting-btn" style="padding: var(--space-xs) var(--space-sm);" title="Midnight">Midnight</button>
-              <button data-theme="aurora" class="setting-btn" style="padding: var(--space-xs) var(--space-sm);" title="Aurora">Aurora</button>
-              <button data-theme="ember" class="setting-btn" style="padding: var(--space-xs) var(--space-sm);" title="Ember">Ember</button>
-            </div>
           </div>
         </div>
         <div class="setting-row">
           <div class="setting-label">
-            <strong>Custom Background</strong>
-            <small>Path to a packaged image (e.g., assets/background.jpg)</small>
+            <strong>Custom background</strong>
+            <small>Path to an image included in the app package</small>
           </div>
           <div class="setting-control">
-            <input id="background-path-enhanced" type="text" placeholder="assets/background.jpg" maxlength="180" style="width: 280px;">
-            <button id="background-apply" class="setting-btn">Apply</button>
+            <input id="background-path-enhanced" type="text" placeholder="assets/background.jpg" maxlength="180" aria-label="Custom background image path">
+            <button id="background-apply" class="setting-btn">Apply image</button>
           </div>
         </div>
-        <p class="hint" style="margin-top: var(--space-sm);">Add your image to the project and its package file list, then rebuild.</p>
+        <p class="hint">Add your JPG, PNG or WebP image under app/assets/, include it in the Tizen package list, rebuild, then enter its relative path above.</p>
       </main>
+
       <main class="settings-panel" id="settings-panel-display" hidden role="tabpanel" aria-labelledby="display-heading">
-        <h3 id="display-heading">Display</h3>
+        <h3 id="display-heading">Display & Inputs</h3>
         <div class="setting-row">
           <div class="setting-label">
-            <strong>Interface Scaling</strong>
-            <small>Adjust the size of UI elements</small>
+            <strong>TV / HDMI preview</strong>
+            <small>Choose the connected source shown in the preview area</small>
           </div>
           <div class="setting-control">
-            <select id="scale-select" class="setting-select">
-              <option value="100">100% (Default)</option>
-              <option value="110">110%</option>
-              <option value="125">125%</option>
-              <option value="90">90%</option>
-            </select>
+            <span id="settings-source-label">Checking current input…</span>
+            <button id="sources-refresh" class="setting-btn">Refresh inputs</button>
           </div>
         </div>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Background Dimming</strong>
-            <small>Overlay intensity for better readability</small>
-          </div>
-          <div class="setting-control">
-            <select id="dim-select" class="setting-select">
-              <option value="default">Default</option>
-              <option value="light">Light</option>
-              <option value="medium">Medium</option>
-              <option value="dark">Dark</option>
-            </select>
-          </div>
-        </div>
+        <div id="sources" class="row" aria-label="Connected TV inputs"></div>
+        <p class="hint">Input switching and live TV preview are available only on a compatible Samsung TV.</p>
       </main>
+
       <main class="settings-panel" id="settings-panel-apps" hidden role="tabpanel" aria-labelledby="apps-heading">
         <h3 id="apps-heading">Apps</h3>
         <div class="setting-row">
           <div class="setting-label">
-            <strong>Show System Entries</strong>
-            <small>Include hidden/system apps in the app catalogue</small>
+            <strong>Show system entries</strong>
+            <small>Include hidden or system apps in the app catalogue</small>
           </div>
           <div class="setting-control">
-            <button id="system-toggle" class="setting-toggle" aria-label="Show system entries"></button>
+            <button id="system-toggle" class="setting-toggle" type="button" aria-label="Show system entries" aria-pressed="false"></button>
           </div>
         </div>
         <div class="setting-row">
           <div class="setting-label">
-            <strong>Refresh App Catalogue</strong>
-            <small>Reload the list of installed applications</small>
+            <strong>Refresh app catalogue</strong>
+            <small>Reload installed applications from the TV</small>
           </div>
           <div class="setting-control">
-            <button id="apps-refresh-settings" class="setting-btn">Refresh Now</button>
+            <button id="apps-refresh-settings" class="setting-btn">Refresh now</button>
           </div>
         </div>
         <div class="setting-row">
           <div class="setting-label">
-            <strong>App Visibility</strong>
-            <small>Manage which apps appear in the launcher</small>
+            <strong>App visibility</strong>
+            <small>Choose which installed apps appear on Home</small>
           </div>
           <div class="setting-control">
-            <button id="manage-visibility" class="setting-btn">Manage</button>
+            <button id="manage-visibility" class="setting-btn">Manage apps</button>
           </div>
         </div>
+        <p id="icon-status" class="hint">Checking app pictures…</p>
       </main>
+
       <main class="settings-panel" id="settings-panel-behaviour" hidden role="tabpanel" aria-labelledby="behaviour-heading">
         <h3 id="behaviour-heading">Launcher Behaviour</h3>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Startup Behaviour</strong>
-            <small>What happens when the launcher starts</small>
-          </div>
-          <div class="setting-control">
-            <select id="startup-select" class="setting-select">
-              <option value="home">Open Home</option>
-              <option value="last">Resume Last Page</option>
-              <option value="apps">Open Apps</option>
-            </select>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Idle Behaviour</strong>
-            <small>What happens after a period of inactivity</small>
-          </div>
-          <div class="setting-control">
-            <select id="idle-select" class="setting-select">
-              <option value="none">None</option>
-              <option value="screensaver">Screen Saver</option>
-              <option value="dim">Dim Screen</option>
-              <option value="exit">Exit Launcher</option>
-            </select>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Navigation Wrap</strong>
-            <small>Wrap around when reaching the end of a list</small>
-          </div>
-          <div class="setting-control">
-            <button id="nav-wrap-toggle" class="setting-toggle" aria-label="Navigation wrap"></button>
-          </div>
-        </div>
+        <p>Use the remote's Home button for Samsung TV settings. If your model supports it, check General → Smart Features → Autorun Last App to control what opens when the TV starts.</p>
+        <p class="hint">Samsung controls startup behaviour. This launcher cannot replace Samsung Home or guarantee that it starts automatically.</p>
       </main>
+
       <main class="settings-panel" id="settings-panel-about" hidden role="tabpanel" aria-labelledby="about-heading">
-        <h3 id="about-heading">About / Diagnostics</h3>
+        <h3 id="about-heading">About & Diagnostics</h3>
         <div class="setting-row">
-          <div class="setting-label"><strong>Launcher Version</strong></div>
-          <div class="setting-control"><span style="color: var(--text-secondary);">0.8.0</span></div>
+          <div class="setting-label"><strong>Launcher version</strong></div>
+          <div class="setting-control"><span>0.8.0</span></div>
         </div>
         <div class="setting-row">
-          <div class="setting-label"><strong>Tizen Environment</strong></div>
-          <div class="setting-control"><span id="tizen-env" style="color: var(--text-secondary);">Checking…</span></div>
+          <div class="setting-label"><strong>Tizen environment</strong></div>
+          <div class="setting-control"><span id="tizen-env">Checking…</span></div>
         </div>
         <div class="setting-row">
-          <div class="setting-label"><strong>TV Integration</strong></div>
-          <div class="setting-control"><span id="tv-integration" style="color: var(--text-secondary);">Checking…</span></div>
+          <div class="setting-label"><strong>TV integration</strong></div>
+          <div class="setting-control"><span id="tv-integration">Checking…</span></div>
         </div>
         <div class="setting-row">
-          <div class="setting-label"><strong>App Discovery</strong></div>
-          <div class="setting-control"><span id="app-discovery" style="color: var(--text-secondary);">Checking…</span></div>
+          <div class="setting-label"><strong>App discovery</strong></div>
+          <div class="setting-control"><span id="app-discovery">Checking…</span></div>
         </div>
         <div class="setting-row">
-          <div class="setting-label"><strong>Input Integration</strong></div>
-          <div class="setting-control"><span id="input-integration" style="color: var(--text-secondary);">Checking…</span></div>
+          <div class="setting-label"><strong>Input integration</strong></div>
+          <div class="setting-control"><span id="input-integration">Checking…</span></div>
         </div>
         <div class="setting-row">
           <div class="setting-label"><strong>Mode</strong></div>
-          <div class="setting-control"><span id="run-mode" style="color: var(--text-secondary);">Browser Preview</span></div>
+          <div class="setting-control"><span id="run-mode">Browser Preview</span></div>
         </div>
+        <div class="setting-row">
+          <div class="setting-label"><strong>Samsung TV settings</strong><small>Opens the TV settings app when supported</small></div>
+          <div class="setting-control"><button id="tv-settings-open" class="setting-btn">Open TV settings</button></div>
+        </div>
+        <p id="tv-settings-status" role="status" class="hint">If direct access is unavailable, press Home on your Samsung remote and select Settings.</p>
         <details style="margin-top: var(--space-lg);">
-          <summary style="cursor: pointer; color: var(--text-secondary);">Connection Details</summary>
+          <summary>Connection details</summary>
           <pre id="diagnostics" style="margin-top: var(--space-md);"></pre>
         </details>
         <div class="setting-row" style="margin-top: var(--space-xl); border-top: 1px solid var(--border-card); padding-top: var(--space-lg);">
-          <div class="setting-label"><strong>Close Launcher</strong></div>
-          <div class="setting-control">
-            <button id="close-app-settings" class="setting-btn danger">Close App</button>
-          </div>
+          <div class="setting-label"><strong>Close launcher</strong></div>
+          <div class="setting-control"><button id="close-app-settings" class="setting-btn danger">Close app</button></div>
         </div>
-        <div class="setting-row">
-          <div class="setting-label"><strong>TV Settings & Startup</strong></div>
-          <div class="setting-control">
-            <button id="tv-settings-open-enhanced" class="setting-btn">Open TV Settings</button>
-          </div>
-        </div>
-        <p id="tv-settings-status-enhanced" role="status" style="margin-top: var(--space-md); color: var(--text-muted); font-size: 13px;">Use the remote's Home button for Samsung Settings. If available, try General → Smart Features → Autorun Last App. Startup support depends on your TV and app; this launcher cannot replace Samsung Home.</p>
       </main>
     </div>
   </section>
