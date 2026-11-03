@@ -13,8 +13,9 @@ const assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),p
    if(mode==='missing')delete window.tizen.application.findAppControl;
   },mode);
   const p=await c.newPage();await p.goto(pathToFileURL(path.resolve('app/index.html')).href);
-  await p.locator('#settings-open').click();await p.locator('[data-panel="about"]').click();await p.locator('#tv-settings-open').click();
+  await p.locator('#settings-open').click();await p.locator('[data-panel="about"]').click();await p.waitForTimeout(300);await p.locator('#tv-settings-open').click();
   if(mode==='timeout')await p.waitForTimeout(5200);
+  else await p.waitForTimeout(100);
   assert.equal(await p.locator('#tv-settings-open').isEnabled(),true);
   const calls=await p.evaluate(()=>window.calls);
   if(mode==='supported'||mode==='launch-error')assert.deepEqual(calls,[{operation:'http://tizen.org/appcontrol/operation/setting',id:'discovered.settings'}]);

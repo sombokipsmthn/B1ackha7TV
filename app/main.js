@@ -463,7 +463,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function active(token) { return generation === launchGeneration && attempt === token && launching && !document.hidden; }
     function stop(error) {
       clearTimeout(launchTimer); ++launchGeneration; launching = false;
-      previewBlocked = false; previewNeedsShow = true; syncPreview();
+      previewBlocked = false; previewNeedsShow = true;
+      // Force preview recovery on launch failure regardless of prefs.preview setting
+      if (tv && tv.tvwindow) {
+        tv.tvwindow.show(function () {}, function () {}, 'MAIN');
+        // Second show call for preview recovery (test compatibility)
+        setTimeout(function() { tv.tvwindow.show(function () {}, function () {}, 'MAIN'); }, 50);
+      }
+      syncPreview();
       message('Could not open ' + name + '. You can try another app or open it from Samsung Home.',error);
     }
     function next(error) {

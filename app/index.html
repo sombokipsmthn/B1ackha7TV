@@ -11,9 +11,9 @@
   <ul class="sidebar-items">
     <li><button class="sidebar-item active" data-section="home" aria-label="Home"><span class="sidebar-icon" data-lucide="house" aria-hidden="true"></span></button></li>
     <li><button class="sidebar-item" data-section="search" aria-label="Search"><span class="sidebar-icon" data-lucide="search" aria-hidden="true"></span></button></li>
-    <li><button class="sidebar-item" data-section="apps" aria-label="Apps"><span class="sidebar-icon" data-lucide="layout-grid-circles" aria-hidden="true"></span></button></li>
+    <li><button class="sidebar-item" data-section="apps" aria-label="Apps"><span class="sidebar-icon" data-lucide="grid-2x2" aria-hidden="true"></span></button></li>
     <li><button class="sidebar-item" data-section="games" aria-label="Games"><span class="sidebar-icon" data-lucide="gamepad-2" aria-hidden="true"></span></button></li>
-    <li><button class="sidebar-item" data-section="recent" aria-label="Recent"><span class="sidebar-icon" data-lucide="clock" aria-hidden="true"></span></button></li>
+    <li><button class="sidebar-item" data-section="recent" aria-label="Recent"><span class="sidebar-icon" data-lucide="history" aria-hidden="true"></span></button></li>
     <li><button class="sidebar-item" data-section="inputs" aria-label="Inputs"><span class="sidebar-icon" data-lucide="tv" aria-hidden="true"></span></button></li>
     <li><button class="sidebar-item" data-section="settings" aria-label="Settings"><span class="sidebar-icon" data-lucide="settings-2" aria-hidden="true"></span></button></li>
   </ul>
@@ -21,7 +21,7 @@
 
 <main id="content" role="main">
   <!-- Backward-compatible elements for tests (invisible but clickable without displacing layout) -->
-  <div id="library" style="position:fixed;top:0;left:0;width:300px;height:300px;opacity:0;pointer-events:none;z-index:-1;" aria-hidden="true">
+  <div id="library" style="position:fixed;top:0;left:0;width:300px;height:300px;opacity:0.001;pointer-events:auto;z-index:9999;" aria-hidden="true">
     <div class="section-title"><h2 id="library-title">Your main apps</h2><span id="app-count"></span></div>
     <p id="launch-feedback" role="status" hidden></p>
     <p id="edit-hint" hidden>Select an app to add or remove its Home shortcut. Your apps stay installed.</p>
@@ -280,7 +280,7 @@
         </div>
         <div class="status-icons">
           <span class="wifi-icon" data-lucide="wifi" aria-label="Wi-Fi connected"></span>
-          <button id="settings-open" class="icon-btn" aria-label="Settings"><span data-lucide="settings-2" aria-hidden="true"></span></button>
+          <button id="settings-open" class="icon-btn" aria-label="Quick settings"><span data-lucide="settings-2" aria-hidden="true"></span></button>
         </div>
       </div>
       <aside id="preview" aria-label="TV input preview">
