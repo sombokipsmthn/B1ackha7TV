@@ -1,0 +1,32 @@
+{
+  "projectDir": "/Users/kipsmthn/Projects/B1ackha7TV/app",
+  "timestamp": "2026-11-03T21:03:05.219Z",
+  "hashAlgorithm": "xxh3-128",
+  "input": {},
+  "output": {
+    "Debug/projects/app/assets/icon-source.svg": {
+      "hash": "ceaae3d760f1b6da04389114676b49c2"
+    },
+    "Debug/projects/app/assets/prime-video.svg": {
+      "hash": "9aafe51bedd385efa68cfa53a263cd81"
+    },
+    "Debug/projects/app/config.xml": {
+      "hash": "7c074ff3fa732ae1d31d4451fdf3b90d"
+    },
+    "Debug/projects/app/css/style.css": {
+      "hash": "a332d8e60666c2796a25875c93f9da8a"
+    },
+    "Debug/projects/app/icon.png": {
+      "hash": "fbec867b62aa3ec5bf468f9a1f393159"
+    },
+    "Debug/projects/app/index.html": {
+      "hash": "0f071b2027f072f9fcea990d0d7e234b"
+    },
+    "Debug/projects/app/main.js": {
+      "hash": "0608c6a197a161c04bcaaf70c31fe29b"
+    },
+    "Debug/projects/app/workspace-20261103-233638.code-workspace": {
+      "hash": "df000533224607fe4bce70a29f36ecf7"
+    }
+  }
+}
