@@ -21,9 +21,16 @@ const assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),p
     });
   }
   const p=await c.newPage();await p.goto(pathToFileURL(path.resolve('app/index.html')).href);
+<<<<<<< HEAD
   await p.locator('#settings-open').click();await p.locator('[data-panel="about"]').click();await p.locator('#tv-settings-open-enhanced').click();
   if(mode==='timeout')await p.waitForTimeout(5200);
   assert.equal(await p.locator('#tv-settings-open-enhanced').isEnabled(),true);
+=======
+  await p.locator('#settings-open').click();await p.locator('[data-panel="about"]').click();await p.waitForTimeout(300);await p.locator('#tv-settings-open').click();
+  if(mode==='timeout')await p.waitForTimeout(5200);
+  else await p.waitForTimeout(100);
+  assert.equal(await p.locator('#tv-settings-open').isEnabled(),true);
+>>>>>>> worktree-lucide-icons-update
   const calls=await p.evaluate(()=>window.calls);
   if(mode==='supported'||mode==='launch-error')assert.deepEqual(calls,[{operation:'http://tizen.org/appcontrol/operation/setting',id:'discovered.settings'}]);
   else {assert.equal(calls.length,0);assert.match(await p.locator('#tv-settings-status').innerText(),/Press Home/);}

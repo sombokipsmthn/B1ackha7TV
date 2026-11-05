@@ -18,12 +18,14 @@
   --text-muted: rgba(255, 255, 255, 0.45);
   --text-dim: rgba(255, 255, 255, 0.25);
 
-  --accent-blue: #3b82f6;
-  --accent-blue-glow: rgba(59, 130, 246, 0.6);
-  --accent-blue-subtle: rgba(59, 130, 246, 0.25);
+  --accent-blue: #ffffff;
+  --accent-blue-glow: rgba(255, 255, 255, 0.5);
+  --accent-blue-subtle: rgba(255, 255, 255, 0.15);
   --accent-white-glow: rgba(255, 255, 255, 0.4);
   --accent-red: #ff0000;
   --accent-red-glow: rgba(255, 0, 0, 0.5);
+  --accent-primary: #ffffff;
+  --accent-glow: rgba(255, 255, 255, 0.4);
 
   --border-subtle: rgba(255, 255, 255, 0.08);
   --border-focus: rgba(59, 130, 246, 0.5);
@@ -85,24 +87,25 @@
   stroke-width: 1.7;
   stroke-linecap: round;
   stroke-linejoin: round;
+  color: currentColor;
   transition: all var(--transition-normal);
 }
 
-/* Default muted, brighter on focus */
+/* Default muted white/grey, brighter white with subtle glow on focus/active */
 .sidebar-icon, .icon-btn > span {
   color: var(--text-muted);
-  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.3));
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.15));
 }
 
 .sidebar-item:hover .sidebar-icon, .icon-btn:hover span {
   color: var(--text-secondary);
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.35));
   transform: scale(1.1);
 }
 
 .sidebar-item.active .sidebar-icon {
   color: var(--text-primary);
-  filter: drop-shadow(0 0 12px var(--accent-blue-glow));
-  stroke: var(--accent-blue);
+  filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.5));
 }
 
 /* Status icons */
@@ -112,12 +115,35 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   color: var(--text-secondary);
-  filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.3));
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.15));
 }
 
-.icon-btn:hover span {
+.icon-btn:focus-visible span {
   color: var(--text-primary);
-  filter: drop-shadow(0 0 8px var(--accent-blue-glow));
+  filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.5));
+}
+
+/* Legacy app grid (for backward-compat tests) */
+.app {
+  display: flex;
+  align-items: center;
+  text-align: left;
+  width: 100%;
+  background: rgba(25,36,59,.94);
+  padding: 1em;
+  border-radius: var(--radius-md);
+}
+
+.app .initial,
+.app img {
+  margin: 0 0 .4em;
+  width: 3vw;
+  height: 3vw;
+}
+
+.app .app-name {
+  font-size: 1.15vw;
+  max-height: 2.6em;
 }
 
 /* App tiles icons */
@@ -132,12 +158,11 @@
   filter: drop-shadow(0 4px 16px rgba(0,0,0,0.4));
 }
 
+/* Keep streaming brand colours separate from navigation icons */
 .youtube-tile .app-icon { color: #ff0000; stroke: #ff0000; }
 .netflix-tile .app-icon { color: #e50914; stroke: #e50914; }
 .prime-tile .app-icon { color: #ffffff; stroke: #ffffff; }
 .glass-tile .app-icon { color: var(--text-secondary); stroke: var(--text-secondary); }
-
-/* Keep brand logos separate - no Lucide replacement for YouTube/Netflix/Prime */
 *, *::before, *::after { box-sizing: border-box; }
 
 html, body {
@@ -858,7 +883,7 @@ a:focus-visible,
   font-weight: 600;
   padding: 2px 8px;
   border-radius: var(--radius-pill);
-  background: var(--accent-subtle);
+  background: var(--accent-blue-subtle);
   color: var(--accent-primary);
 }
 
@@ -1237,7 +1262,7 @@ a:focus-visible,
   border-color: var(--accent-primary);
 }
 
-/* Toggle (settings page) */
+/* Toggle */
 .setting-toggle {
   position: relative;
   width: 56px;
@@ -1250,7 +1275,7 @@ a:focus-visible,
   flex-shrink: 0;
 }
 
-.setting-toggle.active {
+.setting-toggle[aria-pressed="true"] {
   background: var(--accent-primary);
 }
 
@@ -1267,7 +1292,7 @@ a:focus-visible,
   transition: transform var(--transition-fast);
 }
 
-.setting-toggle.active::after {
+.setting-toggle[aria-pressed="true"]::after {
   transform: translateX(26px);
 }
 
@@ -1276,7 +1301,6 @@ a:focus-visible,
   box-shadow: var(--shadow-focus);
 }
 
-/* Toggle (legacy style) */
 .toggle-label {
   display: flex;
   align-items: center;
