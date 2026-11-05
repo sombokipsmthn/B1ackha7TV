@@ -33,6 +33,10 @@
       {
         "path": "Debug/projects/app/workspace-20261103-233638.code-workspace",
         "type": "add"
+      },
+      {
+        "path": "Debug/projects/app/css/style.css.git",
+        "type": "modify"
       }
     ]
   }
