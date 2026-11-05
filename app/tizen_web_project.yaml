@@ -33,6 +33,9 @@ files:
   - main.js
   - assets/lucide.js
   - assets/prime-video.svg
+  - assets/fonts/material-symbols-outlined.woff2
+  - assets/fonts/material-symbols-outlined.woff
+  - assets/fonts/material-icons.css
 
 # list of files to exclude based on the matched patterns
 excludes:

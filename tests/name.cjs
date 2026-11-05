@@ -7,11 +7,15 @@ const assert=require('node:assert/strict'),path=require('node:path'),{pathToFile
  });
  const p=await context.newPage();await p.goto(pathToFileURL(path.resolve('app/index.html')).href);
  assert.equal(await p.locator('#launcher-title').innerText(),'My TV');
- await p.locator('#settings-open').click();await p.locator('#launcher-name').fill('  Living   Room  ');await p.locator('#name-save').click();
+ // Navigate to settings via sidebar
+ await p.locator('[data-page="settings"]').click();
+ await p.locator('#launcher-name').fill('  Living   Room  ');await p.locator('#name-save').click();
  assert.equal(await p.locator('#launcher-title').innerText(),'Living Room');assert.equal(await p.locator('#launcher-mark').innerText(),'LR');
  await p.reload();assert.equal(await p.locator('#launcher-title').innerText(),'Living Room');
  const prefs=await p.evaluate(()=>JSON.parse(localStorage.getItem('b1ackha7tv.settings.v1')));assert.deepEqual(prefs.favorites,['saved.app']);assert.equal(prefs.preview,false);assert.equal(prefs.theme,'ember');
- await p.locator('#settings-open').click();await p.locator('#launcher-name').fill('<img src=x onerror=alert(1)>');await p.locator('#name-save').click();
+ // Back to settings
+ await p.locator('[data-page="settings"]').click();
+ await p.locator('#launcher-name').fill('<img src=x onerror=alert(1)>');await p.locator('#name-save').click();
  assert.equal(await p.locator('#launcher-title img').count(),0);assert.equal(await p.locator('#launcher-title').innerText(),'<img src=x onerror=alert(1)>');
  await p.locator('#launcher-name').fill(' ');await p.locator('#name-save').click();assert.equal(await p.locator('#launcher-title').innerText(),'My TV');
  await p.locator('#launcher-name').fill('Home');await p.locator('#name-save').click();await p.locator('#name-reset').click();await p.reload();assert.equal(await p.locator('#launcher-title').innerText(),'My TV');

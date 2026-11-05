@@ -1,11 +1,7 @@
 {
-  "folders": [
-    {
-      "path": ".."
-    },
-    {
-      "path": "MyTVTheme"
-    }
-  ],
-  "settings": {}
+    "folders": [
+        {
+            "path": "."
+        }
+    ]
 }

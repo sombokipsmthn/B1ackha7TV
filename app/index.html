@@ -1,435 +1,186 @@
+
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My TV</title><link rel="stylesheet" href="css/cinematic.css"><script src="assets/lucide.js"></script><script src="main.js" defer></script>
+<title>My TV</title>
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="assets/fonts/material-icons.css">
+<script src="tizen-service.js" defer></script>
+<script src="main.js" defer></script>
 </head>
 <body>
 <div id="wallpaper" aria-hidden="true"></div>
 
-<nav id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
-  <ul class="sidebar-items">
-    <li><button class="sidebar-item active" data-section="home" aria-label="Home"><span class="sidebar-icon" data-lucide="house" aria-hidden="true"></span></button></li>
-    <li><button class="sidebar-item" data-section="search" aria-label="Search"><span class="sidebar-icon" data-lucide="search" aria-hidden="true"></span></button></li>
-    <li><button class="sidebar-item" data-section="apps" aria-label="Apps"><span class="sidebar-icon" data-lucide="layout-grid-circles" aria-hidden="true"></span></button></li>
-    <li><button class="sidebar-item" data-section="games" aria-label="Games"><span class="sidebar-icon" data-lucide="gamepad-2" aria-hidden="true"></span></button></li>
-    <li><button class="sidebar-item" data-section="recent" aria-label="Recent"><span class="sidebar-icon" data-lucide="clock" aria-hidden="true"></span></button></li>
-    <li><button class="sidebar-item" data-section="inputs" aria-label="Inputs"><span class="sidebar-icon" data-lucide="tv" aria-hidden="true"></span></button></li>
-    <li><button class="sidebar-item" data-section="settings" aria-label="Settings"><span class="sidebar-icon" data-lucide="settings-2" aria-hidden="true"></span></button></li>
-  </ul>
+<header>
+  <div class="brand">
+    <span class="mark" id="launcher-mark">MT</span>
+    <span id="launcher-title">My TV</span>
+  </div>
+  <time id="clock"></time>
+</header>
+
+<nav id="sidebar" aria-label="Main navigation">
+  <button data-page="home" class="nav-item active" aria-label="Home">
+    <span class="material-icons">home</span>
+    <span>Home</span>
+  </button>
+  <button data-page="apps" class="nav-item" aria-label="Apps">
+    <span class="material-icons">apps</span>
+    <span>Apps</span>
+  </button>
+  <button data-page="games" class="nav-item" aria-label="Games">
+    <span class="material-icons">sports_esports</span>
+    <span>Games</span>
+  </button>
+  <button data-page="recent" class="nav-item" aria-label="Recent">
+    <span class="material-icons">history</span>
+    <span>Recent</span>
+  </button>
+  <button data-page="search" class="nav-item" aria-label="Search">
+    <span class="material-icons">search</span>
+    <span>Search</span>
+  </button>
+  <button data-page="settings" class="nav-item" aria-label="Settings">
+    <span class="material-icons">settings</span>
+    <span>Settings</span>
+  </button>
 </nav>
 
-<main id="content" role="main">
-  <!-- Backward-compatible elements for tests (in-viewport but transparent) -->
-  <div id="library" style="position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;pointer-events:auto;z-index:99999;" aria-hidden="true">
-    <div class="section-title"><h2 id="library-title">Your main apps</h2><span id="app-count"></span></div>
-    <p id="launch-feedback" role="status" hidden></p>
-    <p id="edit-hint" hidden>Select an app to add or remove its Home shortcut. Your apps stay installed.</p>
-    <button id="edit-apps">Edit apps</button>
-    <button id="refresh">Refresh apps</button>
-    <div id="apps" aria-label="Installed applications"></div>
-    <p id="empty" hidden></p>
+<aside id="preview" aria-label="TV input preview">
+  <div id="preview-picture">
+    <span id="preview-message">Connecting to your TV input…</span>
   </div>
+  <div class="preview-caption">
+    <span class="live-dot"></span>
+    <span id="source-label">TV / HDMI preview</span>
+    <button id="preview-retry" class="icon-btn" aria-label="Retry TV"><span class="material-icons">refresh</span></button>
+    <button id="preview-toggle" class="icon-btn" aria-label="Toggle preview"><span class="material-icons">tv_off</span></button>
+  </div>
+</aside>
 
-  <!-- Apps page -->
-  <section id="apps-page" class="page-section" hidden aria-label="Applications">
-    <div class="page-head">
-      <h2 class="page-title">Apps</h2>
-      <p class="page-subtitle">Your installed applications</p>
-    </div>
-    <div class="page-controls">
-      <div class="filter-group">
-        <label for="apps-category" class="filter-label">Category</label>
-        <select id="apps-category" class="filter-select" aria-label="Filter by category"></select>
-      </div>
-      <div class="filter-group">
-        <label for="apps-sort" class="filter-label">Sort</label>
-        <select id="apps-sort" class="filter-select" aria-label="Sort apps">
-          <option value="alpha">Alphabetical</option>
-          <option value="recent">Recently Used</option>
-          <option value="favorites">Favorites First</option>
-        </select>
-      </div>
-      <div class="filter-group">
-        <button id="apps-refresh" class="filter-btn" aria-label="Refresh app catalogue"><span data-lucide="refresh-cw" aria-hidden="true"></span>Refresh</button>
-      </div>
-    </div>
-    <div class="apps-grid" id="apps-grid" role="list" aria-label="Installed applications"></div>
-    <p id="apps-empty" class="empty-state" hidden>No apps found. Try adjusting filters or show system entries in Settings.</p>
-  </section>
-
-  <!-- Games page -->
-  <section id="games-page" class="page-section" hidden aria-label="Games">
-    <div class="page-head">
-      <h2 class="page-title">Games</h2>
-      <p class="page-subtitle">Discover and play games</p>
-    </div>
-    <div class="xbox-feature" id="xbox-feature" hidden>
-      <div class="xbox-artwork" aria-hidden="true"></div>
-      <div class="xbox-info">
-        <div class="xbox-header">
-          <span class="xbox-logo" data-lucide="gamepad-2" aria-hidden="true"></span>
-          <h3 class="xbox-name">Xbox</h3>
-        </div>
-        <p class="xbox-connection" id="xbox-connection">HDMI 2 · Connected</p>
-      </div>
-      <button id="launch-xbox" class="xbox-launch-btn" aria-label="Switch to Xbox">
-        <span data-lucide="power" aria-hidden="true"></span>Launch Xbox
-      </button>
-    </div>
-    <div class="games-grid" id="games-grid" role="list" aria-label="Other games"></div>
-    <p id="games-empty" class="empty-state" hidden>No games found. Xbox and other games will appear here when detected.</p>
-  </section>
-
-  <!-- Recent page -->
-  <section id="recent-page" class="page-section" hidden aria-label="Recent">
-    <div class="page-head">
-      <h2 class="page-title">Recent</h2>
-      <p class="page-subtitle">Recently launched apps and games</p>
-    </div>
-    <div class="page-controls">
-      <div class="filter-group">
-        <button id="clear-recent" class="filter-btn danger" aria-label="Clear recent history"><span data-lucide="trash-2" aria-hidden="true"></span>Clear History</button>
-      </div>
-    </div>
-    <div class="recent-list" id="recent-list" role="list" aria-label="Recent apps"></div>
-    <p id="recent-empty" class="empty-state" hidden>No recent apps yet. Launch apps from Home or Apps to see them here.</p>
-  </section>
-
-  <!-- Inputs page -->
-  <section id="inputs-page" class="page-section" hidden aria-label="Inputs">
-    <div class="page-head">
-      <h2 class="page-title">Inputs</h2>
-      <p class="page-subtitle">Select input source</p>
-    </div>
-    <div class="inputs-grid" id="inputs-grid" role="list" aria-label="Input sources"></div>
-    <p id="inputs-empty" class="empty-state" hidden>No input sources detected.</p>
-  </section>
-
-  <section id="settings" hidden aria-label="Launcher settings">
-    <header class="settings-header">
-      <div class="header-left">
-        <h2>Make it yours</h2>
-        <p class="subtitle">Customize your launcher and TV integration.</p>
-      </div>
-      <button id="settings-close" class="setting-btn">Done</button>
-    </header>
-
-    <div class="settings-page">
-      <aside class="settings-sidebar" aria-label="Settings categories">
-        <ul class="settings-categories">
-          <li><button class="settings-category active" data-panel="appearance" aria-label="Appearance"><span data-lucide="palette" aria-hidden="true"></span>Appearance</button></li>
-          <li><button class="settings-category" data-panel="display" aria-label="Display"><span data-lucide="monitor" aria-hidden="true"></span>Display & Inputs</button></li>
-          <li><button class="settings-category" data-panel="apps" aria-label="Apps"><span data-lucide="layout-grid" aria-hidden="true"></span>Apps</button></li>
-          <li><button class="settings-category" data-panel="behaviour" aria-label="Launcher Behaviour"><span data-lucide="sliders-horizontal" aria-hidden="true"></span>Behaviour</button></li>
-          <li><button class="settings-category" data-panel="about" aria-label="About / Diagnostics"><span data-lucide="info" aria-hidden="true"></span>About & Diagnostics</button></li>
-        </ul>
-      </aside>
-
-      <main class="settings-panel" id="settings-panel-appearance" role="tabpanel" aria-labelledby="appearance-heading">
-        <h3 id="appearance-heading">Appearance</h3>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Launcher name</strong>
-            <small>Name shown in the top-left corner</small>
-          </div>
-          <div class="setting-control">
-            <input id="launcher-name" type="text" maxlength="32" placeholder="My TV" autocomplete="off">
-            <button id="name-save" class="setting-btn">Save name</button>
-            <button id="name-reset" class="setting-btn">Reset</button>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Wallpaper theme</strong>
-            <small>Choose the launcher's built-in background</small>
-          </div>
-          <div class="setting-control">
-            <select id="theme-select" class="setting-select" aria-label="Wallpaper theme">
-              <option value="cinematic">Cinematic (Default)</option>
-              <option value="midnight">Midnight</option>
-              <option value="aurora">Aurora</option>
-              <option value="ember">Ember</option>
-            </select>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Custom background</strong>
-            <small>Path to an image included in the app package</small>
-          </div>
-          <div class="setting-control">
-            <input id="background-path-enhanced" type="text" placeholder="assets/background.jpg" maxlength="180" aria-label="Custom background image path">
-            <button id="background-apply" class="setting-btn">Apply image</button>
-          </div>
-        </div>
-        <p class="hint">Add your JPG, PNG or WebP image under app/assets/, include it in the Tizen package list, rebuild, then enter its relative path above.</p>
-      </main>
-
-      <main class="settings-panel" id="settings-panel-display" hidden role="tabpanel" aria-labelledby="display-heading">
-        <h3 id="display-heading">Display & Inputs</h3>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>TV / HDMI preview</strong>
-            <small>Choose the connected source shown in the preview area</small>
-          </div>
-          <div class="setting-control">
-            <span id="settings-source-label">Checking current input…</span>
-            <button id="sources-refresh" class="setting-btn">Refresh inputs</button>
-          </div>
-        </div>
-        <div id="sources" class="row" aria-label="Connected TV inputs"></div>
-        <p class="hint">Input switching and live TV preview are available only on a compatible Samsung TV.</p>
-      </main>
-
-      <main class="settings-panel" id="settings-panel-apps" hidden role="tabpanel" aria-labelledby="apps-heading">
-        <h3 id="apps-heading">Apps</h3>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Show system entries</strong>
-            <small>Include hidden or system apps in the app catalogue</small>
-          </div>
-          <div class="setting-control">
-            <button id="system-toggle" class="setting-toggle" type="button" aria-label="Show system entries" aria-pressed="false"></button>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Refresh app catalogue</strong>
-            <small>Reload installed applications from the TV</small>
-          </div>
-          <div class="setting-control">
-            <button id="apps-refresh-settings" class="setting-btn">Refresh now</button>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>App visibility</strong>
-            <small>Choose which installed apps appear on Home</small>
-          </div>
-          <div class="setting-control">
-            <button id="manage-visibility" class="setting-btn">Manage apps</button>
-          </div>
-        </div>
-        <p id="icon-status" class="hint">Checking app pictures…</p>
-      </main>
-
-      <main class="settings-panel" id="settings-panel-behaviour" hidden role="tabpanel" aria-labelledby="behaviour-heading">
-        <h3 id="behaviour-heading">Launcher Behaviour</h3>
-        <p>Use the remote's Home button for Samsung TV settings. If your model supports it, check General → Smart Features → Autorun Last App to control what opens when the TV starts.</p>
-        <p class="hint">Samsung controls startup behaviour. This launcher cannot replace Samsung Home or guarantee that it starts automatically.</p>
-      </main>
-
-      <main class="settings-panel" id="settings-panel-about" hidden role="tabpanel" aria-labelledby="about-heading">
-        <h3 id="about-heading">About & Diagnostics</h3>
-        <div class="setting-row">
-          <div class="setting-label"><strong>Launcher version</strong></div>
-          <div class="setting-control"><span>0.8.0</span></div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><strong>Tizen environment</strong></div>
-          <div class="setting-control"><span id="tizen-env">Checking…</span></div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><strong>TV integration</strong></div>
-          <div class="setting-control"><span id="tv-integration">Checking…</span></div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><strong>App discovery</strong></div>
-          <div class="setting-control"><span id="app-discovery">Checking…</span></div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><strong>Input integration</strong></div>
-          <div class="setting-control"><span id="input-integration">Checking…</span></div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><strong>Mode</strong></div>
-          <div class="setting-control"><span id="run-mode">Browser Preview</span></div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><strong>Samsung TV settings</strong><small>Opens the TV settings app when supported</small></div>
-          <div class="setting-control"><button id="tv-settings-open-enhanced" class="setting-btn">Open TV settings</button></div>
-        </div>
-        <p id="tv-settings-status" role="status" class="hint">If direct access is unavailable, press Home on your Samsung remote and select Settings.</p>
-        <details style="margin-top: var(--space-lg);">
-          <summary>Connection details</summary>
-          <pre id="diagnostics" style="margin-top: var(--space-md);"></pre>
-        </details>
-        <div class="setting-row" style="margin-top: var(--space-xl); border-top: 1px solid var(--border-card); padding-top: var(--space-lg);">
-          <div class="setting-label"><strong>Close launcher</strong></div>
-          <div class="setting-control"><button id="close-app-settings" class="setting-btn danger">Close app</button></div>
-        </div>
-      </main>
-    </div>
-  </section>
-
-  <header class="header" role="banner">
-    <div class="header-left">
-      <div class="brand">
-        <span class="mark" id="launcher-mark">MT</span>
-        <span id="launcher-title">My TV</span>
-      </div>
-      <h1 id="greeting" class="greeting">Good evening</h1>
-      <p class="subtitle">Relax. You've got great things to watch.</p>
-    </div>
-    <div class="header-right">
-      <div class="header-top-bar">
-        <div class="clock-group">
-          <time id="clock" aria-live="polite"></time>
-          <span id="date"></span>
-        </div>
-        <div class="status-icons">
-          <span class="wifi-icon" data-lucide="wifi" aria-label="Wi-Fi connected"></span>
-          <button id="settings-open" class="icon-btn" aria-label="Settings"><span data-lucide="settings-2" aria-hidden="true"></span></button>
-        </div>
-      </div>
-      <aside id="preview" aria-label="TV input preview">
-        <div id="preview-picture">
-          <span id="preview-message">Connecting to your TV input…</span>
-        </div>
-        <div class="preview-caption">
-          <span class="live-dot"></span>
-          <span id="source-label">TV / HDMI preview</span>
-          <button id="preview-retry">Retry TV</button>
-          <button id="preview-toggle">Turn off</button>
-        </div>
-      </aside>
-    </div>
-  </header>
-
-  <section id="apps-section" class="content-section" aria-labelledby="apps-section-title">
-    <h2 id="apps-section-title" class="section-title">Your apps</h2>
-    <div class="carousel" id="apps-carousel" role="list" aria-label="Your apps">
-      <button class="carousel-item active" data-app-id="youtube" role="listitem" aria-label="YouTube" aria-selected="true">
-        <div class="app-tile youtube-tile">
-          <span class="app-icon">▶</span>
-          <span class="app-name">YouTube</span>
-        </div>
-      </button>
-      <button class="carousel-item" data-app-id="netflix" role="listitem" aria-label="Netflix" aria-selected="false">
-        <div class="app-tile netflix-tile">
-          <span class="app-icon">N</span>
-          <span class="app-name">Netflix</span>
-        </div>
-      </button>
-      <button class="carousel-item" data-app-id="prime" role="listitem" aria-label="Prime Video" aria-selected="false">
-        <div class="app-tile prime-tile">
-          <span class="app-icon">PV</span>
-          <span class="app-name">Prime Video</span>
-        </div>
-      </button>
-      <button class="carousel-item" data-app-id="all-apps" role="listitem" aria-label="All Apps" aria-selected="false">
-        <div class="app-tile glass-tile">
-          <span class="app-icon" data-lucide="layout-grid-circles" aria-hidden="true"></span>
-          <span class="app-name">All Apps</span>
-        </div>
-      </button>
-      <button class="carousel-item" data-app-id="hdmi1" role="listitem" aria-label="HDMI 1" aria-selected="false">
-        <div class="app-tile glass-tile">
-          <span class="app-icon" data-lucide="hdmi-port" aria-hidden="true"></span>
-          <span class="app-name">HDMI 1</span>
-        </div>
-      </button>
-      <button class="carousel-item" data-app-id="hdmi2" role="listitem" aria-label="HDMI 2" aria-selected="false">
-        <div class="app-tile glass-tile">
-          <span class="app-icon" data-lucide="hdmi-port" aria-hidden="true"></span>
-          <span class="app-name">HDMI 2</span>
-        </div>
-      </button>
-    </div>
-  </section>
-
-  <section id="continue-section" class="content-section" aria-labelledby="continue-title">
-    <h2 id="continue-title" class="section-title">Continue watching</h2>
-    <div class="carousel" id="continue-carousel" role="list" aria-label="Continue watching">
-      <button class="carousel-item continue-card" data-content-id="last-of-us" role="listitem" aria-label="The Last of Us - Continue S1 E3">
-        <div class="card-bg" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);"></div>
-        <div class="card-overlay"></div>
-        <div class="card-content">
-          <h3 class="content-title">The Last of Us</h3>
-          <p class="content-meta">Continue · S1 E3</p>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: 35%;"></div>
-          </div>
-        </div>
-      </button>
-      <button class="carousel-item continue-card" data-content-id="dune" role="listitem" aria-label="Dune - Continue 1h 42m">
-        <div class="card-bg" style="background: linear-gradient(135deg, #2c1810 0%, #1a1a1a 100%);"></div>
-        <div class="card-overlay"></div>
-        <div class="card-content">
-          <h3 class="content-title">Dune</h3>
-          <p class="content-meta">Continue · 1h 42m</p>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: 65%;"></div>
-          </div>
-        </div>
-      </button>
-      <button class="carousel-item continue-card" data-content-id="ted-lasso" role="listitem" aria-label="Ted Lasso - Continue S3 E6">
-        <div class="card-bg" style="background: linear-gradient(135deg, #1e3a2e 0%, #1a1a1a 100%);"></div>
-        <div class="card-overlay"></div>
-        <div class="card-content">
-          <h3 class="content-title">Ted Lasso</h3>
-          <p class="content-meta">Continue · S3 E6</p>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: 45%;"></div>
-          </div>
-        </div>
-      </button>
-      <button class="carousel-item continue-card" data-content-id="our-planet" role="listitem" aria-label="Our Planet - Continue S1 E4">
-        <div class="card-bg" style="background: linear-gradient(135deg, #0d1b2a 0%, #1a1a1a 100%);"></div>
-        <div class="card-overlay"></div>
-        <div class="card-content">
-          <h3 class="content-title">Our Planet</h3>
-          <p class="content-meta">Continue · S1 E4</p>
-          <div class="progress-bar">
-            <div class="progress-fill" style="width: 25%;"></div>
-          </div>
-        </div>
-      </button>
-    </div>
-  </section>
-
-  <section id="trending-section" class="content-section" aria-labelledby="trending-title">
-    <h2 id="trending-title" class="section-title">Trending now</h2>
-    <div class="carousel" id="trending-carousel" role="list" aria-label="Trending now">
-      <button class="carousel-item trending-card" data-content-id="trending-1" role="listitem" aria-label="Trending content 1">
-        <div class="card-bg" style="background: linear-gradient(135deg, #2d1b3d 0%, #1a1a1a 100%);"></div>
-        <div class="card-overlay"></div>
-        <div class="card-content">
-          <h3 class="content-title">Stranger Things</h3>
-        </div>
-      </button>
-      <button class="carousel-item trending-card" data-content-id="trending-2" role="listitem" aria-label="Trending content 2">
-        <div class="card-bg" style="background: linear-gradient(135deg, #1a2d3a 0%, #1a1a1a 100%);"></div>
-        <div class="card-overlay"></div>
-        <div class="card-content">
-          <h3 class="content-title">The Crown</h3>
-        </div>
-      </button>
-      <button class="carousel-item trending-card" data-content-id="trending-3" role="listitem" aria-label="Trending content 3">
-        <div class="card-bg" style="background: linear-gradient(135deg, #2d2d1a 0%, #1a1a1a 100%);"></div>
-        <div class="card-overlay"></div>
-        <div class="card-content">
-          <h3 class="content-title">Wednesday</h3>
-        </div>
-      </button>
-      <button class="carousel-item trending-card" data-content-id="trending-4" role="listitem" aria-label="Trending content 4">
-        <div class="card-bg" style="background: linear-gradient(135deg, #3a1a2a 0%, #1a1a1a 100%);"></div>
-        <div class="card-overlay"></div>
-        <div class="card-content">
-          <h3 class="content-title">House of Dragon</h3>
-        </div>
-      </button>
-    </div>
-  </section>
+<main id="page-home" class="page active" aria-label="Home">
+  <div class="section-title">
+    <h2 id="library-title">Your main apps</h2>
+    <span id="app-count"></span>
+  </div>
+  <p id="launch-feedback" role="status" hidden></p>
+  <div id="apps" aria-label="Installed applications"></div>
+  <p id="empty" hidden></p>
 </main>
 
-<footer class="footer" role="contentinfo">
-  <span class="nav-hint">← → Navigate · Enter Select · ↑ ↓ Sections · Back Exit</span>
+<main id="page-apps" class="page" aria-label="All Apps" hidden>
+  <div class="section-title">
+    <h2>All Applications</h2>
+    <span id="apps-count"></span>
+  </div>
+  <div class="toolbar">
+    <input type="search" id="apps-search" placeholder="Search apps…" aria-label="Search apps">
+    <button id="apps-refresh" class="icon-btn" aria-label="Refresh"><span class="material-icons">refresh</span></button>
+    <button id="edit-apps" aria-label="Edit apps"><span class="material-icons">edit</span> Edit apps</button>
+  </div>
+  <div id="apps-grid" aria-label="All installed applications"></div>
+  <p id="apps-empty" hidden></p>
+</main>
+
+<main id="page-games" class="page" aria-label="Games" hidden>
+  <div class="section-title">
+    <h2>Games</h2>
+    <span id="games-count"></span>
+  </div>
+  <div class="toolbar">
+    <input type="search" id="games-search" placeholder="Search games…" aria-label="Search games">
+    <button id="games-refresh" class="icon-btn" aria-label="Refresh"><span class="material-icons">refresh</span></button>
+  </div>
+  <div id="games-grid" aria-label="Games"></div>
+  <p id="games-empty" hidden></p>
+</main>
+
+<main id="page-recent" class="page" aria-label="Recent" hidden>
+  <div class="section-title">
+    <h2>Recently Launched</h2>
+    <span id="recent-count"></span>
+  </div>
+  <div class="toolbar">
+    <button id="recent-clear" aria-label="Clear history">Clear history</button>
+  </div>
+  <div id="recent-grid" aria-label="Recent applications"></div>
+  <p id="recent-empty" hidden>No recent apps yet. Launch apps from Home or Apps to see them here.</p>
+</main>
+
+<main id="page-search" class="page" aria-label="Search" hidden>
+  <div class="section-title">
+    <h2>Search</h2>
+  </div>
+  <div class="search-page">
+    <input type="search" id="search-input" placeholder="Search apps and games…" aria-label="Search" autocomplete="off">
+    <div id="search-results" aria-label="Search results"></div>
+    <p id="search-empty" hidden>No matches found.</p>
+    <p id="search-hint" hidden>Type to search installed apps and games.</p>
+  </div>
+</main>
+
+<main id="page-settings" class="page" aria-label="Settings" hidden>
+  <div class="section-title">
+    <h2>Settings</h2>
+  </div>
+  <div class="settings-content">
+    <section>
+      <h3>Launcher Name</h3>
+      <label for="launcher-name">Name shown at the top left</label>
+      <div class="row">
+        <input id="launcher-name" type="text" maxlength="32" placeholder="My TV" autocomplete="off">
+        <button id="name-save">Save name</button>
+        <button id="name-reset">Reset name</button>
+      </div>
+    </section>
+    <section>
+      <h3>Samsung TV Settings</h3>
+      <button id="tv-settings-open">Open TV Settings</button>
+      <p id="tv-settings-status" role="status">Opens Samsung settings if supported. Otherwise, use Home → Settings on your remote.</p>
+    </section>
+    <section>
+      <h3>Background</h3>
+      <div class="row">
+        <button data-theme="midnight" class="theme-btn active">Midnight</button>
+        <button data-theme="aurora" class="theme-btn">Aurora</button>
+        <button data-theme="ember" class="theme-btn">Ember</button>
+      </div>
+      <label for="background-path">Custom image (packaged with app)</label>
+      <div class="row">
+        <input id="background-path" placeholder="assets/background.jpg" maxlength="180">
+        <button id="background-apply">Apply image</button>
+      </div>
+      <p class="hint">Add your image to the project and its package file list, then rebuild.</p>
+    </section>
+    <section>
+      <h3>Preview Input</h3>
+      <div id="sources" class="row"></div>
+      <button id="sources-refresh">Refresh inputs</button>
+    </section>
+    <section>
+      <h3>App Icons</h3>
+      <p id="icon-status">Checking app icons…</p>
+    </section>
+    <section>
+      <h3>App List</h3>
+      <button id="system-toggle">Show system entries: off</button>
+    </section>
+    <section>
+      <h3>About</h3>
+      <p>B1ackha7TV v0.9.0</p>
+      <p>Open-source launcher for Samsung Tizen TVs.</p>
+    </section>
+    <section>
+      <h3>Close Launcher</h3>
+      <button id="close-app">Close app</button>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <span>Arrow keys to browse · OK to open · Back to return</span>
   <span id="status" role="status" aria-live="polite">Starting…</span>
-  <nav class="quick-actions">
-    <button id="watch-tv">Watch TV full screen</button>
-  </nav>
 </footer>
 
 <div id="exit-dialog" hidden role="dialog" aria-modal="true" aria-label="Close launcher">

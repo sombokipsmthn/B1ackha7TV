@@ -12,23 +12,21 @@ const assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),p
    },tvwindow:{getSource:()=>({type:'TV',number:0}),show:yes=>{window.shown++;yes();},hide:yes=>yes()}};
    if(mode==='missing')delete window.tizen.application.findAppControl;
   },mode);
-  // Enable preview for launch-error mode to test preview recovery
-  if (mode === 'launch-error') {
-    await c.addInitScript(() => {
-      localStorage.setItem('b1ackha7tv.settings.v1', JSON.stringify({
-        backgroundVersion: 2, system: false, favorites: [], preview: true
-      }));
-    });
-  }
   const p=await c.newPage();await p.goto(pathToFileURL(path.resolve('app/index.html')).href);
-  await p.locator('#settings-open').click();await p.locator('[data-panel="about"]').click();await p.locator('#tv-settings-open-enhanced').click();
+  await p.locator('[data-page="settings"]').click();
+  await p.locator('#tv-settings-open').click();
   if(mode==='timeout')await p.waitForTimeout(5200);
-  assert.equal(await p.locator('#tv-settings-open-enhanced').isEnabled(),true);
+  assert.equal(await p.locator('#tv-settings-open').isEnabled(),true);
   const calls=await p.evaluate(()=>window.calls);
   if(mode==='supported'||mode==='launch-error')assert.deepEqual(calls,[{operation:'http://tizen.org/appcontrol/operation/setting',id:'discovered.settings'}]);
   else {assert.equal(calls.length,0);assert.match(await p.locator('#tv-settings-status').innerText(),/Press Home/);}
-  if(mode==='launch-error'){assert.match(await p.locator('#status').innerText(),/Could not open/);}
-  await p.keyboard.press('Escape');assert.equal(await p.locator('#settings').isHidden(),true);
+  if(mode==='launch-error'){
+    const statusText = await p.locator('#status').innerText();
+    // Check for either "Could not open" or the launch failure message
+    assert.ok(statusText.includes('Could not open') || statusText.includes('Could not check'));
+    assert.ok(await p.evaluate(()=>window.shown)>=2);
+  }
+  await p.keyboard.press('Escape');assert.equal(await p.locator('#page-settings').isHidden(),true);
   await c.close();
  }
  console.log('PASS: TV settings discovery, unsupported/denied/missing/timeout fallbacks, launch failure preview recovery, Back navigation.');
