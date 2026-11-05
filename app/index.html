@@ -31,6 +31,45 @@
     <p id="empty" hidden></p>
   </div>
 
+  <!-- Search page -->
+  <section id="search-page" class="page-section search-page" hidden aria-label="Search">
+    <div class="search-hero">
+      <h2 class="page-title">Search</h2>
+      <p class="page-subtitle">Find your favourite apps, games and content</p>
+    </div>
+    <div class="search-bar">
+      <span class="search-icon" data-lucide="search" aria-hidden="true"></span>
+      <input type="search" id="search-input" placeholder="Search apps, games and more…" autocomplete="off" spellcheck="false" aria-label="Search">
+      <button id="search-clear" class="search-clear" aria-label="Clear search" hidden><span data-lucide="x" aria-hidden="true"></span></button>
+    </div>
+    <div id="search-results" class="search-results" hidden>
+      <div class="search-section">
+        <h3 class="search-section-title">Installed Apps &amp; Games</h3>
+        <div id="search-apps" class="search-grid" role="list"></div>
+      </div>
+      <div class="search-section">
+        <h3 class="search-section-title">Popular Searches</h3>
+        <div id="search-popular" class="search-chips" role="list"></div>
+      </div>
+    </div>
+    <div id="search-empty" class="search-empty" hidden>
+      <p>Start typing to search your installed apps and games.</p>
+    </div>
+    <div id="search-keyboard" class="search-keyboard" hidden aria-label="On-screen keyboard">
+      <div class="keyboard-row">
+        <button class="key" data-key="Q">Q</button><button class="key" data-key="W">W</button><button class="key" data-key="E">E</button><button class="key" data-key="R">R</button><button class="key" data-key="T">T</button><button class="key" data-key="Y">Y</button><button class="key" data-key="U">U</button><button class="key" data-key="I">I</button><button class="key" data-key="O">O</button><button class="key" data-key="P">P</button>
+      </div>
+      <div class="keyboard-row">
+        <button class="key" data-key="A">A</button><button class="key" data-key="S">S</button><button class="key" data-key="D">D</button><button class="key" data-key="F">F</button><button class="key" data-key="G">G</button><button class="key" data-key="H">H</button><button class="key" data-key="J">J</button><button class="key" data-key="K">K</button><button class="key" data-key="L">L</button>
+      </div>
+      <div class="keyboard-row">
+        <button class="key" data-key="Z">Z</button><button class="key" data-key="X">X</button><button class="key" data-key="C">C</button><button class="key" data-key="V">V</button><button class="key" data-key="B">B</button><button class="key" data-key="N">N</button><button class="key" data-key="M">M</button>
+        <button class="key key-wide" data-key="SPACE">Space</button>
+        <button class="key key-wide" data-key="BACK">⌫ Back</button>
+      </div>
+    </div>
+  </section>
+
   <!-- Apps page -->
   <section id="apps-page" class="page-section" hidden aria-label="Applications">
     <div class="page-head">
@@ -297,7 +336,14 @@
     </div>
   </header>
 
-  <section id="apps-section" class="content-section" aria-labelledby="apps-section-title">
+  <!-- Home page content -->
+  <section id="page-home" class="page-section home-page" aria-label="Home">
+    <div class="hero" role="banner" style="pointer-events:none;">
+      <p class="eyebrow">Your space. Your entertainment.</p>
+      <h1>Welcome to <em id="hero-title">B1ackha7TV</em></h1>
+    </div>
+
+    <section id="apps-section" class="content-section" aria-labelledby="apps-section-title">
     <h2 id="apps-section-title" class="section-title">Your apps</h2>
     <div class="carousel" id="apps-carousel" role="list" aria-label="Your apps">
       <button class="carousel-item active" data-app-id="youtube" role="listitem" aria-label="YouTube" aria-selected="true">
