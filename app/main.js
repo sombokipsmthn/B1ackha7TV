@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
   var launchTimer = null, imageRequest = 0, appRequest = 0;
   var launchGeneration = 0;
   var themes = {
-    cinematic:'radial-gradient(circle at 20% 20%, #1a2332 0%, #0a1222 100%)',
+    cinematic:'linear-gradient(rgba(5,10,20,.25),rgba(5,10,20,.5)),url("assets/VWMK740-01059.jpg")',
     midnight:'radial-gradient(ellipse at 10% 0%,#244357 0%,transparent 55%),linear-gradient(130deg,#131b33,#090e1b)',
     aurora:'radial-gradient(ellipse at 0% 0%,#24746c 0%,transparent 60%),linear-gradient(130deg,#20224c,#101426)',
     ember:'radial-gradient(ellipse at 0% 0%,#854b39 0%,transparent 60%),linear-gradient(130deg,#3d263c,#121325)'
