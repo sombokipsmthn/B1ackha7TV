@@ -76,6 +76,10 @@
    RESET & BASE
    ========================================================================== */
 
+[hidden] {
+  display: none !important;
+}
+
 /* Monochrome Lucide icons with refined stroke width */
 [data-lucide] {
   stroke-width: 1.7;
@@ -147,6 +151,15 @@ html, body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+#wallpaper {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: -1;
+  pointer-events: none;
 }
 
 button, input, select, textarea {
@@ -527,6 +540,7 @@ a:focus-visible,
   inset: 0;
   background: rgba(0,0,0,0.4);
   z-index: 2;
+  pointer-events: none;
 }
 
 .card-content {
@@ -1223,7 +1237,46 @@ a:focus-visible,
   border-color: var(--accent-primary);
 }
 
-/* Toggle */
+/* Toggle (settings page) */
+.setting-toggle {
+  position: relative;
+  width: 56px;
+  height: 30px;
+  background: var(--border-subtle);
+  border-radius: var(--radius-pill);
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.setting-toggle.active {
+  background: var(--accent-primary);
+}
+
+.setting-toggle::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  transition: transform var(--transition-fast);
+}
+
+.setting-toggle.active::after {
+  transform: translateX(26px);
+}
+
+.setting-toggle:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+/* Toggle (legacy style) */
 .toggle-label {
   display: flex;
   align-items: center;

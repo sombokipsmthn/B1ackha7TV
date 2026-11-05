@@ -9,8 +9,16 @@ const assert=require('node:assert/strict'),path=require('node:path'),{pathToFile
   const page=await context.newPage(),requests=[];page.on('request',r=>requests.push(r.url()));
   await page.goto(pathToFileURL(path.resolve('app/index.html')).href);
   assert.equal(await page.locator('#background-path-enhanced').inputValue(),'');
-  assert.ok(!(await page.locator('#wallpaper').getAttribute('style')).includes('url('));
-  assert.ok(!requests.some(url=>url.endsWith('.jpg')));
+  // Default cinematic theme now uses twilight mountain/lake image (non-legacy case)
+  if (!legacy) {
+    const wallpaperStyle = await page.locator('#wallpaper').getAttribute('style');
+    assert.ok(wallpaperStyle.includes('url(') && wallpaperStyle.includes('VWMK740-01059.jpg'));
+    assert.ok(requests.some(url=>url.endsWith('.jpg')));
+  } else {
+    // Legacy case migrates to aurora gradient (no image)
+    assert.ok(!(await page.locator('#wallpaper').getAttribute('style')).includes('url('));
+    assert.ok(!requests.some(url=>url.endsWith('.jpg')));
+  }
   if(legacy){const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('b1ackha7tv.settings.v1')));assert.equal(saved.backgroundVersion,2);assert.deepEqual(saved.favorites,['saved.app']);assert.equal(saved.preview,false);}
   await page.locator('#settings-open').click();await page.locator('#theme-select').selectOption('ember');
   await page.reload();assert.equal((await page.evaluate(()=>JSON.parse(localStorage.getItem('b1ackha7tv.settings.v1')).theme)),'ember');
