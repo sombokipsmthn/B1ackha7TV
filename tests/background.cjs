@@ -8,11 +8,11 @@ for(const legacy of [false,true]){
  });
  const page=await context.newPage(),requests=[];page.on('request',r=>requests.push(r.url()));
  await page.goto(pathToFileURL(path.resolve('app/index.html')).href);
- // Default cinematic theme now uses twilight mountain/lake image (non-legacy case)
+ // Default cinematic theme uses the packaged cinematic title artwork (non-legacy case)
  if (!legacy) {
    const wallpaperStyle = await page.locator('#wallpaper').getAttribute('style');
-   assert.ok(wallpaperStyle.includes('url(') && wallpaperStyle.includes('VWMK740-01059.jpg'));
-   assert.ok(requests.some(url=>url.endsWith('.jpg')));
+   assert.ok(wallpaperStyle.includes('url(') && wallpaperStyle.includes('cinematic-title.svg'));
+   assert.ok(requests.some(url=>url.endsWith('cinematic-title.svg')));
  } else {
    // Legacy case migrates to aurora gradient (no image)
    assert.ok(!(await page.locator('#wallpaper').getAttribute('style')).includes('url('));

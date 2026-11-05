@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
+ <defs>
+  <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#101d35"/><stop offset=".5" stop-color="#36556b"/><stop offset="1" stop-color="#101824"/></linearGradient>
+  <linearGradient id="lake" x2="0" y2="1"><stop stop-color="#54717b"/><stop offset="1" stop-color="#101824"/></linearGradient>
+  <radialGradient id="sun"><stop stop-color="#fff0cb" stop-opacity=".88"/><stop offset=".22" stop-color="#f2cba3" stop-opacity=".32"/><stop offset="1" stop-color="#f2cba3" stop-opacity="0"/></radialGradient>
+  <linearGradient id="shade" x2="0" y2="1"><stop stop-color="#030812" stop-opacity=".10"/><stop offset=".5" stop-color="#030812" stop-opacity=".12"/><stop offset="1" stop-color="#030812" stop-opacity=".72"/></linearGradient>
+ </defs>
+ <rect width="1920" height="1080" fill="url(#sky)"/>
+ <circle cx="1380" cy="320" r="400" fill="url(#sun)"/>
+ <circle cx="1380" cy="320" r="86" fill="#ffe9cf" opacity=".82"/>
+ <path d="M0 640 200 430l130 105 205-300 235 325 180-215 240 255 215-330 215 245 170-160 130 290v435H0z" fill="#172536"/>
+ <path d="m0 700 250-175 180 130 210-270 210 290 180-160 250 210 190-260 210 215 240-180 200 230v350H0z" fill="#243746"/>
+ <path d="M0 650q380 90 750 0t1170 10v420H0z" fill="url(#lake)"/>
+ <path d="M1180 675q200 42 390 0M1280 716q150 25 340 0M1110 770q245 34 530 0M1330 820q160 18 310 0" fill="none" stroke="#d3c3b2" stroke-opacity=".28" stroke-width="8"/>
+ <path d="M0 0h1920v1080H0z" fill="url(#shade)"/>
+</svg>

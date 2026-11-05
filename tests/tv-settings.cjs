@@ -23,7 +23,7 @@ const assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),p
   const p=await c.newPage();await p.goto(pathToFileURL(path.resolve('app/index.html')).href);
 await p.locator('#settings-open').click();await p.locator('[data-panel="about"]').click();await p.locator('#tv-settings-open-enhanced').click();
   if(mode==='timeout')await p.waitForTimeout(5200);
-  assert.equal(await p.locator('#tv-settings-open').isEnabled(),true);
+  assert.equal(await p.locator('#tv-settings-open-enhanced').isEnabled(),true);
   const calls=await p.evaluate(()=>window.calls);
   if(mode==='supported'||mode==='launch-error')assert.deepEqual(calls,[{operation:'http://tizen.org/appcontrol/operation/setting',id:'discovered.settings'}]);
   else {assert.equal(calls.length,0);assert.match(await p.locator('#tv-settings-status').innerText(),/Press Home/);}
@@ -33,7 +33,7 @@ await p.locator('#settings-open').click();await p.locator('[data-panel="about"]'
     assert.ok(statusText.includes('Could not open') || statusText.includes('Could not check'));
     assert.ok(await p.evaluate(()=>window.shown)>=2);
   }
-  await p.keyboard.press('Escape');assert.equal(await p.locator('#page-settings').isHidden(),true);
+  await p.keyboard.press('Escape');assert.equal(await p.locator('#settings').isHidden(),true);
   await c.close();
  }
  console.log('PASS: TV settings discovery, unsupported/denied/missing/timeout fallbacks, launch failure preview recovery, Back navigation.');

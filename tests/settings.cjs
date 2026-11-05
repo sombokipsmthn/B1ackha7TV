@@ -20,43 +20,34 @@ const { pathToFileURL } = require('node:url');
       };
     });
     const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(pathToFileURL(path.resolve('app/index.html')).href);
 
-    // Open settings via sidebar
-    await page.locator('[data-page="settings"]').click();
-    await page.waitForSelector('#page-settings:not([hidden])');
-
-    // Check theme buttons exist (data-theme buttons)
-    const themeBtns = page.locator('.theme-btn');
-    assert.equal(await themeBtns.count(), 3);
-
-    // Click aurora theme
-    await page.locator('[data-theme="aurora"]').click({ force: true });
-    await page.waitForTimeout(500);
-    const prefs = await page.evaluate(() => JSON.parse(localStorage.getItem('b1ackha7tv.settings.v1')));
+    await page.locator('[data-section="settings"]').click();
+    await page.locator('#settings:not([hidden])').waitFor();
+    assert.equal(await page.locator('.settings-category').count(), 5);
+    await page.locator('#theme-select').selectOption('aurora');
+    const prefs = await page.evaluate(() => JSON.parse(localStorage.getItem('kipsmthn.settings.v1')));
     assert.equal(prefs.theme, 'aurora');
 
-    // Check system toggle
+    await page.locator('[data-panel="apps"]').click();
     const sysToggle = page.locator('#system-toggle');
     assert.equal(await sysToggle.getAttribute('aria-pressed'), 'false');
-    await sysToggle.click({ force: true });
+    await sysToggle.click();
     assert.equal(await sysToggle.getAttribute('aria-pressed'), 'true');
-    const prefs2 = await page.evaluate(() => JSON.parse(localStorage.getItem('b1ackha7tv.settings.v1')));
-    assert.equal(prefs2.system, true);
+    assert.equal((await page.evaluate(() => JSON.parse(localStorage.getItem('kipsmthn.settings.v1')))).system, true);
 
-    // Background apply button exists
-    await page.locator('#background-apply').isVisible();
-
-    // Close settings via Escape
+    await page.locator('[data-panel="appearance"]').click();
+    assert.equal(await page.locator('#background-apply').isVisible(), true);
+    await page.locator('[data-panel="about"]').click();
+    await page.locator('#tv-settings-status').waitFor();
     await page.keyboard.press('Escape');
-    await page.waitForSelector('#page-settings[hidden]');
-
+    await page.waitForFunction(() => document.getElementById('settings').hidden);
+    assert.deepEqual(errors, []);
+    console.log('PASS: settings navigation, theme selection, system-entry persistence, about panel, and Back close.');
     await context.close();
-    console.log('PASS: settings navigation, system-entry toggle persistence, theme selection and Back close.');
   } finally {
     await browser.close();
   }
-})().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+})().catch((error) => { console.error(error); process.exit(1); });

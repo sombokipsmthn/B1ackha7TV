@@ -312,15 +312,16 @@
   <header class="header" role="banner">
     <div class="header-left">
       <div class="brand">
-        <span class="mark" id="launcher-mark">MT</span>
-        <span id="launcher-title">My TV</span>
+        <span class="mark" id="launcher-mark">K</span>
+        <span id="launcher-title">Kipsmthn</span>
       </div>
+      <p class="eyebrow">YOUR ENTERTAINMENT, IN ONE PLACE</p>
       <h1 id="greeting" class="greeting">Good evening</h1>
-      <p class="subtitle">Relax. You've got great things to watch.</p>
+      <p class="subtitle">Settle in. Your next favourite is waiting.</p>
     </div>
     <div class="header-right">
       <div class="header-top-bar">
-        <div class="clock-group">
+        <div class="clock-group" aria-label="Local date and time">
           <time id="clock" aria-live="polite"></time>
           <span id="date"></span>
         </div>
@@ -354,22 +355,13 @@
     <h2 id="apps-section-title" class="section-title">Your apps</h2>
     <div class="carousel" id="apps-carousel" role="list" aria-label="Your apps">
       <button class="carousel-item active" data-app-id="youtube" role="listitem" aria-label="YouTube" aria-selected="true">
-        <div class="app-tile youtube-tile">
-          <span class="app-icon">▶</span>
-          <span class="app-name">YouTube</span>
-        </div>
+        <div class="app-tile youtube-tile"><img class="brand-artwork" src="assets/logos/youtube.svg" alt="YouTube"></div>
       </button>
       <button class="carousel-item" data-app-id="netflix" role="listitem" aria-label="Netflix" aria-selected="false">
-        <div class="app-tile netflix-tile">
-          <span class="app-icon">N</span>
-          <span class="app-name">Netflix</span>
-        </div>
+        <div class="app-tile netflix-tile"><img class="brand-artwork" src="assets/logos/netflix.svg" alt="Netflix"></div>
       </button>
       <button class="carousel-item" data-app-id="prime" role="listitem" aria-label="Prime Video" aria-selected="false">
-        <div class="app-tile prime-tile">
-          <span class="app-icon">PV</span>
-          <span class="app-name">Prime Video</span>
-        </div>
+        <div class="app-tile prime-tile"><img class="brand-artwork" src="assets/logos/prime-video.svg" alt="Prime Video"></div>
       </button>
       <button class="carousel-item" data-app-id="all-apps" role="listitem" aria-label="All Apps" aria-selected="false">
         <div class="app-tile glass-tile">
@@ -396,7 +388,7 @@
     <h2 id="continue-title" class="section-title">Continue watching</h2>
     <div class="carousel" id="continue-carousel" role="list" aria-label="Continue watching">
       <button class="carousel-item continue-card" data-content-id="last-of-us" role="listitem" aria-label="The Last of Us - Continue S1 E3">
-        <div class="card-bg" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);"></div>
+        <div class="card-bg" style="background-image: url('assets/posters/last-of-us.svg');"></div>
         <div class="card-overlay"></div>
         <div class="card-content">
           <h3 class="content-title">The Last of Us</h3>
@@ -407,7 +399,7 @@
         </div>
       </button>
       <button class="carousel-item continue-card" data-content-id="dune" role="listitem" aria-label="Dune - Continue 1h 42m">
-        <div class="card-bg" style="background: linear-gradient(135deg, #2c1810 0%, #1a1a1a 100%);"></div>
+        <div class="card-bg" style="background-image: url('assets/posters/dune.svg');"></div>
         <div class="card-overlay"></div>
         <div class="card-content">
           <h3 class="content-title">Dune</h3>
@@ -418,7 +410,7 @@
         </div>
       </button>
       <button class="carousel-item continue-card" data-content-id="ted-lasso" role="listitem" aria-label="Ted Lasso - Continue S3 E6">
-        <div class="card-bg" style="background: linear-gradient(135deg, #1e3a2e 0%, #1a1a1a 100%);"></div>
+        <div class="card-bg" style="background-image: url('assets/posters/ted-lasso.svg');"></div>
         <div class="card-overlay"></div>
         <div class="card-content">
           <h3 class="content-title">Ted Lasso</h3>
@@ -429,7 +421,7 @@
         </div>
       </button>
       <button class="carousel-item continue-card" data-content-id="our-planet" role="listitem" aria-label="Our Planet - Continue S1 E4">
-        <div class="card-bg" style="background: linear-gradient(135deg, #0d1b2a 0%, #1a1a1a 100%);"></div>
+        <div class="card-bg" style="background-image: url('assets/posters/our-planet.svg');"></div>
         <div class="card-overlay"></div>
         <div class="card-content">
           <h3 class="content-title">Our Planet</h3>

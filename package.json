@@ -5,7 +5,8 @@
   "description": "Browser regression tests for a Samsung Tizen TV launcher",
   "license": "MIT",
   "scripts": {
-    "test": "node tests/project-structure.cjs && node tests/settings.cjs && node tests/dedup.cjs && node tests/exit.cjs && node tests/tv-settings.cjs && node tests/background.cjs && node tests/launch.cjs && node tests/name.cjs"
+    "test": "node tests/project-structure.cjs && node tests/settings.cjs && node tests/dedup.cjs && node tests/exit.cjs && node tests/tv-settings.cjs && node tests/background.cjs && node tests/launch.cjs && node tests/name.cjs && node tests/visual-regression.cjs",
+    "test:visual": "node tests/visual-regression.cjs"
   },
   "devDependencies": {
     "playwright": "^1.56.0"
