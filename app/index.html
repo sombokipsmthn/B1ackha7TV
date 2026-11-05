@@ -133,49 +133,166 @@
         <button id="name-save">Save name</button>
         <button id="name-reset">Reset name</button>
       </div>
-    </section>
-    <section>
-      <h3>Samsung TV Settings</h3>
-      <button id="tv-settings-open">Open TV Settings</button>
-      <p id="tv-settings-status" role="status">Opens Samsung settings if supported. Otherwise, use Home → Settings on your remote.</p>
-    </section>
-    <section>
-      <h3>Background</h3>
-      <div class="row">
-        <button data-theme="midnight" class="theme-btn active">Midnight</button>
-        <button data-theme="aurora" class="theme-btn">Aurora</button>
-        <button data-theme="ember" class="theme-btn">Ember</button>
+      <h1 id="greeting" class="greeting">Good evening</h1>
+      <p class="subtitle">Relax. You've got great things to watch.</p>
+    </div>
+    <div class="header-right">
+      <div class="header-top-bar">
+        <div class="clock-group">
+          <time id="clock" aria-live="polite"></time>
+          <span id="date"></span>
+        </div>
+        <div class="status-icons">
+          <span class="wifi-icon" data-lucide="wifi" aria-label="Wi-Fi connected"></span>
+          <button id="settings-open" class="icon-btn" aria-label="Quick settings"><span data-lucide="settings-2" aria-hidden="true"></span></button>
+        </div>
       </div>
-      <label for="background-path">Custom image (packaged with app)</label>
-      <div class="row">
-        <input id="background-path" placeholder="assets/background.jpg" maxlength="180">
-        <button id="background-apply">Apply image</button>
-      </div>
-      <p class="hint">Add your image to the project and its package file list, then rebuild.</p>
-    </section>
-    <section>
-      <h3>Preview Input</h3>
-      <div id="sources" class="row"></div>
-      <button id="sources-refresh">Refresh inputs</button>
-    </section>
-    <section>
-      <h3>App Icons</h3>
-      <p id="icon-status">Checking app icons…</p>
-    </section>
-    <section>
-      <h3>App List</h3>
-      <button id="system-toggle">Show system entries: off</button>
-    </section>
-    <section>
-      <h3>About</h3>
-      <p>B1ackha7TV v0.9.0</p>
-      <p>Open-source launcher for Samsung Tizen TVs.</p>
-    </section>
-    <section>
-      <h3>Close Launcher</h3>
-      <button id="close-app">Close app</button>
-    </section>
-  </div>
+      <aside id="preview" aria-label="TV input preview">
+        <div id="preview-picture">
+          <span id="preview-message">Connecting to your TV input…</span>
+        </div>
+        <div class="preview-caption">
+          <span class="live-dot"></span>
+          <span id="source-label">TV / HDMI preview</span>
+          <button id="preview-retry">Retry TV</button>
+          <button id="preview-toggle">Turn off</button>
+        </div>
+      </aside>
+    </div>
+  </header>
+
+  <!-- Home page content -->
+  <section id="page-home" class="page-section home-page" aria-label="Home">
+    <div class="hero" role="banner" style="pointer-events:none;">
+      <p class="eyebrow">Your space. Your entertainment.</p>
+      <h1>Welcome to <em id="hero-title">Kipsmthn</em></h1>
+    </div>
+
+    <section id="apps-section" class="content-section" aria-labelledby="apps-section-title">
+    <h2 id="apps-section-title" class="section-title">Your apps</h2>
+    <div class="carousel" id="apps-carousel" role="list" aria-label="Your apps">
+      <button class="carousel-item active" data-app-id="youtube" role="listitem" aria-label="YouTube" aria-selected="true">
+        <div class="app-tile youtube-tile">
+          <span class="app-icon">▶</span>
+          <span class="app-name">YouTube</span>
+        </div>
+      </button>
+      <button class="carousel-item" data-app-id="netflix" role="listitem" aria-label="Netflix" aria-selected="false">
+        <div class="app-tile netflix-tile">
+          <span class="app-icon">N</span>
+          <span class="app-name">Netflix</span>
+        </div>
+      </button>
+      <button class="carousel-item" data-app-id="prime" role="listitem" aria-label="Prime Video" aria-selected="false">
+        <div class="app-tile prime-tile">
+          <span class="app-icon">PV</span>
+          <span class="app-name">Prime Video</span>
+        </div>
+      </button>
+      <button class="carousel-item" data-app-id="all-apps" role="listitem" aria-label="All Apps" aria-selected="false">
+        <div class="app-tile glass-tile">
+          <span class="app-icon" data-lucide="layout-grid-circles" aria-hidden="true"></span>
+          <span class="app-name">All Apps</span>
+        </div>
+      </button>
+      <button class="carousel-item" data-app-id="hdmi1" role="listitem" aria-label="HDMI 1" aria-selected="false">
+        <div class="app-tile glass-tile">
+          <span class="app-icon" data-lucide="hdmi-port" aria-hidden="true"></span>
+          <span class="app-name">HDMI 1</span>
+        </div>
+      </button>
+      <button class="carousel-item" data-app-id="hdmi2" role="listitem" aria-label="HDMI 2" aria-selected="false">
+        <div class="app-tile glass-tile">
+          <span class="app-icon" data-lucide="hdmi-port" aria-hidden="true"></span>
+          <span class="app-name">HDMI 2</span>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <section id="continue-section" class="content-section" aria-labelledby="continue-title">
+    <h2 id="continue-title" class="section-title">Continue watching</h2>
+    <div class="carousel" id="continue-carousel" role="list" aria-label="Continue watching">
+      <button class="carousel-item continue-card" data-content-id="last-of-us" role="listitem" aria-label="The Last of Us - Continue S1 E3">
+        <div class="card-bg" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">The Last of Us</h3>
+          <p class="content-meta">Continue · S1 E3</p>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 35%;"></div>
+          </div>
+        </div>
+      </button>
+      <button class="carousel-item continue-card" data-content-id="dune" role="listitem" aria-label="Dune - Continue 1h 42m">
+        <div class="card-bg" style="background: linear-gradient(135deg, #2c1810 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">Dune</h3>
+          <p class="content-meta">Continue · 1h 42m</p>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 65%;"></div>
+          </div>
+        </div>
+      </button>
+      <button class="carousel-item continue-card" data-content-id="ted-lasso" role="listitem" aria-label="Ted Lasso - Continue S3 E6">
+        <div class="card-bg" style="background: linear-gradient(135deg, #1e3a2e 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">Ted Lasso</h3>
+          <p class="content-meta">Continue · S3 E6</p>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 45%;"></div>
+          </div>
+        </div>
+      </button>
+      <button class="carousel-item continue-card" data-content-id="our-planet" role="listitem" aria-label="Our Planet - Continue S1 E4">
+        <div class="card-bg" style="background: linear-gradient(135deg, #0d1b2a 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">Our Planet</h3>
+          <p class="content-meta">Continue · S1 E4</p>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 25%;"></div>
+          </div>
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <section id="trending-section" class="content-section" aria-labelledby="trending-title">
+    <h2 id="trending-title" class="section-title">Trending now</h2>
+    <div class="carousel" id="trending-carousel" role="list" aria-label="Trending now">
+      <button class="carousel-item trending-card" data-content-id="trending-1" role="listitem" aria-label="Trending content 1">
+        <div class="card-bg" style="background: linear-gradient(135deg, #2d1b3d 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">Stranger Things</h3>
+        </div>
+      </button>
+      <button class="carousel-item trending-card" data-content-id="trending-2" role="listitem" aria-label="Trending content 2">
+        <div class="card-bg" style="background: linear-gradient(135deg, #1a2d3a 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">The Crown</h3>
+        </div>
+      </button>
+      <button class="carousel-item trending-card" data-content-id="trending-3" role="listitem" aria-label="Trending content 3">
+        <div class="card-bg" style="background: linear-gradient(135deg, #2d2d1a 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">Wednesday</h3>
+        </div>
+      </button>
+      <button class="carousel-item trending-card" data-content-id="trending-4" role="listitem" aria-label="Trending content 4">
+        <div class="card-bg" style="background: linear-gradient(135deg, #3a1a2a 0%, #1a1a1a 100%);"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <h3 class="content-title">House of Dragon</h3>
+        </div>
+      </button>
+    </div>
+  </section>
 </main>
 
 <footer>

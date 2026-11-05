@@ -9,7 +9,7 @@ api_version: "10.0"
 build_type: Debug
 
 # Output name for application
-output_name: B1ackha7TV
+output_name: Kipsmthn
 
 # Output path for build
 output_path: ""
@@ -32,10 +32,8 @@ files:
   - index.html
   - main.js
   - assets/lucide.js
+  - assets/lucide.min.js
   - assets/prime-video.svg
-  - assets/fonts/material-symbols-outlined.woff2
-  - assets/fonts/material-symbols-outlined.woff
-  - assets/fonts/material-icons.css
 
 # list of files to exclude based on the matched patterns
 excludes:

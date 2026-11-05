@@ -12,9 +12,16 @@ const assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),p
    },tvwindow:{getSource:()=>({type:'TV',number:0}),show:yes=>{window.shown++;yes();},hide:yes=>yes()}};
    if(mode==='missing')delete window.tizen.application.findAppControl;
   },mode);
+  // Enable preview for launch-error mode to test preview recovery
+  if (mode === 'launch-error') {
+    await c.addInitScript(() => {
+      localStorage.setItem('kipsmthn.settings.v1', JSON.stringify({
+        backgroundVersion: 2, system: false, favorites: [], preview: true
+      }));
+    });
+  }
   const p=await c.newPage();await p.goto(pathToFileURL(path.resolve('app/index.html')).href);
-  await p.locator('[data-page="settings"]').click();
-  await p.locator('#tv-settings-open').click();
+await p.locator('#settings-open').click();await p.locator('[data-panel="about"]').click();await p.locator('#tv-settings-open-enhanced').click();
   if(mode==='timeout')await p.waitForTimeout(5200);
   assert.equal(await p.locator('#tv-settings-open').isEnabled(),true);
   const calls=await p.evaluate(()=>window.calls);
