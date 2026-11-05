@@ -2,10 +2,10 @@
   "name": "kipsmthn",
   "version": "0.8.0",
   "private": true,
-  "description": "Browser regression tests for a Samsung Tizen TV launcher",
+  "description": "Kipsmthn TV launcher for Samsung Tizen with browser regression tests",
   "license": "MIT",
   "scripts": {
-    "test": "node tests/project-structure.cjs && node tests/settings.cjs && node tests/dedup.cjs && node tests/exit.cjs && node tests/tv-settings.cjs && node tests/background.cjs && node tests/launch.cjs && node tests/name.cjs && node tests/visual-regression.cjs",
+    "test": "node tests/project-structure.cjs && node tests/experience.cjs && node tests/settings.cjs && node tests/dedup.cjs && node tests/exit.cjs && node tests/tv-settings.cjs && node tests/background.cjs && node tests/launch.cjs && node tests/name.cjs && node tests/visual-regression.cjs",
     "test:visual": "node tests/visual-regression.cjs"
   },
   "devDependencies": {
@@ -13,11 +13,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sombokipsmthn/B1ackha7TV.git"
+    "url": "git+https://github.com/sombokipsmthn/Kipsmthn.git"
   },
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/sombokipsmthn/B1ackha7TV/issues"
+    "url": "https://github.com/sombokipsmthn/Kipsmthn/issues"
   },
-  "homepage": "https://github.com/sombokipsmthn/B1ackha7TV#readme"
+  "homepage": "https://github.com/sombokipsmthn/Kipsmthn#readme"
 }

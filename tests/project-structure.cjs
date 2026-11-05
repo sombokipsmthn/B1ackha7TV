@@ -18,7 +18,14 @@ assert.deepEqual([...new Set(duplicates)], [], 'HTML IDs must be unique');
 const localResources = [
   ...[...html.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map((match) => match[1]),
   'icon.png',
-  'assets/prime-video.svg'
+  'assets/prime-video.svg',
+  'audio-controller.js',
+  'assets/wallpapers/twilight-mountains.svg',
+  'assets/audio/navigation.wav',
+  'assets/audio/selection.wav',
+  'assets/audio/back.wav',
+  'assets/audio/error.wav',
+  'assets/audio/startup.wav'
 ].filter((resource) => !/^(?:https?:|data:|#)/i.test(resource));
 
 for (const resource of localResources) {

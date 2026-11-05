@@ -26,7 +26,8 @@ const { pathToFileURL } = require('node:url');
 
     await page.locator('[data-section="settings"]').click();
     await page.locator('#settings:not([hidden])').waitFor();
-    assert.equal(await page.locator('.settings-category').count(), 5);
+    assert.equal(await page.locator('.settings-category').count(), 8);
+    await page.locator('[data-panel="appearance"]').click();
     await page.locator('#theme-select').selectOption('aurora');
     const prefs = await page.evaluate(() => JSON.parse(localStorage.getItem('kipsmthn.settings.v1')));
     assert.equal(prefs.theme, 'aurora');
@@ -40,12 +41,27 @@ const { pathToFileURL } = require('node:url');
 
     await page.locator('[data-panel="appearance"]').click();
     assert.equal(await page.locator('#background-apply').isVisible(), true);
-    await page.locator('[data-panel="about"]').click();
-    await page.locator('#tv-settings-status').waitFor();
+    assert.equal(await page.locator('.settings-wallpaper-choice').count(), 6);
+    await page.locator('.settings-wallpaper-choice[aria-label="Apply Northern Lights wallpaper"]').click();
+    assert.equal((await page.evaluate(() => JSON.parse(localStorage.getItem('kipsmthn.settings.v1')))).background, 'assets/wallpapers/northern-lights.svg');
+    await page.locator('[data-panel="personalisation"]').click();
+    const continueToggle = page.locator('[data-pref="showContinue"]').last();
+    await continueToggle.click();
+    assert.equal(await continueToggle.getAttribute('aria-pressed'), 'false');
+    assert.equal((await page.evaluate(() => JSON.parse(localStorage.getItem('kipsmthn.settings.v1')))).showContinue, false);
+
+    await page.locator('[data-panel="system"]').click();
+    await page.locator('#settings-panel-system').waitFor({ state: 'visible' });
+    await page.locator('#tv-settings-status').waitFor({ state: 'attached' });
+    await page.locator('[data-panel="general"]').click();
+    await page.locator('#settings-reset').click();
+    await page.locator('#settings-confirm').waitFor({ state: 'visible' });
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#settings-confirm').isHidden(), true);
     await page.keyboard.press('Escape');
     await page.waitForFunction(() => document.getElementById('settings').hidden);
     assert.deepEqual(errors, []);
-    console.log('PASS: settings navigation, theme selection, system-entry persistence, about panel, and Back close.');
+    console.log('PASS: Settings navigation, theme and wallpaper selection, app listing, Home row persistence, native settings availability, reset dialog, and Back dismissal.');
     await context.close();
   } finally {
     await browser.close();

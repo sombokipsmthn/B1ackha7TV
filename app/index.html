@@ -2,15 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kipsmthn</title>
+<meta name="application-name" content="Kipsmthn TV"><meta name="theme-color" content="#07111b">
+<title>Kipsmthn TV</title>
 <link rel="stylesheet" href="css/cinematic.css">
-<link rel="stylesheet" href="assets/fonts/material-icons.css">
-<script src="assets/lucide.js"></script>
+<script src="assets/lucide.min.js"></script>
+<script src="audio-controller.js"></script>
 <script src="tizen-service.js" defer></script>
 <script src="main.js" defer></script>
 </head>
 <body>
 <div id="wallpaper" aria-hidden="true"></div>
+<div id="page-transition-layer" aria-hidden="true"></div>
 
 <nav id="sidebar" class="sidebar" role="navigation" aria-label="Main navigation">
   <ul class="sidebar-items">
@@ -30,6 +32,7 @@
     <div class="section-title"><h2 id="library-title">Your main apps</h2><span id="app-count"></span></div>
     <p id="launch-feedback" role="status" hidden></p>
     <p id="edit-hint" hidden>Select an app to add or remove its Home shortcut. Your apps stay installed.</p>
+    <p id="catalog-mode" class="catalog-mode" aria-live="polite"></p>
     <button id="refresh">Refresh apps</button>
     <div id="apps" aria-label="Installed applications"></div>
     <p id="empty" hidden></p>
@@ -152,161 +155,84 @@
     <p id="inputs-empty" class="empty-state" hidden>No input sources detected.</p>
   </section>
 
-  <section id="settings" hidden aria-label="Launcher settings">
-    <header class="settings-header">
-      <div class="header-left">
-        <h2>Make it yours</h2>
-        <p class="subtitle">Customize your launcher and TV integration.</p>
-      </div>
-      <button id="settings-close" class="setting-btn">Done</button>
+  <section id="settings" class="settings-screen" hidden aria-label="Kipsmthn TV settings">
+    <header class="settings-topbar">
+      <div class="settings-brand"><span class="settings-brand-mark">K</span><span>KIPSMTHN <b>TV</b></span></div>
+      <nav class="settings-global-nav" aria-label="Main destinations">
+        <button type="button" data-settings-destination="home">Home</button><button type="button" data-settings-destination="apps">Apps</button><button type="button" data-settings-destination="inputs">Live TV</button>
+      </nav>
+      <button id="settings-close" class="settings-done" type="button">Done</button>
     </header>
-
-    <div class="settings-page">
+    <div class="settings-workspace">
       <aside class="settings-sidebar" aria-label="Settings categories">
+        <div class="settings-sidebar-heading"><span>SETTINGS</span><p>Customise your Kipsmthn TV experience.</p></div>
         <ul class="settings-categories">
-          <li><button class="settings-category active" data-panel="appearance" aria-label="Appearance"><span data-lucide="palette" aria-hidden="true"></span>Appearance</button></li>
-          <li><button class="settings-category" data-panel="display" aria-label="Display"><span data-lucide="monitor" aria-hidden="true"></span>Display & Inputs</button></li>
-          <li><button class="settings-category" data-panel="apps" aria-label="Apps"><span data-lucide="layout-grid" aria-hidden="true"></span>Apps</button></li>
-          <li><button class="settings-category" data-panel="behaviour" aria-label="Launcher Behaviour"><span data-lucide="sliders-horizontal" aria-hidden="true"></span>Behaviour</button></li>
-          <li><button class="settings-category" data-panel="about" aria-label="About / Diagnostics"><span data-lucide="info" aria-hidden="true"></span>About & Diagnostics</button></li>
+          <li><button class="settings-category active" data-panel="general" aria-current="true"><span data-lucide="sliders-horizontal"></span><span><b>General</b><small>Core preferences</small></span></button></li>
+          <li><button class="settings-category" data-panel="appearance"><span data-lucide="palette"></span><span><b>Appearance</b><small>Theme and wallpaper</small></span></button></li>
+          <li><button class="settings-category" data-panel="personalisation"><span data-lucide="layout-dashboard"></span><span><b>Personalisation</b><small>Your home screen</small></span></button></li>
+          <li><button class="settings-category" data-panel="playback"><span data-lucide="play-circle"></span><span><b>Playback</b><small>Viewing preferences</small></span></button></li>
+          <li><button class="settings-category" data-panel="apps"><span data-lucide="grid-2x2"></span><span><b>Apps &amp; Integrations</b><small>Installed applications</small></span></button></li>
+          <li><button class="settings-category" data-panel="network"><span data-lucide="wifi"></span><span><b>Network &amp; Connectivity</b><small>Connection status</small></span></button></li>
+          <li><button class="settings-category" data-panel="system"><span data-lucide="cpu"></span><span><b>System &amp; Device</b><small>Device information</small></span></button></li>
+          <li><button class="settings-category" data-panel="about"><span data-lucide="info"></span><span><b>About Kipsmthn</b><small>Version and credits</small></span></button></li>
         </ul>
       </aside>
-
-      <main class="settings-panel" id="settings-panel-appearance" role="tabpanel" aria-labelledby="appearance-heading">
-        <h3 id="appearance-heading">Appearance</h3>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Launcher name</strong>
-            <small>Name shown in the top-left corner</small>
-          </div>
-          <div class="setting-control">
-            <input id="launcher-name" type="text" maxlength="32" placeholder="My TV" autocomplete="off">
-            <button id="name-save" class="setting-btn">Save name</button>
-            <button id="name-reset" class="setting-btn">Reset</button>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Wallpaper theme</strong>
-            <small>Choose the launcher's built-in background</small>
-          </div>
-          <div class="setting-control">
-            <select id="theme-select" class="setting-select" aria-label="Wallpaper theme">
-              <option value="cinematic">Cinematic (Default)</option>
-              <option value="midnight">Midnight</option>
-              <option value="aurora">Aurora</option>
-              <option value="ember">Ember</option>
-            </select>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Custom background</strong>
-            <small>Path to an image included in the app package</small>
-          </div>
-          <div class="setting-control">
-            <input id="background-path-enhanced" type="text" placeholder="assets/background.jpg" maxlength="180" aria-label="Custom background image path">
-            <button id="background-apply" class="setting-btn">Apply image</button>
-          </div>
-        </div>
-        <p class="hint">Add your JPG, PNG or WebP image under app/assets/, include it in the Tizen package list, rebuild, then enter its relative path above.</p>
-      </main>
-
-      <main class="settings-panel" id="settings-panel-display" hidden role="tabpanel" aria-labelledby="display-heading">
-        <h3 id="display-heading">Display & Inputs</h3>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>TV / HDMI preview</strong>
-            <small>Choose the connected source shown in the preview area</small>
-          </div>
-          <div class="setting-control">
-            <span id="settings-source-label">Checking current input…</span>
-            <button id="sources-refresh" class="setting-btn">Refresh inputs</button>
-          </div>
-        </div>
-        <div id="sources" class="row" aria-label="Connected TV inputs"></div>
-        <p class="hint">Input switching and live TV preview are available only on a compatible Samsung TV.</p>
-      </main>
-
-      <main class="settings-panel" id="settings-panel-apps" hidden role="tabpanel" aria-labelledby="apps-heading">
-        <h3 id="apps-heading">Apps</h3>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Show system entries</strong>
-            <small>Include hidden or system apps in the app catalogue</small>
-          </div>
-          <div class="setting-control">
-            <button id="system-toggle" class="setting-toggle" type="button" aria-label="Show system entries" aria-pressed="false"></button>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>Refresh app catalogue</strong>
-            <small>Reload installed applications from the TV</small>
-          </div>
-          <div class="setting-control">
-            <button id="apps-refresh-settings" class="setting-btn">Refresh now</button>
-          </div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label">
-            <strong>App visibility</strong>
-            <small>Choose which installed apps appear on Home</small>
-          </div>
-          <div class="setting-control">
-            <button id="manage-visibility" class="setting-btn">Manage apps</button>
-          </div>
-        </div>
-        <p id="icon-status" class="hint">Checking app pictures…</p>
-      </main>
-
-      <main class="settings-panel" id="settings-panel-behaviour" hidden role="tabpanel" aria-labelledby="behaviour-heading">
-        <h3 id="behaviour-heading">Launcher Behaviour</h3>
-        <p>Use the remote's Home button for Samsung TV settings. If your model supports it, check General → Smart Features → Autorun Last App to control what opens when the TV starts.</p>
-        <p class="hint">Samsung controls startup behaviour. This launcher cannot replace Samsung Home or guarantee that it starts automatically.</p>
-      </main>
-
-      <main class="settings-panel" id="settings-panel-about" hidden role="tabpanel" aria-labelledby="about-heading">
-        <h3 id="about-heading">About & Diagnostics</h3>
-        <div class="setting-row">
-          <div class="setting-label"><strong>Launcher version</strong></div>
-          <div class="setting-control"><span>0.8.0</span></div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><strong>Tizen environment</strong></div>
-          <div class="setting-control"><span id="tizen-env">Checking…</span></div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><strong>TV integration</strong></div>
-          <div class="setting-control"><span id="tv-integration">Checking…</span></div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><strong>App discovery</strong></div>
-          <div class="setting-control"><span id="app-discovery">Checking…</span></div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><strong>Input integration</strong></div>
-          <div class="setting-control"><span id="input-integration">Checking…</span></div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><strong>Mode</strong></div>
-          <div class="setting-control"><span id="run-mode">Browser Preview</span></div>
-        </div>
-        <div class="setting-row">
-          <div class="setting-label"><strong>Samsung TV settings</strong><small>Opens the TV settings app when supported</small></div>
-          <div class="setting-control"><button id="tv-settings-open-enhanced" class="setting-btn">Open TV settings</button></div>
-        </div>
-        <p id="tv-settings-status" role="status" class="hint">If direct access is unavailable, press Home on your Samsung remote and select Settings.</p>
-        <details style="margin-top: var(--space-lg);">
-          <summary>Connection details</summary>
-          <pre id="diagnostics" style="margin-top: var(--space-md);"></pre>
-        </details>
-        <div class="setting-row" style="margin-top: var(--space-xl); border-top: 1px solid var(--border-card); padding-top: var(--space-lg);">
-          <div class="setting-label"><strong>Close launcher</strong></div>
-          <div class="setting-control"><button id="close-app-settings" class="setting-btn danger">Close app</button></div>
-        </div>
-      </main>
+      <div class="settings-content-shell">
+        <main class="settings-panel" id="settings-panel-general" role="tabpanel" aria-labelledby="general-heading">
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="sliders-horizontal"></span><div><h2 id="general-heading">General</h2><p>Your Kipsmthn TV experience, made personal.</p></div></div>
+          <section class="settings-group"><h3>Application Behaviour</h3>
+            <div class="setting-row"><div class="setting-label"><strong>Default Home Screen</strong><small>Choose the first destination when opening the app</small></div><div class="setting-control"><select id="home-destination" class="setting-select" data-pref="homeDestination"><option value="home">Home</option><option value="apps">Apps</option><option value="recent">Recently used</option></select></div></div>
+            <div class="setting-row"><div class="setting-label"><strong>Default Home destination</strong><small>Used when Kipsmthn TV launches. Samsung controls app startup.</small></div><div class="setting-control"><span class="settings-status-pill">Launcher preference</span></div></div>
+            <div class="setting-row"><div class="setting-label"><strong>Continue Watching</strong><small>Show sample picks on the Home screen</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showContinue" aria-label="Continue Watching"></button></div></div>
+            <div class="setting-row"><div class="setting-label"><strong>Recently Watched</strong><small>Show recently launched apps on Home</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showRecent" aria-label="Recently Watched"></button></div></div>
+          </section>
+          <section class="settings-group"><h3>Launcher Preferences</h3><p class="settings-note">These controls change Kipsmthn TV only. Samsung Tizen system configuration remains in the TV's native Settings.</p></section>
+          <section class="settings-group"><h3>Reset Options</h3><div class="setting-row"><div class="setting-label"><strong>Reset Settings</strong><small>Restore Kipsmthn preferences to their defaults</small></div><div class="setting-control"><button id="settings-reset" class="setting-btn danger" type="button">Reset settings</button></div></div></section>
+        </main>
+        <main class="settings-panel" id="settings-panel-appearance" hidden role="tabpanel" aria-labelledby="appearance-heading">
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="palette"></span><div><h2 id="appearance-heading">Appearance</h2><p>Set the atmosphere for your screen.</p></div></div>
+          <section class="settings-group"><h3>Theme</h3><div class="setting-row"><div class="setting-label"><strong>Colour theme</strong><small>Choose a Kipsmthn colour palette</small></div><div class="setting-control"><select id="theme-select" class="setting-select" aria-label="Colour theme"><option value="cinematic">Cinematic</option><option value="midnight">Midnight</option><option value="aurora">Aurora</option><option value="ember">Ember</option></select></div></div></section>
+          <section class="settings-group"><h3>Wallpaper</h3><p class="settings-group-description">These bundled landscape scenes are illustrations; no suitable photographic wallpaper was present in the local project.</p><div id="wallpaper-gallery" class="settings-wallpaper-gallery" aria-label="Wallpaper choices"></div><div class="setting-row"><div class="setting-label"><strong>Packaged image</strong><small>Optional image path within the app package</small></div><div class="setting-control"><input id="background-path-enhanced" type="text" placeholder="assets/background.jpg" maxlength="180" aria-label="Custom background image path"><button id="background-apply" class="setting-btn" type="button">Apply image</button></div></div></section>
+          <section class="settings-group"><h3>Visual Effects</h3><div class="setting-row"><div class="setting-label"><strong>Interface animations</strong><small>Premium focus and page transitions</small></div><div class="setting-control"><button id="animations-toggle" class="setting-toggle" type="button" data-pref="animations" aria-label="Interface animations"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Reduced motion</strong><small>Shorten transitions and disable wallpaper movement</small></div><div class="setting-control"><button id="reduced-motion-toggle" class="setting-toggle" type="button" data-pref="reducedMotion" aria-label="Reduced motion"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Interface sounds</strong><small>Subtle remote navigation and selection cues</small></div><div class="setting-control"><button id="sounds-toggle" class="setting-toggle" type="button" data-pref="sounds" aria-label="Interface sounds"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Sound volume</strong><small>Adjust the interface cue level</small></div><div class="setting-control"><input id="sound-volume" type="range" min="0" max="100" step="1" value="25" aria-label="Sound volume"><output id="sound-volume-value" for="sound-volume">25%</output></div></div><div class="setting-row"><div class="setting-label"><strong>Startup sound</strong><small>Play a short signature on first interaction</small></div><div class="setting-control"><button id="startup-sound-toggle" class="setting-toggle" type="button" data-pref="startupSound" aria-label="Startup sound"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Background blur</strong><small>Glass surfaces use translucent blur where supported</small></div><div class="setting-control"><span class="settings-status-pill">Automatic</span></div></div><div class="setting-row"><div class="setting-label"><strong>Panel transparency</strong><small>Use the cinematic glass surface</small></div><div class="setting-control"><span class="settings-status-pill">Balanced</span></div></div></section>
+          <div class="legacy-controls" aria-hidden="true"><input id="launcher-name" value="Kipsmthn"><button id="name-save" type="button">Save name</button><button id="name-reset" type="button">Reset</button></div>
+        </main>
+        <main class="settings-panel" id="settings-panel-personalisation" hidden role="tabpanel" aria-labelledby="personalisation-heading">
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="layout-dashboard"></span><div><h2 id="personalisation-heading">Personalisation</h2><p>Choose what appears on your Home screen.</p></div></div>
+          <section class="settings-group"><h3>Home Screen Rows</h3>
+            <div class="setting-row"><div class="setting-label"><strong>Your apps</strong><small>Show your pinned app shortcuts</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showApps" aria-label="Your apps"></button></div></div>
+            <div class="setting-row"><div class="setting-label"><strong>Continue Watching</strong><small>Show demonstration picks, not account viewing history</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showContinue" aria-label="Continue Watching row"></button></div></div>
+            <div class="setting-row"><div class="setting-label"><strong>Featured content</strong><small>Show featured entertainment selections</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showFeatured" aria-label="Featured content"></button></div></div>
+            <div class="setting-row"><div class="setting-label"><strong>Recently added</strong><small>Show recently launched applications</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showRecent" aria-label="Recently added"></button></div></div>
+          </section>
+        </main>
+        <main class="settings-panel" id="settings-panel-playback" hidden role="tabpanel" aria-labelledby="playback-heading">
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="play-circle"></span><div><h2 id="playback-heading">Playback</h2><p>Playback is handled by the selected streaming application.</p></div></div>
+          <section class="settings-group"><h3>Playback Preferences</h3><div class="setting-row"><div class="setting-label"><strong>Resume playback</strong><small>Resume support is managed by each streaming service</small></div><div class="setting-control"><span class="settings-status-pill">Service controlled</span></div></div><div class="setting-row"><div class="setting-label"><strong>Autoplay</strong><small>Autoplay is managed within each streaming application</small></div><div class="setting-control"><span class="settings-status-pill">Service controlled</span></div></div><div class="setting-row"><div class="setting-label"><strong>Subtitles &amp; audio</strong><small>Language and subtitle controls are provided by the player</small></div><div class="setting-control"><span class="settings-status-pill">Service controlled</span></div></div><p class="settings-note">Kipsmthn TV does not play video or have access to streaming-service playback preferences.</p></section>
+        </main>
+        <main class="settings-panel" id="settings-panel-apps" hidden role="tabpanel" aria-labelledby="apps-heading">
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="grid-2x2"></span><div><h2 id="apps-heading">Apps &amp; Integrations</h2><p>Applications detected on this device.</p></div></div>
+          <div class="setting-row"><div class="setting-label"><strong>Show system applications</strong><small>Include system entries in the app catalogue</small></div><div class="setting-control"><button id="system-toggle" class="setting-toggle" type="button" aria-label="Show system applications" data-pref="system"></button></div></div>
+          <div class="setting-row"><div class="setting-label"><strong>Installed applications</strong><small>Refresh the device application list</small></div><div class="setting-control"><button id="apps-refresh-settings" class="setting-btn" type="button">Refresh apps</button><button id="manage-visibility" class="setting-btn" type="button">Manage Home apps</button></div></div>
+          <section class="settings-group"><h3>Availability &amp; Integrations</h3><p id="settings-apps-status" class="settings-note">Checking applications…</p><div id="settings-installed-apps" class="settings-app-list"></div><p id="icon-status" class="settings-note"></p></section>
+        </main>
+        <main class="settings-panel" id="settings-panel-network" hidden role="tabpanel" aria-labelledby="network-heading">
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="wifi"></span><div><h2 id="network-heading">Network &amp; Connectivity</h2><p>Connection services available to the application.</p></div></div>
+          <section class="settings-group"><h3>Launcher integrations</h3><p class="settings-note">Kipsmthn does not configure Wi-Fi or other Samsung system connections. Network and Bluetooth settings remain under the TV's native Settings.</p><div class="setting-row"><div class="setting-label"><strong>TV input integration</strong><small>Read and switch sources when the TV exposes the supported Tizen API</small></div><div class="setting-control"><span id="settings-source-label">Checking…</span><button id="sources-refresh" class="setting-btn" type="button">Check TV inputs</button></div></div><div id="sources" class="settings-source-list" aria-label="TV-reported connected inputs"></div></section>
+          <section class="settings-group"><h3>External applications</h3><p id="settings-connectivity-info" class="settings-note">Kipsmthn does not connect to streaming services or control their network status. Use each installed app for service configuration.</p></section>
+        </main>
+        <main class="settings-panel" id="settings-panel-system" hidden role="tabpanel" aria-labelledby="system-heading">
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="cpu"></span><div><h2 id="system-heading">System &amp; Device</h2><p>Runtime environment and application diagnostics.</p></div></div>
+          <section class="settings-group"><h3>Launcher &amp; Device Runtime</h3><div class="setting-row"><div class="setting-label"><strong>Runtime</strong></div><div class="setting-control"><span id="tizen-env">Checking…</span></div></div><div class="setting-row"><div class="setting-label"><strong>Application API access</strong></div><div class="setting-control"><span id="tv-integration">Checking…</span></div></div><div class="setting-row"><div class="setting-label"><strong>Kipsmthn version</strong></div><div class="setting-control"><span>0.8.0</span></div></div><div class="setting-row"><div class="setting-label"><strong>Samsung native TV Settings</strong><small>Shortcut only; Kipsmthn does not change OS settings</small></div><div class="setting-control"><button id="tv-settings-open-enhanced" class="setting-btn" type="button">Open native Settings</button></div></div><p id="tv-settings-status" role="status" class="settings-note">Direct opening is attempted only through the Tizen app-control API when present. Otherwise use Home on your Samsung remote.</p><details class="settings-details"><summary>Launcher diagnostics</summary><pre id="diagnostics"></pre></details></section>
+        </main>
+        <main class="settings-panel" id="settings-panel-about" hidden role="tabpanel" aria-labelledby="about-heading">
+          <div class="settings-panel-heading"><span class="settings-heading-icon settings-about-mark">K</span><div><h2 id="about-heading">About Kipsmthn</h2><p>Your entertainment, in one place.</p></div></div>
+          <section class="settings-group"><h3>Kipsmthn TV</h3><div class="setting-row"><div class="setting-label"><strong>Application version</strong></div><div class="setting-control"><span>0.8.0</span></div></div><div class="setting-row"><div class="setting-label"><strong>Build information</strong></div><div class="setting-control"><span>Samsung Tizen TV · Kipsmthn0.Kipsmthn</span></div></div><div class="setting-row"><div class="setting-label"><strong>Project</strong><small>Open-source TV launcher</small></div><div class="setting-control"><span>Created by the Kipsmthn project</span></div></div><div class="setting-row"><div class="setting-label"><strong>Credits</strong><small>Lucide icons and local application assets</small></div><div class="setting-control"><span>Kipsmthn contributors</span></div></div><div class="setting-row"><div class="setting-label"><strong>Close launcher</strong></div><div class="setting-control"><button id="close-app-settings" class="setting-btn danger" type="button">Close app</button></div></div></section>
+          <div class="legacy-controls" aria-hidden="true"><span id="app-discovery">Checking…</span><span id="input-integration">Checking…</span><span id="run-mode">Browser Preview</span></div>
+        </main>
+      </div>
     </div>
+    <footer class="settings-remote-hints"><span>↑ ↓ <b>Navigate</b></span><span>← → <b>Switch panels</b></span><span>OK <b>Select</b></span><span>BACK <b>Return</b></span></footer>
+    <div id="settings-confirm" class="settings-dialog-backdrop" hidden><section class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-confirm-title"><span class="settings-heading-icon" data-lucide="rotate-ccw"></span><h2 id="settings-confirm-title">Reset settings?</h2><p>This restores Kipsmthn preferences to their defaults. Your installed apps and TV settings will not change.</p><div><button id="settings-reset-cancel" class="setting-btn" type="button">Cancel</button><button id="settings-reset-confirm" class="setting-btn danger" type="button">Reset settings</button></div></section></div>
   </section>
 
   <header class="header" role="banner">
@@ -326,7 +252,7 @@
           <span id="date"></span>
         </div>
         <div class="status-icons">
-          <span class="wifi-icon" data-lucide="wifi" aria-label="Wi-Fi connected"></span>
+          <span class="wifi-icon" data-lucide="wifi" aria-hidden="true"></span>
           <button id="settings-open" class="icon-btn" aria-label="Quick settings"><span data-lucide="settings-2" aria-hidden="true"></span></button>
         </div>
       </div>
@@ -353,6 +279,7 @@
 
     <section id="apps-section" class="content-section" aria-labelledby="apps-section-title">
     <h2 id="apps-section-title" class="section-title">Your apps</h2>
+    <p class="demo-disclaimer">Continue watching and trending artwork are sample demonstrations, not personal viewing history.</p>
     <div class="carousel" id="apps-carousel" role="list" aria-label="Your apps">
       <button class="carousel-item active" data-app-id="youtube" role="listitem" aria-label="YouTube" aria-selected="true">
         <div class="app-tile youtube-tile"><img class="brand-artwork" src="assets/logos/youtube.svg" alt="YouTube"></div>
@@ -385,7 +312,7 @@
   </section>
 
   <section id="continue-section" class="content-section" aria-labelledby="continue-title">
-    <h2 id="continue-title" class="section-title">Continue watching</h2>
+    <h2 id="continue-title" class="section-title">Sample picks</h2>
     <div class="carousel" id="continue-carousel" role="list" aria-label="Continue watching">
       <button class="carousel-item continue-card" data-content-id="last-of-us" role="listitem" aria-label="The Last of Us - Continue S1 E3">
         <div class="card-bg" style="background-image: url('assets/posters/last-of-us.svg');"></div>
@@ -434,6 +361,7 @@
     </div>
   </section>
 
+  <section id="recent-home-section" class="content-section" aria-labelledby="recent-home-title" hidden><h2 id="recent-home-title" class="section-title">Recently launched</h2><div id="recent-home-apps" class="carousel" role="list" aria-label="Recently launched apps"></div></section>
   <section id="trending-section" class="content-section" aria-labelledby="trending-title">
     <h2 id="trending-title" class="section-title">Trending now</h2>
     <div class="carousel" id="trending-carousel" role="list" aria-label="Trending now">

@@ -21,7 +21,7 @@ const assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),p
     });
   }
   const p=await c.newPage();await p.goto(pathToFileURL(path.resolve('app/index.html')).href);
-await p.locator('#settings-open').click();await p.locator('[data-panel="about"]').click();await p.locator('#tv-settings-open-enhanced').click();
+await p.locator('#settings-open').click();await p.locator('[data-panel="system"]').click();await p.locator('#tv-settings-open-enhanced').click();
   if(mode==='timeout')await p.waitForTimeout(5200);
   assert.equal(await p.locator('#tv-settings-open-enhanced').isEnabled(),true);
   const calls=await p.evaluate(()=>window.calls);

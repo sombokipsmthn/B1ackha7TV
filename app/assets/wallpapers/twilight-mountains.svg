@@ -1,58 +1,15 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080">
-  <defs>
-    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#0a1222"/>
-      <stop offset="30%" stop-color="#1a1a3a"/>
-      <stop offset="60%" stop-color="#2d1b3d"/>
-      <stop offset="100%" stop-color="#050810"/>
-    </linearGradient>
-    <radialGradient id="moon-glow" cx="50%" cy="30%" r="50%">
-      <stop offset="0%" stop-color="rgba(75, 40, 100, 0.3)"/>
-      <stop offset="100%" stop-color="transparent"/>
-    </radialGradient>
-    <radialGradient id="horizon-glow" cx="50%" cy="100%" r="40%">
-      <stop offset="0%" stop-color="rgba(20, 10, 30, 0.4)"/>
-      <stop offset="100%" stop-color="transparent"/>
-    </radialGradient>
-  </defs>
-
-  <!-- Sky gradient -->
-  <rect width="1920" height="1080" fill="url(#sky)"/>
-
-  <!-- Moon glow -->
-  <ellipse cx="384" cy="324" rx="200" ry="150" fill="url(#moon-glow)"/>
-
-  <!-- Mountains layer 1 (back) -->
-  <path d="M0,850 Q480,400 960,650 Q1440,400 1920,850 L1920,1080 L0,1080 Z" fill="#0f141c" opacity="0.6"/>
-
-  <!-- Mountains layer 2 (mid) -->
-  <path d="M0,900 Q480,550 960,750 Q1440,550 1920,900 L1920,1080 L0,1080 Z" fill="#151a2a" opacity="0.8"/>
-
-  <!-- Mountains layer 3 (front) -->
-  <path d="M0,950 Q480,700 960,850 Q1440,700 1920,950 L1920,1080 L0,1080 Z" fill="#1a1f2e"/>
-
-  <!-- Lake reflection -->
-  <ellipse cx="960" cy="1200" rx="1200" ry="300" fill="url(#horizon-glow)"/>
-
-  <!-- Stars -->
-  <g fill="white" opacity="0.7">
-    <circle cx="150" cy="120" r="1"/>
-    <circle cx="400" cy="80" r="0.5"/>
-    <circle cx="600" cy="180" r="1"/>
-    <circle cx="850" cy="60" r="0.5"/>
-    <circle cx="1100" cy="140" r="1"/>
-    <circle cx="1350" cy="90" r="0.5"/>
-    <circle cx="1600" cy="160" r="1"/>
-    <circle cx="1800" cy="70" r="0.5"/>
-    <circle cx="200" cy="220" r="0.5"/>
-    <circle cx="500" cy="200" r="1"/>
-    <circle cx="750" cy="240" r="0.5"/>
-    <circle cx="1000" cy="210" r="1"/>
-    <circle cx="1250" cy="190" r="0.5"/>
-    <circle cx="1500" cy="230" r="1"/>
-    <circle cx="1750" cy="250" r="0.5"/>
-  </g>
-
-  <!-- Moon -->
-  <circle cx="384" cy="324" r="60" fill="#f5f0e1" opacity="0.9" filter="url(#glow)"/>
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#111c2d"/><stop offset=".45" stop-color="#536174"/><stop offset=".58" stop-color="#b47d68"/><stop offset="1" stop-color="#111922"/></linearGradient>
+ <linearGradient id="lake" x2="0" y2="1"><stop stop-color="#293e50"/><stop offset="1" stop-color="#081522"/></linearGradient>
+ <radialGradient id="glow"><stop stop-color="#e5b096" stop-opacity=".32"/><stop offset="1" stop-color="#e5b096" stop-opacity="0"/></radialGradient>
+ <linearGradient id="shade" x2="0" y2="1"><stop stop-color="#06111f" stop-opacity=".42"/><stop offset=".55" stop-color="#06111f" stop-opacity=".06"/><stop offset="1" stop-color="#030911" stop-opacity=".72"/></linearGradient>
+</defs>
+<rect width="1920" height="1080" fill="url(#sky)"/><ellipse cx="1040" cy="510" rx="650" ry="240" fill="url(#glow)"/>
+<circle cx="1060" cy="480" r="34" fill="#f1c5a6" opacity=".82"/>
+<path d="M0 658 190 520 315 607 515 407 710 620 894 463 1080 611 1275 420 1485 623 1668 488 1920 656V1080H0Z" fill="#263342"/>
+<path d="m0 711 224-116 171 116 220-150 180 164 234-180 203 171 211-146 210 157 267-111V1080H0Z" fill="#182735"/>
+<path d="M0 696Q480 677 960 704T1920 690V1080H0Z" fill="url(#lake)"/>
+<path d="M760 724q210 18 420 0M660 766q300 17 590 0M810 818q200 12 405 0M470 885q390 18 820 0" fill="none" stroke="#d89b7c" stroke-opacity=".15" stroke-width="3"/>
+<path d="M0 0h1920v1080H0z" fill="url(#shade)"/>
 </svg>

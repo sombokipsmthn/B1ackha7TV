@@ -31,6 +31,7 @@ files:
   - icon.png
   - index.html
   - main.js
+  - audio-controller.js
   - tizen-service.js
   - assets/lucide.js
   - assets/lucide.min.js
@@ -40,6 +41,11 @@ files:
   - assets/logos/youtube.svg
   - assets/logos/netflix.svg
   - assets/logos/prime-video.svg
+  - assets/audio/navigation.wav
+  - assets/audio/selection.wav
+  - assets/audio/back.wav
+  - assets/audio/error.wav
+  - assets/audio/startup.wav
   - assets/posters/last-of-us.svg
   - assets/posters/dune.svg
   - assets/posters/ted-lasso.svg
