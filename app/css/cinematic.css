@@ -76,6 +76,10 @@
    RESET & BASE
    ========================================================================== */
 
+[hidden] {
+  display: none !important;
+}
+
 /* Monochrome Lucide icons with refined stroke width */
 [data-lucide] {
   stroke-width: 1.7;
@@ -527,6 +531,7 @@ a:focus-visible,
   inset: 0;
   background: rgba(0,0,0,0.4);
   z-index: 2;
+  pointer-events: none;
 }
 
 .card-content {
