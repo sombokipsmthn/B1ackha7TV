@@ -3,7 +3,7 @@
 
   var $ = function (id) { return document.getElementById(id); };
 
-  var storageKey = 'b1ackha7tv.settings.v1';
+  var storageKey = 'kipsmthn.settings.v1';
 var tv = window.tizen;
 
 // Track current page
@@ -154,8 +154,14 @@ document.addEventListener('DOMContentLoaded', () => {
       var stored = localStorage.getItem(storageKey);
       var migratedLegacy = false;
       if (!stored) {
-        stored = localStorage.getItem('kipsmthntheme.settings.v1');
-        migratedLegacy = !!stored;
+        // Migration from old B1ackha7TV storage key
+        stored = localStorage.getItem('b1ackha7tv.settings.v1');
+        if (stored) {
+          migratedLegacy = true;
+        } else {
+          stored = localStorage.getItem('kipsmthntheme.settings.v1');
+          migratedLegacy = !!stored;
+        }
       }
       var saved = JSON.parse(stored || '{}');
       if (saved && typeof saved === 'object') {
@@ -289,7 +295,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     var lt = $('library-title');
     if (lt) lt.textContent = editingApps ? 'Add or remove apps' : 'Your main apps';
-    var ea = $('edit-apps');
+    var ea = $('edit-apps-home') || $('edit-apps');
     if (ea) ea.textContent = editingApps ? 'Done editing apps' : 'Edit apps';
     var eh = $('edit-hint');
     if (eh) eh.hidden = !editingApps;
@@ -299,7 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
     var emptyEl = $('empty');
     if (emptyEl) {
       emptyEl.hidden = visible.length > 0;
-      if (!visible.length) { emptyEl.textContent = tv ? (editingApps ? 'No apps returned. Try Refresh apps or show system entries in Settings.' : 'Choose Edit apps to add your favorite apps to Home.') : 'Open B1ackha7TV on your Samsung TV to see installed apps. TV apps and live input are unavailable in a PC browser.'; }
+      if (!visible.length) { emptyEl.textContent = tv ? (editingApps ? 'No apps returned. Try Refresh apps or show system entries in Settings.' : 'Choose Edit apps to add your favorite apps to Home.') : 'Open Kipsmthn on your Samsung TV to see installed apps. TV apps and live input are unavailable in a PC browser.'; }
     }
     if (oldId && document.activeElement === document.body) { focus($('refresh')); }
   }
@@ -474,8 +480,11 @@ document.addEventListener('DOMContentLoaded', () => {
     var canControl = typeof tv.ApplicationControl === 'function' && typeof tv.application.launchAppControl === 'function';
     function add(target) {
       if (routes.some(function (route) { return route.id === target; })) { return; }
-      routes.push({id:target,control:appControl || null});
-      if (!appControl && canControl) { routes.push({id:target,control:'default'}); }
+      if (!appControl && canControl) {
+        routes.push({id:target,control:'default'});
+      } else {
+        routes.push({id:target,control:appControl || null});
+      }
     }
     add(id);
     if (!appControl) {
@@ -569,12 +578,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Edit apps toggle
-  var editBtn = $('edit-apps');
-  if (editBtn) {
-    editBtn.addEventListener('click', function () {
+  // Edit apps toggle (Home page)
+  var editBtnHome = $('edit-apps-home');
+  if (editBtnHome) {
+    editBtnHome.addEventListener('click', function () {
       editingApps = !editingApps;
       renderApps();
+      if (!editingApps) { focus($('edit-apps-home')); }
+    });
+  }
+  // Edit apps toggle (Apps page)
+  var editBtnApps = $('edit-apps');
+  if (editBtnApps) {
+    editBtnApps.addEventListener('click', function () {
+      editingApps = !editingApps;
+      renderAppsPage();
       if (!editingApps) { focus($('edit-apps')); }
     });
   }
@@ -1087,7 +1105,7 @@ document.addEventListener('DOMContentLoaded', () => {
       e.preventDefault();
       if (!$('exit-dialog').hidden) { exitDialog(false); }
       else if (document.querySelector('#settings') && !$('settings').hidden) { settings(false); }
-      else if (editingApps) { editingApps = false; renderApps(); focus($('edit-apps')); }
+      else if (editingApps) { editingApps = false; renderApps(); focus($('edit-apps') || $('edit-apps-home')); }
       else { exitDialog(true); }
     } else if (code >= 37 && code <= 40) { // Arrow keys
       if (document.activeElement.tagName === 'INPUT' && (code === 37 || code === 39)) { return; }

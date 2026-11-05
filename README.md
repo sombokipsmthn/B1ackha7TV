@@ -1,4 +1,4 @@
-# B1ackha7TV
+# Kipsmthn
 
 A remote-friendly, open-source launcher for Samsung Tizen TVs. Choose your main apps, launch them from one screen, and browse alongside a TV/HDMI preview.
 
@@ -10,7 +10,7 @@ A remote-friendly, open-source launcher for Samsung Tizen TVs. Choose your main 
 - Prime Video and Disney+ duplicate shortcut grouping, native app pictures where accessible, and a bundled Prime Video fallback tile.
 - Current TV or HDMI input preview in the upper-right corner, input selection, and full-screen TV shortcut.
 - A saved display name and initials badge, editable in Settings (defaults to My TV).
-- Three built-in backgrounds, optional locally packaged images, remote navigation, and a Close app dialog.
+- Cinematic wallpaper (twilight mountain/lake) plus two gradient themes, optional locally packaged images, remote navigation, and a Close app dialog.
 - Optional system Settings shortcut: discovers a compatible handler first and provides remote instructions when unavailable.
 
 ## Compatibility and limits
@@ -26,7 +26,7 @@ Only apps returned and launchable through public APIs can appear and open. Some 
 - `tests/` contains browser regression tests for the active app.
 - `docs/` contains project documentation and preview assets.
 - `archive/legacy-MyTvTheme/` preserves the older experimental app tree for reference only. Do not import or package it.
-- `B1ackha7TV.code-workspace` opens the repository root without adding the archived app as a second project.
+- `Kipsmthn.code-workspace` opens the repository root without adding the archived app as a second project.
 
 The app is intentionally still a single HTML/CSS/JavaScript Tizen web app. The older `components/`, `pages/` and `services/` files were not wired into the active `index.html` entry point, so they remain archived rather than being mixed into the runtime.
 
@@ -45,8 +45,8 @@ For Tizen Studio's classic CLI, from the repository root (replace the uppercase 
 ```text
 tizen build-web -- app
 tizen package -t wgt -s YOUR_CERTIFICATE_PROFILE -- app/.buildResult
-tizen install -s YOUR_DEVICE_SERIAL --name B1ackha7TV.wgt -- app/.buildResult
-tizen run -s YOUR_DEVICE_SERIAL -p B1ackha7TV0.B1ackha7TV
+tizen install -s YOUR_DEVICE_SERIAL --name Kipsmthn.wgt -- app/.buildResult
+tizen run -s YOUR_DEVICE_SERIAL -p B1ackha7TV0.Kipsmthn
 ```
 
 Confirm the generated package filename in your build output. Use your own app ID in the run command if you changed the manifest. The YAML/`tz` workflow and classic Tizen Studio CLI are different toolchains; use your installed SDK's workflow. See [Samsung's CLI guide](https://developer.samsung.com/smarttv/develop/getting-started/using-sdk/command-line-interface.html). An update requires the same author certificate; avoid uninstalling if you want to retain preferences.
@@ -57,7 +57,7 @@ Confirm the generated package filename in your build output. Use your own app ID
 
 Arrow keys move focus, OK opens/selects, Back closes Settings/Edit apps or opens the exit dialog. The blue key opens launcher settings when supported. Home remains controlled by Samsung.
 
-Use **Edit apps** to add/remove Home shortcuts (not uninstall apps). Use **TV & launcher settings → Your launcher name → Save name** to change the heading and initials badge. Names are stored locally, can be up to 32 characters, and can be reset to My TV. This changes the in-app heading; the installed package remains B1ackha7TV. The same panel has themes and connected inputs. For your own background, add a JPG, PNG, or WebP under `app/assets/`, include it in the YAML package list when applicable, rebuild, and enter its `assets/...` path. Custom artwork stays local unless you deliberately commit it. Upgrading from pre-0.7 builds resets the old background once while keeping favorite apps and preview preferences.
+Use **Edit apps** to add/remove Home shortcuts (not uninstall apps). Use **TV & launcher settings → Your launcher name → Save name** to change the heading and initials badge. Names are stored locally, can be up to 32 characters, and can be reset to My TV. This changes the in-app heading; the installed package remains Kipsmthn. The same panel has themes and connected inputs. For your own background, add a JPG, PNG, or WebP under `app/assets/`, include it in the YAML package list when applicable, rebuild, and enter its `assets/...` path. Custom artwork stays local unless you deliberately commit it. Upgrading from pre-0.7 builds resets the old background once while keeping favorite apps and preview preferences.
 
 ## Browser preview and tests
 

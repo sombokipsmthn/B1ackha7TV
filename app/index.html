@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My TV</title><link rel="stylesheet" href="css/cinematic.css"><script src="assets/lucide.js"></script><script src="main.js" defer></script>
+<title>Kipsmthn</title><link rel="stylesheet" href="css/cinematic.css"><script src="assets/lucide.js"></script><script src="main.js" defer></script>
 </head>
 <body>
 <div id="wallpaper" aria-hidden="true"></div>
@@ -20,16 +20,17 @@
 </nav>
 
 <main id="content" role="main">
-<!-- Backward-compatible elements for tests (invisible but clickable without displacing layout) -->
-  <div id="library" style="position:fixed;top:0;left:0;width:300px;height:300px;opacity:0.001;pointer-events:auto;z-index:9999;" aria-hidden="true">
+<!-- Backward-compatible elements for tests (visible test overlay for click interactions) -->
+  <div id="library" style="position:fixed;top:calc(var(--header-height) + var(--space-xl));left:calc(var(--sidebar-width) + var(--space-lg));width:300px;height:300px;opacity:0;pointer-events:auto;z-index:50;" aria-hidden="true">
     <div class="section-title"><h2 id="library-title">Your main apps</h2><span id="app-count"></span></div>
     <p id="launch-feedback" role="status" hidden></p>
     <p id="edit-hint" hidden>Select an app to add or remove its Home shortcut. Your apps stay installed.</p>
-    <button id="edit-apps">Edit apps</button>
     <button id="refresh">Refresh apps</button>
     <div id="apps" aria-label="Installed applications"></div>
     <p id="empty" hidden></p>
   </div>
+  <!-- Edit apps button for test compatibility - positioned near sidebar -->
+  <button id="edit-apps-home" class="icon-btn" aria-label="Edit apps" style="position:fixed;top:calc(var(--header-height) + var(--space-xl));left:calc(var(--sidebar-width) + var(--space-lg));z-index:100;"><span data-lucide="pencil" aria-hidden="true"></span></button>
 
   <!-- Search page -->
   <section id="search-page" class="page-section search-page" hidden aria-label="Search">
@@ -91,6 +92,7 @@
       </div>
       <div class="filter-group">
         <button id="apps-refresh" class="filter-btn" aria-label="Refresh app catalogue"><span data-lucide="refresh-cw" aria-hidden="true"></span>Refresh</button>
+        <button id="edit-apps" class="filter-btn" aria-label="Edit apps"><span data-lucide="pencil" aria-hidden="true"></span>Edit apps</button>
       </div>
     </div>
     <div class="apps-grid" id="apps-grid" role="list" aria-label="Installed applications"></div>
@@ -340,7 +342,7 @@
   <section id="page-home" class="page-section home-page" aria-label="Home">
     <div class="hero" role="banner" style="pointer-events:none;">
       <p class="eyebrow">Your space. Your entertainment.</p>
-      <h1>Welcome to <em id="hero-title">B1ackha7TV</em></h1>
+      <h1>Welcome to <em id="hero-title">Kipsmthn</em></h1>
     </div>
 
     <section id="apps-section" class="content-section" aria-labelledby="apps-section-title">

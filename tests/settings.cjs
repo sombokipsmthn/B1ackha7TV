@@ -8,7 +8,7 @@ const { pathToFileURL } = require('node:url');
   try {
     const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
     await context.addInitScript(() => {
-      localStorage.setItem('b1ackha7tv.settings.v1', JSON.stringify({
+      localStorage.setItem('kipsmthn.settings.v1', JSON.stringify({
         backgroundVersion: 2, system: false, favorites: [], preview: false
       }));
       window.tizen = {
@@ -33,11 +33,11 @@ const { pathToFileURL } = require('node:url');
     assert.equal(await toggle.getAttribute('aria-pressed'), 'false');
     await toggle.click();
     assert.equal(await toggle.getAttribute('aria-pressed'), 'true');
-    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('b1ackha7tv.settings.v1')).system), true);
+    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('kipsmthn.settings.v1')).system), true);
 
     await page.locator('[data-panel="appearance"]').click();
     await page.locator('#theme-select').selectOption('aurora');
-    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('b1ackha7tv.settings.v1')).theme), 'aurora');
+    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('kipsmthn.settings.v1')).theme), 'aurora');
 
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#settings').isHidden(), true);

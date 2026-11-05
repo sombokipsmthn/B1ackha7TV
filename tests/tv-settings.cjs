@@ -15,7 +15,7 @@ const assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),p
   // Enable preview for launch-error mode to test preview recovery
   if (mode === 'launch-error') {
     await c.addInitScript(() => {
-      localStorage.setItem('b1ackha7tv.settings.v1', JSON.stringify({
+      localStorage.setItem('kipsmthn.settings.v1', JSON.stringify({
         backgroundVersion: 2, system: false, favorites: [], preview: true
       }));
     });
