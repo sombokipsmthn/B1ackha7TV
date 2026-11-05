@@ -37,7 +37,7 @@ This repository contains source only. There are no personal certificates, device
 1. Install Samsung's TV development tools: Tizen Studio with the TV and Samsung Certificate extensions, or a compatible Visual Studio Tizen Web setup.
 2. Enable Developer Mode on your TV, configure your development computer as the host, restart as required, and connect using Device Manager. Follow [Samsung's TV connection guide](https://developer.samsung.com/smarttv/develop/getting-started/using-sdk/tv-device.html).
 3. In Certificate Manager, create your own **Samsung TV** author/distributor certificate profile. Include your own TV's DUID and use Device Manager's installation permission step as required. Keep the author certificate for future updates. See [Samsung's certificate guide](https://developer.samsung.com/smarttv/develop/getting-started/setting-up-sdk/creating-certificates.html).
-4. Import the contents of `app/` into a TV Web application project. The public package ID is `B1ackha7TV0`; it is an application identifier, not a TV identifier. Keep your IDE-generated app/package IDs if needed, ensuring both remain consistent in `config.xml`.
+4. Import the contents of `app/` into a TV Web application project. The public package ID is `Kipsmthn0`; it is an application identifier, not a TV identifier. Keep your IDE-generated app/package IDs if needed, ensuring both remain consistent in `config.xml`.
 5. Select your own signing profile in the IDE. For tooling that uses `tizen_web_project.yaml`, the empty signing profile uses your active local profile. Build, sign, then run on your connected TV.
 
 For Tizen Studio's classic CLI, from the repository root (replace the uppercase placeholders):
@@ -46,7 +46,7 @@ For Tizen Studio's classic CLI, from the repository root (replace the uppercase 
 tizen build-web -- app
 tizen package -t wgt -s YOUR_CERTIFICATE_PROFILE -- app/.buildResult
 tizen install -s YOUR_DEVICE_SERIAL --name Kipsmthn.wgt -- app/.buildResult
-tizen run -s YOUR_DEVICE_SERIAL -p B1ackha7TV0.Kipsmthn
+tizen run -s YOUR_DEVICE_SERIAL -p Kipsmthn0.Kipsmthn
 ```
 
 Confirm the generated package filename in your build output. Use your own app ID in the run command if you changed the manifest. The YAML/`tz` workflow and classic Tizen Studio CLI are different toolchains; use your installed SDK's workflow. See [Samsung's CLI guide](https://developer.samsung.com/smarttv/develop/getting-started/using-sdk/command-line-interface.html). An update requires the same author certificate; avoid uninstalling if you want to retain preferences.

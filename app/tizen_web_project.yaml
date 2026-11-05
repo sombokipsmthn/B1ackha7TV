@@ -31,9 +31,22 @@ files:
   - icon.png
   - index.html
   - main.js
+  - tizen-service.js
   - assets/lucide.js
   - assets/lucide.min.js
   - assets/prime-video.svg
+  - assets/icon-source.svg
+  - assets/VWMK740-01059.jpg
+  - assets/fonts/material-icons.css
+  - assets/fonts/material-symbols-outlined.woff
+  - assets/fonts/material-symbols-outlined.woff2
+  - assets/fonts/MaterialSymbolsOutlined-subset.ttf
+  - assets/fonts/MaterialSymbolsOutlined-subset.woff2
+  - assets/wallpapers/abstract-gradient.svg
+  - assets/wallpapers/earth-space.svg
+  - assets/wallpapers/lake-dusk.svg
+  - assets/wallpapers/northern-lights.svg
+  - assets/wallpapers/twilight-mountains.svg
 
 # list of files to exclude based on the matched patterns
 excludes:
@@ -62,7 +75,3 @@ excludes:
 
 # project dependencies
 deps: []
-
-
-
-

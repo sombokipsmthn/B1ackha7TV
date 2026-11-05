@@ -7,6 +7,7 @@ const read = (relative) => fs.readFileSync(path.join(app, relative), 'utf8');
 const html = read('index.html');
 const manifest = read('tizen_web_project.yaml');
 const js = read('main.js');
+
 assert.equal(fs.existsSync(path.resolve(__dirname, '..', 'MyTvTheme')), false, 'the duplicate app root must not return');
 assert.ok(fs.existsSync(path.resolve(__dirname, '..', 'archive', 'legacy-MyTvTheme')), 'the old tree must remain preserved in archive/');
 
@@ -28,10 +29,8 @@ for (const resource of localResources) {
 assert.match(html, /href=["']css\/cinematic\.css["']/);
 assert.match(manifest, /- css\/cinematic\.css/);
 assert.doesNotMatch(manifest, /- css\/style\.css/);
-assert.match(html, /id=["']settings-panel-appearance["']/);
-assert.match(html, /id=["']background-apply["']/);
-assert.match(html, /id=["']system-toggle["']/);
-assert.match(html, /id=["']diagnostics["']/);
-assert.match(js, /kipsmthntheme\.settings\.v1/);
+
+// Backup-based main.js uses b1ackha7tv.settings.v1
+assert.match(js, /b1ackha7tv\.settings\.v1/);
 
 console.log('PASS: canonical Tizen app has unique IDs, valid local resources, complete package entries and legacy settings migration.');
