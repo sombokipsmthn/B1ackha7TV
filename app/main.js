@@ -132,6 +132,7 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (pageId === 'games') { renderGamesPage(); }
     else if (pageId === 'recent') { renderRecentPage(); }
     else if (pageId === 'inputs') { renderInputsPage(); }
+    else if (pageId === 'search') { renderSearchPage(); }
   }
 
   function report(message, error) {
@@ -424,12 +425,45 @@ document.addEventListener('DOMContentLoaded', () => {
         item.addEventListener('focus', function() {
           items.forEach(function(i) { i.classList.remove('active'); });
           item.classList.add('active');
+          // Trigger preview for focused carousel item
+          var meta = getPreviewMeta(item);
+          if (meta && window.B1ackha7Preview) { window.B1ackha7Preview.start(meta); }
         });
+      });
+
+      // Stop preview when leaving carousel
+      carousel.addEventListener('focusout', function(e) {
+        if (!carousel.contains(e.relatedTarget) && window.B1ackha7Preview) {
+          window.B1ackha7Preview.stop();
+        }
       });
 
       // Set first item active initially
       if (items.length > 0) items[0].classList.add('active');
     });
+  }
+
+  // Preview metadata mapping for carousel items
+  var PREVIEW_META = {
+    'youtube': { preview: '', artwork: '', background: '', fullBackground: true },
+    'netflix': { preview: '', artwork: '', background: '', fullBackground: true },
+    'prime': { preview: '', artwork: '', background: '', fullBackground: true },
+    'all-apps': { preview: '', artwork: '', background: '', fullBackground: false },
+    'hdmi1': { preview: '', artwork: '', background: '', fullBackground: false },
+    'hdmi2': { preview: '', artwork: '', background: '', fullBackground: false },
+    'last-of-us': { preview: '', artwork: '', background: '', fullBackground: true },
+    'dune': { preview: '', artwork: '', background: '', fullBackground: true },
+    'ted-lasso': { preview: '', artwork: '', background: '', fullBackground: true },
+    'our-planet': { preview: '', artwork: '', background: '', fullBackground: true },
+    'trending-1': { preview: '', artwork: '', background: '', fullBackground: true },
+    'trending-2': { preview: '', artwork: '', background: '', fullBackground: true },
+    'trending-3': { preview: '', artwork: '', background: '', fullBackground: true },
+    'trending-4': { preview: '', artwork: '', background: '', fullBackground: true }
+  };
+
+  function getPreviewMeta(element) {
+    var id = element.getAttribute('data-app-id') || element.getAttribute('data-content-id');
+    return id ? PREVIEW_META[id] : null;
   }
 
   // App launching (preserves original logic)
@@ -463,7 +497,12 @@ document.addEventListener('DOMContentLoaded', () => {
     function active(token) { return generation === launchGeneration && attempt === token && launching && !document.hidden; }
     function stop(error) {
       clearTimeout(launchTimer); ++launchGeneration; launching = false;
-      previewBlocked = false; previewNeedsShow = true; syncPreview();
+      previewBlocked = false; previewNeedsShow = true;
+      // Ensure the preview element is in view before attempting to show it.
+      // When settings or other overlays are open the preview may have scrolled off-screen.
+      var previewEl = $('preview-picture');
+      if (previewEl) { try { previewEl.scrollIntoView({block: 'nearest'}); } catch (ignore) { } }
+      syncPreview();
       message('Could not open ' + name + '. You can try another app or open it from Samsung Home.',error);
     }
     function next(error) {
@@ -783,6 +822,168 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updatePreviewToggle() { var el = $('preview-toggle'); if (el) el.textContent = prefs.preview ? 'Turn off' : 'Turn on'; }
+
+  // ==========================================================================
+  // HYBRID CINEMATIC PREVIEW ENGINE
+  // ==========================================================================
+  // Single shared HTML5 video element for all content previews.
+  // Modes: 'full' (fills wallpaper background) | 'floating' (picture-in-picture)
+  var previewVideo = null;
+  var previewArtwork = null;
+  var previewMode = 'none'; // 'none' | 'full' | 'floating'
+  var previewActive = false;
+  var previewTimer = null;
+  var previewDelay = 700; // ms after focus settles before starting preview
+  var previewLoading = false;
+  var previewError = false;
+
+  function ensurePreviewVideo() {
+    if (!previewVideo) {
+      previewVideo = document.createElement('video');
+      previewVideo.muted = true;
+      previewVideo.playsInline = true;
+      previewVideo.preload = 'none';
+      previewVideo.style.position = 'absolute';
+      previewVideo.style.opacity = '0';
+      previewVideo.style.transition = 'opacity 0.6s ease';
+      previewVideo.addEventListener('error', onPreviewError);
+      previewVideo.addEventListener('loadeddata', onPreviewLoaded);
+      previewVideo.addEventListener('playing', onPreviewPlaying);
+    }
+    return previewVideo;
+  }
+
+  function onPreviewError() {
+    previewError = true;
+    previewLoading = false;
+    if (previewActive) { showPreviewArtwork(currentPreviewMeta); }
+    report('Preview video unavailable; showing artwork instead.');
+  }
+
+  function onPreviewLoaded() {
+    previewLoading = false;
+  }
+
+  function onPreviewPlaying() {
+    previewLoading = false;
+  }
+
+  function stopPreview() {
+    if (!previewActive) { return; }
+    previewActive = false;
+    clearTimeout(previewTimer);
+    if (previewVideo) {
+      try { previewVideo.pause(); } catch (e) { /* ignore */ }
+      previewVideo.src = '';
+      previewVideo.load();
+      previewVideo.style.opacity = '0';
+    }
+    hidePreviewArtwork();
+  }
+
+  function showPreviewArtwork(meta) {
+    if (!meta) { return; }
+    var bg = meta.artwork || meta.background || '';
+    if (!bg) { return; }
+    var wallpaper = $('wallpaper');
+    if (!wallpaper) { return; }
+    wallpaper.style.backgroundImage = 'linear-gradient(rgba(5,8,16,0.3),rgba(5,8,16,0.55)),url("' + bg + '")';
+    wallpaper.style.backgroundSize = 'cover';
+    wallpaper.style.backgroundPosition = 'center 40%';
+  }
+
+  function hidePreviewArtwork() {
+    // Restore theme-based wallpaper
+    var wallpaper = $('wallpaper');
+    if (wallpaper) { wallpaper.style.backgroundImage = themes[prefs.theme]; }
+  }
+
+  function setPreviewMode(mode) {
+    if (mode === previewMode) { return; }
+    var floating = $('preview-floating');
+    var wallpaper = $('wallpaper');
+    if (mode === 'full') {
+      if (wallpaper) { wallpaper.classList.add('preview-active'); }
+      if (floating) { floating.hidden = true; }
+      if (previewVideo) { previewVideo.style.position = 'absolute'; previewVideo.style.inset = '0'; }
+    } else if (mode === 'floating') {
+      if (wallpaper) { wallpaper.classList.remove('preview-active'); }
+      if (floating) { floating.hidden = false; }
+      if (previewVideo) {
+        if (floating) { floating.appendChild(previewVideo); }
+        previewVideo.style.position = 'absolute';
+        previewVideo.style.inset = '0';
+        previewVideo.style.width = '100%';
+        previewVideo.style.height = '100%';
+        previewVideo.style.objectFit = 'cover';
+      }
+    } else {
+      if (wallpaper) { wallpaper.classList.remove('preview-active'); }
+      if (floating) { floating.hidden = true; }
+    }
+    previewMode = mode;
+  }
+
+  var currentPreviewMeta = null;
+
+  function startPreview(meta) {
+    if (!meta) { stopPreview(); return; }
+    currentPreviewMeta = meta;
+    if (!meta.preview && !meta.artwork && !meta.background) {
+      // No preview content available — keep artwork only
+      stopPreview();
+      showPreviewArtwork(meta);
+      return;
+    }
+    // Decide mode based on content and screen space
+    var mode = (meta.fullBackground !== false && meta.preview) ? 'full' : 'floating';
+    setPreviewMode(mode);
+    // Show artwork immediately
+    showPreviewArtwork(meta);
+    // Delayed video start
+    clearTimeout(previewTimer);
+    previewError = false;
+    previewLoading = true;
+    previewTimer = setTimeout(function () {
+      if (!previewActive && meta.preview) {
+        playPreviewVideo(meta.preview, mode);
+      }
+    }, previewDelay);
+  }
+
+  function playPreviewVideo(src, mode) {
+    if (!src) { return; }
+    var video = ensurePreviewVideo();
+    if (mode === 'full') {
+      var wallpaper = $('wallpaper');
+      if (wallpaper && video.parentNode !== wallpaper) { wallpaper.appendChild(video); }
+    } else {
+      var floating = $('preview-floating');
+      if (floating && video.parentNode !== floating) { floating.appendChild(video); }
+    }
+    previewActive = true;
+    previewLoading = true;
+    video.src = src;
+    video.load();
+    video.play().catch(function (e) {
+      // Autoplay blocked — keep artwork visible
+      previewError = true;
+      report('Preview playback blocked by browser policy; showing artwork.');
+    });
+  }
+
+  function cancelPreview() {
+    clearTimeout(previewTimer);
+    stopPreview();
+  }
+
+  // Expose for navigation focus handlers
+  window.B1ackha7Preview = {
+    start: startPreview,
+    stop: cancelPreview,
+    setMode: setPreviewMode,
+    isActive: function () { return previewActive; }
+  };
   function retryPreview() {
     prefs.preview = true; previewBlocked = false; previewNeedsShow = true;
     save(); updatePreviewToggle();
@@ -1297,5 +1498,150 @@ document.addEventListener('DOMContentLoaded', () => {
   if (appsCategory) { appsCategory.onchange = renderAppsPage; }
   if (appsSort) { appsSort.onchange = renderAppsPage; }
   if (appsRefresh) { appsRefresh.onclick = refreshApps; }
+
+  // ==========================================================================
+  // SEARCH PAGE
+  // ==========================================================================
+  var POPULAR_SEARCHES = [
+    'Netflix', 'YouTube', 'Prime Video', 'Disney+', 'Hulu', 'Apple TV',
+    'Spotify', 'Plex', 'Twitch', 'Xbox', 'Steam', 'Settings'
+  ];
+
+  function renderSearchPage() {
+    var results = $('search-results');
+    var appsGrid = $('search-apps');
+    var chips = $('search-popular');
+    var empty = $('search-empty');
+    if (!results || !appsGrid || !chips) { return; }
+
+    var query = ($('search-input') || {}).value || '';
+    query = query.trim();
+
+    if (!query) {
+      results.hidden = true;
+      empty.hidden = true;
+      // Show popular searches as chips
+      chips.innerHTML = '';
+      POPULAR_SEARCHES.forEach(function (term) {
+        var chip = document.createElement('button');
+        chip.className = 'search-chip';
+        chip.textContent = term;
+        chip.onclick = function () {
+          var input = $('search-input');
+          if (input) { input.value = term; input.focus(); renderSearchPage(); }
+        };
+        chips.appendChild(chip);
+      });
+      return;
+    }
+
+    results.hidden = false;
+    empty.hidden = true;
+    var q = query.toLowerCase();
+
+    // Filter installed apps by name
+    var matches = apps.filter(function (app) {
+      if (!app || app.show === false) { return false; }
+      return (app.name || app.id).toLowerCase().indexOf(q) !== -1;
+    });
+    matches.sort(function (a, b) { return (a.name || a.id).localeCompare(b.name || b.id); });
+
+    appsGrid.innerHTML = '';
+    if (matches.length) {
+      matches.forEach(function (app) {
+        var item = document.createElement('button');
+        item.className = 'app-grid-item';
+        item.setAttribute('data-app-id', app.id);
+        item.setAttribute('aria-label', app.name || app.id);
+
+        var icon = document.createElement('span');
+        icon.className = 'app-icon';
+        var initial = document.createElement('span');
+        initial.className = 'initial';
+        initial.textContent = (app.name || '?').slice(0, 2).toUpperCase();
+        icon.appendChild(initial);
+        loadAppIcon(app, item, initial);
+
+        var name = document.createElement('span');
+        name.className = 'app-name';
+        name.textContent = app.name || app.id;
+
+        item.appendChild(icon);
+        item.appendChild(name);
+        item.onclick = function () { launch(app.id, app.name || app.id); };
+        appsGrid.appendChild(item);
+      });
+    } else {
+      var msg = document.createElement('p');
+      msg.className = 'empty-state';
+      msg.textContent = 'No installed apps match "' + query + '".';
+      appsGrid.appendChild(msg);
+    }
+
+    // Filter popular searches by query
+    chips.innerHTML = '';
+    var popularMatches = POPULAR_SEARCHES.filter(function (term) {
+      return term.toLowerCase().indexOf(q) !== -1;
+    });
+    if (!popularMatches.length) {
+      popularMatches = POPULAR_SEARCHES.slice(0, 6);
+    }
+    popularMatches.forEach(function (term) {
+      var chip = document.createElement('button');
+      chip.className = 'search-chip';
+      chip.textContent = term;
+      chip.onclick = function () {
+        var input = $('search-input');
+        if (input) { input.value = term; input.focus(); renderSearchPage(); }
+      };
+      chips.appendChild(chip);
+    });
+
+    try { lucide.createIcons(); } catch (e) { /* ignore */ }
+  }
+
+  var searchInput = $('search-input');
+  var searchClear = $('search-clear');
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      if (searchClear) { searchClear.hidden = !this.value; }
+      renderSearchPage();
+    });
+    searchInput.addEventListener('focus', function () {
+      var bar = this.parentElement;
+      if (bar) { bar.classList.add('focused'); }
+      var kb = $('search-keyboard');
+      if (kb) { kb.hidden = false; }
+    });
+  }
+  if (searchClear) {
+    searchClear.addEventListener('click', function () {
+      var input = $('search-input');
+      if (input) { input.value = ''; input.focus(); }
+      if (searchClear) { searchClear.hidden = true; }
+      renderSearchPage();
+    });
+  }
+
+  // On-screen keyboard
+  var keyboard = $('search-keyboard');
+  if (keyboard) {
+    keyboard.addEventListener('click', function (e) {
+      var key = e.target.closest('.key');
+      if (!key) { return; }
+      var k = key.getAttribute('data-key');
+      var input = $('search-input');
+      if (!input) { return; }
+      if (k === 'SPACE') { input.value += ' '; }
+      else if (k === 'BACK') { input.value = input.value.slice(0, -1); }
+      else { input.value += k.toLowerCase(); }
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      key.classList.add('active');
+      setTimeout(function () { key.classList.remove('active'); }, 120);
+    });
+  }
+
+  // Show popular searches on first visit
+  renderSearchPage();
 
 }());
