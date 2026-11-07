@@ -9,6 +9,7 @@
 <script src="audio-controller.js"></script>
 <script src="tizen-service.js" defer></script>
 <script src="main.js" defer></script>
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
 </head>
 <body>
 <div id="wallpaper" aria-hidden="true"></div>
@@ -29,7 +30,7 @@
 <main id="content" role="main">
 <!-- Backward-compatible elements for tests (visible test overlay for click interactions) -->
   <div id="library" style="position:fixed;top:calc(var(--header-height) + var(--space-xl));left:calc(var(--sidebar-width) + var(--space-lg));width:300px;height:300px;opacity:0;pointer-events:auto;z-index:50;" aria-hidden="true">
-    <div class="section-title"><h2 id="library-title">Your main apps</h2><span id="app-count"></span></div>
+    <div class="section-title"><h2 id="library-title">Apps</h2><span id="app-count"></span></div>
     <p id="launch-feedback" role="status" hidden></p>
     <p id="edit-hint" hidden>Select an app to add or remove its Home shortcut. Your apps stay installed.</p>
     <p id="catalog-mode" class="catalog-mode" aria-live="polite"></p>
@@ -41,10 +42,9 @@
   <button id="edit-apps-home" class="icon-btn" aria-label="Edit apps" style="position:fixed;top:calc(var(--header-height) + var(--space-xl));left:calc(var(--sidebar-width) + var(--space-lg));z-index:100;"><span data-lucide="pencil" aria-hidden="true"></span></button>
 
   <!-- Search page -->
-  <section id="search-page" class="page-section search-page" hidden aria-label="Search">
+  <section id="page-search" class="page-section search-page" hidden aria-label="Search">
     <div class="search-hero">
       <h2 class="page-title">Search</h2>
-      <p class="page-subtitle">Find your favourite apps, games and content</p>
     </div>
     <div class="search-bar">
       <span class="search-icon" data-lucide="search" aria-hidden="true"></span>
@@ -62,7 +62,7 @@
       </div>
     </div>
     <div id="search-empty" class="search-empty" hidden>
-      <p>Start typing to search your installed apps and games.</p>
+      
     </div>
     <div id="search-keyboard" class="search-keyboard" hidden aria-label="On-screen keyboard">
       <div class="keyboard-row">
@@ -80,10 +80,9 @@
   </section>
 
   <!-- Apps page -->
-  <section id="apps-page" class="page-section" hidden aria-label="Applications">
+  <section id="page-apps" class="page-section" hidden aria-label="Applications">
     <div class="page-head">
       <h2 class="page-title">Apps</h2>
-      <p class="page-subtitle">Your installed applications</p>
     </div>
     <div class="page-controls">
       <div class="filter-group">
@@ -104,14 +103,13 @@
       </div>
     </div>
     <div class="apps-grid" id="apps-grid" role="list" aria-label="Installed applications"></div>
-    <p id="apps-empty" class="empty-state" hidden>No apps found. Try adjusting filters or show system entries in Settings.</p>
+    <p id="apps-empty" class="empty-state" hidden>No apps</p>
   </section>
 
   <!-- Games page -->
   <section id="page-games" class="page-section" hidden aria-label="Games">
     <div class="page-head">
       <h2 class="page-title">Games</h2>
-      <p class="page-subtitle">Discover and play games</p>
     </div>
     <div class="xbox-feature" id="xbox-feature" hidden>
       <div class="xbox-artwork" aria-hidden="true"></div>
@@ -127,14 +125,13 @@
       </button>
     </div>
     <div class="games-grid" id="games-grid" role="list" aria-label="Other games"></div>
-    <p id="games-empty" class="empty-state" hidden>No games found. Xbox and other games will appear here when detected.</p>
+    <p id="games-empty" class="empty-state" hidden>No games</p>
   </section>
 
   <!-- Recent page -->
   <section id="page-recent" class="page-section" hidden aria-label="Recent">
     <div class="page-head">
       <h2 class="page-title">Recent</h2>
-      <p class="page-subtitle">Recently launched apps and games</p>
     </div>
     <div class="page-controls">
       <div class="filter-group">
@@ -142,22 +139,21 @@
       </div>
     </div>
     <div class="recent-list" id="recent-list" role="list" aria-label="Recent apps"></div>
-    <p id="recent-empty" class="empty-state" hidden>No recent apps yet. Launch apps from Home or Apps to see them here.</p>
+    <p id="recent-empty" class="empty-state" hidden>No recent apps</p>
   </section>
 
   <!-- Inputs page -->
   <section id="page-inputs" class="page-section" hidden aria-label="Inputs">
     <div class="page-head">
       <h2 class="page-title">Inputs</h2>
-      <p class="page-subtitle">Select input source</p>
     </div>
     <div class="inputs-grid" id="inputs-grid" role="list" aria-label="Input sources"></div>
-    <p id="inputs-empty" class="empty-state" hidden>No input sources detected.</p>
+    <p id="inputs-empty" class="empty-state" hidden>No inputs</p>
   </section>
 
-  <section id="settings" class="settings-screen" hidden aria-label="Kipsmthn TV settings">
+  <section id="page-settings" class="settings-screen" hidden aria-label="Kipsmthn TV settings">
     <header class="settings-topbar">
-      <div class="settings-brand"><span class="settings-brand-mark">K</span><span>KIPSMTHN <b>TV</b></span></div>
+      <div class="settings-brand"><img class="settings-brand-mark" src="assets/icon-source.svg" alt=""><span>KIPSMTHN <b>TV</b></span></div>
       <nav class="settings-global-nav" aria-label="Main destinations">
         <button type="button" data-settings-destination="home">Home</button><button type="button" data-settings-destination="apps">Apps</button><button type="button" data-settings-destination="inputs">Live TV</button>
       </nav>
@@ -165,7 +161,7 @@
     </header>
     <div class="settings-workspace">
       <aside class="settings-sidebar" aria-label="Settings categories">
-        <div class="settings-sidebar-heading"><span>SETTINGS</span><p>Customise your Kipsmthn TV experience.</p></div>
+        <div class="settings-sidebar-heading"><span>SETTINGS</span></div>
         <ul class="settings-categories">
           <li><button class="settings-category active" data-panel="general" aria-current="true"><span data-lucide="sliders-horizontal"></span><span><b>General</b><small>Core preferences</small></span></button></li>
           <li><button class="settings-category" data-panel="appearance"><span data-lucide="palette"></span><span><b>Appearance</b><small>Theme and wallpaper</small></span></button></li>
@@ -179,25 +175,24 @@
       </aside>
       <div class="settings-content-shell">
         <main class="settings-panel" id="settings-panel-general" role="tabpanel" aria-labelledby="general-heading">
-          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="sliders-horizontal"></span><div><h2 id="general-heading">General</h2><p>Your Kipsmthn TV experience, made personal.</p></div></div>
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="sliders-horizontal"></span><div><h2 id="general-heading">General</h2></div></div>
           <section class="settings-group"><h3>Application Behaviour</h3>
             <div class="setting-row"><div class="setting-label"><strong>Default Home Screen</strong><small>Choose the first destination when opening the app</small></div><div class="setting-control"><select id="home-destination" class="setting-select" data-pref="homeDestination"><option value="home">Home</option><option value="apps">Apps</option><option value="recent">Recently used</option></select></div></div>
-            <div class="setting-row"><div class="setting-label"><strong>Default Home destination</strong><small>Used when Kipsmthn TV launches. Samsung controls app startup.</small></div><div class="setting-control"><span class="settings-status-pill">Launcher preference</span></div></div>
-            <div class="setting-row"><div class="setting-label"><strong>Continue Watching</strong><small>Show sample picks on the Home screen</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showContinue" aria-label="Continue Watching"></button></div></div>
+                        <div class="setting-row"><div class="setting-label"><strong>Continue Watching</strong><small>Show sample picks on the Home screen</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showContinue" aria-label="Continue Watching"></button></div></div>
             <div class="setting-row"><div class="setting-label"><strong>Recently Watched</strong><small>Show recently launched apps on Home</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showRecent" aria-label="Recently Watched"></button></div></div>
           </section>
-          <section class="settings-group"><h3>Launcher Preferences</h3><p class="settings-note">These controls change Kipsmthn TV only. Samsung Tizen system configuration remains in the TV's native Settings.</p></section>
-          <section class="settings-group"><h3>Reset Options</h3><div class="setting-row"><div class="setting-label"><strong>Reset Settings</strong><small>Restore Kipsmthn preferences to their defaults</small></div><div class="setting-control"><button id="settings-reset" class="setting-btn danger" type="button">Reset settings</button></div></div></section>
+          
+          <section class="settings-group" id="launcher-name-setting"><h3>Launcher name</h3><div class="setting-row"><div class="setting-label"><strong>Name</strong></div><div class="setting-control"><input id="launcher-name" type="text" maxlength="32" aria-label="Launcher name"><button id="name-save" class="setting-btn" type="button">Save</button><button id="name-reset" class="setting-btn" type="button">Reset</button></div></div></section>
+<section class="settings-group"><h3>Reset Options</h3><div class="setting-row"><div class="setting-label"><strong>Reset Settings</strong><small>Restore Kipsmthn preferences to their defaults</small></div><div class="setting-control"><button id="settings-reset" class="setting-btn danger" type="button">Reset settings</button></div></div></section>
         </main>
         <main class="settings-panel" id="settings-panel-appearance" hidden role="tabpanel" aria-labelledby="appearance-heading">
-          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="palette"></span><div><h2 id="appearance-heading">Appearance</h2><p>Set the atmosphere for your screen.</p></div></div>
-          <section class="settings-group"><h3>Theme</h3><div class="setting-row"><div class="setting-label"><strong>Colour theme</strong><small>Choose a Kipsmthn colour palette</small></div><div class="setting-control"><select id="theme-select" class="setting-select" aria-label="Colour theme"><option value="cinematic">Cinematic</option><option value="midnight">Midnight</option><option value="aurora">Aurora</option><option value="ember">Ember</option></select></div></div></section>
-          <section class="settings-group"><h3>Wallpaper</h3><p class="settings-group-description">These bundled landscape scenes are illustrations; no suitable photographic wallpaper was present in the local project.</p><div id="wallpaper-gallery" class="settings-wallpaper-gallery" aria-label="Wallpaper choices"></div><div class="setting-row"><div class="setting-label"><strong>Packaged image</strong><small>Optional image path within the app package</small></div><div class="setting-control"><input id="background-path-enhanced" type="text" placeholder="assets/background.jpg" maxlength="180" aria-label="Custom background image path"><button id="background-apply" class="setting-btn" type="button">Apply image</button></div></div></section>
-          <section class="settings-group"><h3>Visual Effects</h3><div class="setting-row"><div class="setting-label"><strong>Interface animations</strong><small>Premium focus and page transitions</small></div><div class="setting-control"><button id="animations-toggle" class="setting-toggle" type="button" data-pref="animations" aria-label="Interface animations"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Reduced motion</strong><small>Shorten transitions and disable wallpaper movement</small></div><div class="setting-control"><button id="reduced-motion-toggle" class="setting-toggle" type="button" data-pref="reducedMotion" aria-label="Reduced motion"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Interface sounds</strong><small>Subtle remote navigation and selection cues</small></div><div class="setting-control"><button id="sounds-toggle" class="setting-toggle" type="button" data-pref="sounds" aria-label="Interface sounds"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Sound volume</strong><small>Adjust the interface cue level</small></div><div class="setting-control"><input id="sound-volume" type="range" min="0" max="100" step="1" value="25" aria-label="Sound volume"><output id="sound-volume-value" for="sound-volume">25%</output></div></div><div class="setting-row"><div class="setting-label"><strong>Startup sound</strong><small>Play a short signature on first interaction</small></div><div class="setting-control"><button id="startup-sound-toggle" class="setting-toggle" type="button" data-pref="startupSound" aria-label="Startup sound"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Background blur</strong><small>Glass surfaces use translucent blur where supported</small></div><div class="setting-control"><span class="settings-status-pill">Automatic</span></div></div><div class="setting-row"><div class="setting-label"><strong>Panel transparency</strong><small>Use the cinematic glass surface</small></div><div class="setting-control"><span class="settings-status-pill">Balanced</span></div></div></section>
-          <div class="legacy-controls" aria-hidden="true"><input id="launcher-name" value="Kipsmthn"><button id="name-save" type="button">Save name</button><button id="name-reset" type="button">Reset</button></div>
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="palette"></span><div><h2 id="appearance-heading">Appearance</h2></div></div>
+          <section class="settings-group"><h3>Theme</h3><div class="setting-row"><div class="setting-label"><strong>Colour theme</strong></div><div class="setting-control"><select id="theme-select" class="setting-select" aria-label="Colour theme"><option value="cinematic">Cinematic</option><option value="midnight">Midnight</option><option value="aurora">Aurora</option><option value="ember">Ember</option></select></div></div></section>
+          <section class="settings-group"><h3>Wallpaper</h3><div id="wallpaper-gallery" class="settings-wallpaper-gallery" aria-label="Wallpaper choices"></div><div class="setting-row"><div class="setting-label"><strong>Packaged image</strong><small>Optional image path within the app package</small></div><div class="setting-control"><input id="background-path-enhanced" type="text" placeholder="assets/background.jpg" maxlength="180" aria-label="Custom background image path"><button id="background-apply" class="setting-btn" type="button">Apply image</button></div></div></section>
+          <section class="settings-group"><h3>Visual Effects</h3><div class="setting-row"><div class="setting-label"><strong>Interface animations</strong></div><div class="setting-control"><button id="animations-toggle" class="setting-toggle" type="button" data-pref="animations" aria-label="Interface animations"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Reduced motion</strong><small>Shorten transitions and disable wallpaper movement</small></div><div class="setting-control"><button id="reduced-motion-toggle" class="setting-toggle" type="button" data-pref="reducedMotion" aria-label="Reduced motion"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Interface sounds</strong><small>Subtle remote navigation and selection cues</small></div><div class="setting-control"><button id="sounds-toggle" class="setting-toggle" type="button" data-pref="sounds" aria-label="Interface sounds"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Sound volume</strong><small>Adjust the interface cue level</small></div><div class="setting-control"><input id="sound-volume" type="range" min="0" max="100" step="1" value="25" aria-label="Sound volume"><output id="sound-volume-value" for="sound-volume">25%</output></div></div><div class="setting-row"><div class="setting-label"><strong>Startup sound</strong><small>Play a short signature on first interaction</small></div><div class="setting-control"><button id="startup-sound-toggle" class="setting-toggle" type="button" data-pref="startupSound" aria-label="Startup sound"></button></div></div></section>
         </main>
         <main class="settings-panel" id="settings-panel-personalisation" hidden role="tabpanel" aria-labelledby="personalisation-heading">
-          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="layout-dashboard"></span><div><h2 id="personalisation-heading">Personalisation</h2><p>Choose what appears on your Home screen.</p></div></div>
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="layout-dashboard"></span><div><h2 id="personalisation-heading">Personalisation</h2></div></div>
           <section class="settings-group"><h3>Home Screen Rows</h3>
             <div class="setting-row"><div class="setting-label"><strong>Your apps</strong><small>Show your pinned app shortcuts</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showApps" aria-label="Your apps"></button></div></div>
             <div class="setting-row"><div class="setting-label"><strong>Continue Watching</strong><small>Show demonstration picks, not account viewing history</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showContinue" aria-label="Continue Watching row"></button></div></div>
@@ -206,26 +201,26 @@
           </section>
         </main>
         <main class="settings-panel" id="settings-panel-playback" hidden role="tabpanel" aria-labelledby="playback-heading">
-          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="play-circle"></span><div><h2 id="playback-heading">Playback</h2><p>Playback is handled by the selected streaming application.</p></div></div>
-          <section class="settings-group"><h3>Playback Preferences</h3><div class="setting-row"><div class="setting-label"><strong>Resume playback</strong><small>Resume support is managed by each streaming service</small></div><div class="setting-control"><span class="settings-status-pill">Service controlled</span></div></div><div class="setting-row"><div class="setting-label"><strong>Autoplay</strong><small>Autoplay is managed within each streaming application</small></div><div class="setting-control"><span class="settings-status-pill">Service controlled</span></div></div><div class="setting-row"><div class="setting-label"><strong>Subtitles &amp; audio</strong><small>Language and subtitle controls are provided by the player</small></div><div class="setting-control"><span class="settings-status-pill">Service controlled</span></div></div><p class="settings-note">Kipsmthn TV does not play video or have access to streaming-service playback preferences.</p></section>
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="play-circle"></span><div><h2 id="playback-heading">Playback</h2></div></div>
+          <section class="settings-group"><h3>Playback Preferences</h3><div class="setting-row"><div class="setting-label"><strong>Resume playback</strong><small>Resume support is managed by each streaming service</small></div><div class="setting-control"><span class="settings-status-pill">Service controlled</span></div></div><div class="setting-row"><div class="setting-label"><strong>Autoplay</strong><small>Autoplay is managed within each streaming application</small></div><div class="setting-control"><span class="settings-status-pill">Service controlled</span></div></div><div class="setting-row"><div class="setting-label"><strong>Subtitles &amp; audio</strong><small>Language and subtitle controls are provided by the player</small></div><div class="setting-control"><span class="settings-status-pill">Service controlled</span></div></div></section>
         </main>
         <main class="settings-panel" id="settings-panel-apps" hidden role="tabpanel" aria-labelledby="apps-heading">
-          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="grid-2x2"></span><div><h2 id="apps-heading">Apps &amp; Integrations</h2><p>Applications detected on this device.</p></div></div>
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="grid-2x2"></span><div><h2 id="apps-heading">Apps &amp; Integrations</h2></div></div>
           <div class="setting-row"><div class="setting-label"><strong>Show system applications</strong><small>Include system entries in the app catalogue</small></div><div class="setting-control"><button id="system-toggle" class="setting-toggle" type="button" aria-label="Show system applications" data-pref="system"></button></div></div>
           <div class="setting-row"><div class="setting-label"><strong>Installed applications</strong><small>Refresh the device application list</small></div><div class="setting-control"><button id="apps-refresh-settings" class="setting-btn" type="button">Refresh apps</button><button id="manage-visibility" class="setting-btn" type="button">Manage Home apps</button></div></div>
           <section class="settings-group"><h3>Availability &amp; Integrations</h3><p id="settings-apps-status" class="settings-note">Checking applications…</p><div id="settings-installed-apps" class="settings-app-list"></div><p id="icon-status" class="settings-note"></p></section>
         </main>
         <main class="settings-panel" id="settings-panel-network" hidden role="tabpanel" aria-labelledby="network-heading">
-          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="wifi"></span><div><h2 id="network-heading">Network &amp; Connectivity</h2><p>Connection services available to the application.</p></div></div>
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="wifi"></span><div><h2 id="network-heading">Network &amp; Connectivity</h2></div></div>
           <section class="settings-group"><h3>Launcher integrations</h3><p class="settings-note">Kipsmthn does not configure Wi-Fi or other Samsung system connections. Network and Bluetooth settings remain under the TV's native Settings.</p><div class="setting-row"><div class="setting-label"><strong>TV input integration</strong><small>Read and switch sources when the TV exposes the supported Tizen API</small></div><div class="setting-control"><span id="settings-source-label">Checking…</span><button id="sources-refresh" class="setting-btn" type="button">Check TV inputs</button></div></div><div id="sources" class="settings-source-list" aria-label="TV-reported connected inputs"></div></section>
-          <section class="settings-group"><h3>External applications</h3><p id="settings-connectivity-info" class="settings-note">Kipsmthn does not connect to streaming services or control their network status. Use each installed app for service configuration.</p></section>
+          <section class="settings-group"><h3>External applications</h3><p id="settings-connectivity-info" class="settings-note">Service settings are managed by each app.</p></section>
         </main>
         <main class="settings-panel" id="settings-panel-system" hidden role="tabpanel" aria-labelledby="system-heading">
-          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="cpu"></span><div><h2 id="system-heading">System &amp; Device</h2><p>Runtime environment and application diagnostics.</p></div></div>
+          <div class="settings-panel-heading"><span class="settings-heading-icon" data-lucide="cpu"></span><div><h2 id="system-heading">System &amp; Device</h2></div></div>
           <section class="settings-group"><h3>Launcher &amp; Device Runtime</h3><div class="setting-row"><div class="setting-label"><strong>Runtime</strong></div><div class="setting-control"><span id="tizen-env">Checking…</span></div></div><div class="setting-row"><div class="setting-label"><strong>Application API access</strong></div><div class="setting-control"><span id="tv-integration">Checking…</span></div></div><div class="setting-row"><div class="setting-label"><strong>Kipsmthn version</strong></div><div class="setting-control"><span>0.8.0</span></div></div><div class="setting-row"><div class="setting-label"><strong>Samsung native TV Settings</strong><small>Shortcut only; Kipsmthn does not change OS settings</small></div><div class="setting-control"><button id="tv-settings-open-enhanced" class="setting-btn" type="button">Open native Settings</button></div></div><p id="tv-settings-status" role="status" class="settings-note">Direct opening is attempted only through the Tizen app-control API when present. Otherwise use Home on your Samsung remote.</p><details class="settings-details"><summary>Launcher diagnostics</summary><pre id="diagnostics"></pre></details></section>
         </main>
         <main class="settings-panel" id="settings-panel-about" hidden role="tabpanel" aria-labelledby="about-heading">
-          <div class="settings-panel-heading"><span class="settings-heading-icon settings-about-mark">K</span><div><h2 id="about-heading">About Kipsmthn</h2><p>Your entertainment, in one place.</p></div></div>
+          <div class="settings-panel-heading"><img class="settings-heading-icon settings-about-mark" src="assets/icon-source.svg" alt=""><div><h2 id="about-heading">About Kipsmthn</h2></div></div>
           <section class="settings-group"><h3>Kipsmthn TV</h3><div class="setting-row"><div class="setting-label"><strong>Application version</strong></div><div class="setting-control"><span>0.8.0</span></div></div><div class="setting-row"><div class="setting-label"><strong>Build information</strong></div><div class="setting-control"><span>Samsung Tizen TV · Kipsmthn0.Kipsmthn</span></div></div><div class="setting-row"><div class="setting-label"><strong>Project</strong><small>Open-source TV launcher</small></div><div class="setting-control"><span>Created by the Kipsmthn project</span></div></div><div class="setting-row"><div class="setting-label"><strong>Credits</strong><small>Lucide icons and local application assets</small></div><div class="setting-control"><span>Kipsmthn contributors</span></div></div><div class="setting-row"><div class="setting-label"><strong>Close launcher</strong></div><div class="setting-control"><button id="close-app-settings" class="setting-btn danger" type="button">Close app</button></div></div></section>
           <div class="legacy-controls" aria-hidden="true"><span id="app-discovery">Checking…</span><span id="input-integration">Checking…</span><span id="run-mode">Browser Preview</span></div>
         </main>
@@ -238,12 +233,9 @@
   <header class="header" role="banner">
     <div class="header-left">
       <div class="brand">
-        <span class="mark" id="launcher-mark">K</span>
+        <span class="mark" id="launcher-mark" role="img" aria-label="Kipsmthn brand icon">B7</span>
         <span id="launcher-title">Kipsmthn</span>
       </div>
-      <p class="eyebrow">YOUR ENTERTAINMENT, IN ONE PLACE</p>
-      <h1 id="greeting" class="greeting">Good evening</h1>
-      <p class="subtitle">Settle in. Your next favourite is waiting.</p>
     </div>
     <div class="header-right">
       <div class="header-top-bar">
@@ -274,12 +266,10 @@
   <section id="page-home" class="page-section home-page" aria-label="Home">
     <div class="hero" role="banner" style="pointer-events:none;">
       <p class="eyebrow">Your space. Your entertainment.</p>
-      <h1>Welcome to <em id="hero-title">Kipsmthn</em></h1>
     </div>
 
     <section id="apps-section" class="content-section" aria-labelledby="apps-section-title">
-    <h2 id="apps-section-title" class="section-title">Your apps</h2>
-    <p class="demo-disclaimer">Continue watching and trending artwork are sample demonstrations, not personal viewing history.</p>
+    <h2 id="apps-section-title" class="section-title">Apps</h2>
     <div class="carousel" id="apps-carousel" role="list" aria-label="Your apps">
       <button class="carousel-item active" data-app-id="youtube" role="listitem" aria-label="YouTube" aria-selected="true">
         <div class="app-tile youtube-tile"><img class="brand-artwork" src="assets/logos/youtube.svg" alt="YouTube"></div>
@@ -293,7 +283,7 @@
       <button class="carousel-item" data-app-id="all-apps" role="listitem" aria-label="All Apps" aria-selected="false">
         <div class="app-tile glass-tile">
           <span class="app-icon" data-lucide="layout-grid-circles" aria-hidden="true"></span>
-          <span class="app-name">All Apps</span>
+          <span class="app-name">Apps</span>
         </div>
       </button>
       <button class="carousel-item" data-app-id="hdmi1" role="listitem" aria-label="HDMI 1" aria-selected="false">
@@ -312,7 +302,7 @@
   </section>
 
   <section id="continue-section" class="content-section" aria-labelledby="continue-title">
-    <h2 id="continue-title" class="section-title">Sample picks</h2>
+    <h2 id="continue-title" class="section-title">Movies &amp; TV</h2>
     <div class="carousel" id="continue-carousel" role="list" aria-label="Continue watching">
       <button class="carousel-item continue-card" data-content-id="last-of-us" role="listitem" aria-label="The Last of Us - Continue S1 E3">
         <div class="card-bg" style="background-image: url('assets/posters/last-of-us.svg');"></div>
@@ -363,7 +353,7 @@
 
   <section id="recent-home-section" class="content-section" aria-labelledby="recent-home-title" hidden><h2 id="recent-home-title" class="section-title">Recently launched</h2><div id="recent-home-apps" class="carousel" role="list" aria-label="Recently launched apps"></div></section>
   <section id="trending-section" class="content-section" aria-labelledby="trending-title">
-    <h2 id="trending-title" class="section-title">Trending now</h2>
+    <h2 id="trending-title" class="section-title">Trending</h2>
     <div class="carousel" id="trending-carousel" role="list" aria-label="Trending now">
       <button class="carousel-item trending-card" data-content-id="trending-1" role="listitem" aria-label="Trending content 1">
         <div class="card-bg" style="background: linear-gradient(135deg, #2d1b3d 0%, #1a1a1a 100%);"></div>

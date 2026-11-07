@@ -25,7 +25,7 @@ const { pathToFileURL } = require('node:url');
     await page.goto(pathToFileURL(path.resolve('app/index.html')).href);
 
     await page.locator('[data-section="settings"]').click();
-    await page.locator('#settings:not([hidden])').waitFor();
+    await page.locator('#page-settings:not([hidden])').waitFor();
     assert.equal(await page.locator('.settings-category').count(), 8);
     await page.locator('[data-panel="appearance"]').click();
     await page.locator('#theme-select').selectOption('aurora');
@@ -59,7 +59,7 @@ const { pathToFileURL } = require('node:url');
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#settings-confirm').isHidden(), true);
     await page.keyboard.press('Escape');
-    await page.waitForFunction(() => document.getElementById('settings').hidden);
+    await page.waitForFunction(() => document.getElementById('page-settings').hidden);
     assert.deepEqual(errors, []);
     console.log('PASS: Settings navigation, theme and wallpaper selection, app listing, Home row persistence, native settings availability, reset dialog, and Back dismissal.');
     await context.close();

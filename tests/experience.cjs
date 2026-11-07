@@ -17,7 +17,7 @@ const { pathToFileURL } = require('node:url');
     const destinations = ['home', 'search', 'apps', 'games', 'recent', 'inputs', 'settings'];
     for (const destination of destinations) {
       await page.locator(`.sidebar-item[data-section="${destination}"]`).click();
-      const selector = destination === 'settings' ? '#settings' : destination === 'search' ? '#search-page' : destination === 'apps' ? '#apps-page' : `#page-${destination}`;
+      const selector = `#page-${destination}`;
       await page.locator(selector).waitFor({ state: 'visible' });
       assert.equal(await page.locator(`.sidebar-item[data-section="${destination}"]`).getAttribute('aria-current'), 'page');
       await page.screenshot({ path: path.resolve(`tests/screenshots/${destination}-1920x1080.png`), fullPage: true });

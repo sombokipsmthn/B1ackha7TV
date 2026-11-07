@@ -8,7 +8,7 @@
   var defaults = { name: 'Kipsmthn', theme: 'cinematic', background: '', backgroundVersion: 2, preview: true, system: false, favorites: null, recentApps: [], animations: true, sounds: true, soundVolume: 25, reducedMotion: false, startupSound: false, homeDestination: 'home', showApps: true, showContinue: true, showFeatured: true, showRecent: true };
   var prefs = Object.assign({}, defaults);
   var themes = {
-    cinematic: 'url("assets/wallpapers/cinematic-title.svg")',
+    cinematic: 'url("assets/wallpapers/twilight-mountains.svg")',
     midnight: 'radial-gradient(ellipse at 10% 0%,#244357 0%,transparent 55%),linear-gradient(130deg,#131b33,#090e1b)',
     aurora: 'radial-gradient(ellipse at 0% 0%,#24746c 0%,transparent 60%),linear-gradient(130deg,#20224c,#101426)',
     ember: 'radial-gradient(ellipse at 0% 0%,#854b39 0%,transparent 60%),linear-gradient(130deg,#3d263c,#121325)'
@@ -97,7 +97,6 @@
   function clock() {
     if ($('clock')) { $('clock').textContent = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }); }
     if ($('date')) { $('date').textContent = new Date().toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' }); }
-    if ($('greeting')) { var h = new Date().getHours(); $('greeting').textContent = h < 12 ? 'Good morning' : (h < 17 ? 'Good afternoon' : 'Good evening'); }
     if ($('clock')) { $('clock').setAttribute('datetime', new Date().toISOString()); }
   }
 
@@ -119,14 +118,14 @@
       showPage.transitionTimer = setTimeout(function () { document.body.classList.remove('page-transition'); }, prefs.reducedMotion ? 120 : 300);
     }
     Array.prototype.forEach.call($$('.page-section'), function (section) {
-      var sectionId = page === 'search' ? 'search-page' : (page === 'apps' ? 'apps-page' : 'page-' + page);
+      var sectionId = 'page-' + page;
       section.hidden = section.id !== sectionId;
     });
-    if ($('settings')) { $('settings').hidden = page !== 'settings'; }
+    if ($('page-settings')) { $('page-settings').hidden = page !== 'settings'; }
     setActiveNavigation(page);
     if (page === 'settings') { selectSettingsPanel(currentPanel); refreshSources(); var firstCategory = document.querySelector('.settings-category.active'); if (firstCategory && pageChanged) { firstCategory.focus(); } }
     else {
-      var pageRoot = $(page === 'search' ? 'search-page' : (page === 'apps' ? 'apps-page' : 'page-' + page));
+      var pageRoot = $('page-' + page);
       if (pageRoot) { var first = pageRoot.querySelector('button,input,select,[tabindex="0"]'); if (first && pageChanged && page !== 'home') { first.focus(); } else if (pageChanged) { var navButton = document.querySelector('.sidebar-item[data-section="' + page + '"]'); if (navButton) { navButton.focus(); } } }
       if (page === 'apps') { renderAppsPage(); }
       else if (page === 'games') { renderGames(); }
@@ -232,7 +231,7 @@
     visible.sort(function (a, b) { return prefs.favorites.indexOf(a.id) - prefs.favorites.indexOf(b.id); });
     library.textContent = '';
     visible.forEach(function (app) { library.appendChild(createAppButton(app, true, 'app')); });
-    if ($('library-title')) { $('library-title').textContent = editingApps ? 'Add or remove apps' : 'Your main apps'; }
+    if ($('library-title')) { $('library-title').textContent = editingApps ? 'Edit apps' : 'Apps'; }
     if ($('apps-section')) { $('apps-section').hidden = !prefs.showApps; }
     if ($('continue-section')) { $('continue-section').hidden = !prefs.showContinue; }
     if ($('trending-section')) { $('trending-section').hidden = !prefs.showFeatured; }
@@ -240,7 +239,7 @@
     if ($('catalog-mode')) { $('catalog-mode').textContent = TizenService.isTV() ? 'Installed apps from this TV' : 'Browser preview · demonstration apps'; }
     if ($('app-count')) { $('app-count').textContent = visible.length + (editingApps ? ' available' : ' on Home'); }
     if ($('edit-hint')) { $('edit-hint').hidden = !editingApps; }
-    if ($('empty')) { $('empty').hidden = visible.length > 0; if (!visible.length) { $('empty').textContent = 'Choose Edit apps to add your favorite apps to Home.'; } }
+    if ($('empty')) { $('empty').hidden = visible.length > 0; if (!visible.length) { $('empty').textContent = 'No apps'; } }
   }
   function filterApps(apps, query) {
     var term = (query || '').trim().toLowerCase();
@@ -335,7 +334,7 @@
     var list = $('settings-installed-apps'), status = $('settings-apps-status'); if (!list) { return; }
     list.textContent = '';
     var catalog = uniqueApps().catalog;
-    if (status) { status.textContent = TizenService.isTV() ? (catalog.length + ' applications discovered on this Samsung TV. Integration status is reported by the TV app catalogue.') : 'Browser preview uses a demonstration catalogue; apps are not installed or connected.'; }
+    if (status) { status.textContent = TizenService.isTV() ? (catalog.length + ' apps') : 'Demo apps · not installed'; }
     catalog.slice(0, 16).forEach(function (app) {
       var row = document.createElement('div'), name = document.createElement('span'), state = document.createElement('span');
       row.className = 'settings-app-row'; name.textContent = app.name || app.id;
@@ -521,7 +520,7 @@
     try { TizenService.exitApp(); } catch (error) { launching = false; exitDialog(false); report('Could not close the app.', error); syncPreview(); }
   }
   function visibleControls() {
-    var root = !$('exit-dialog').hidden ? $('exit-dialog') : (!$('settings-confirm').hidden ? $('settings-confirm') : (!$('settings').hidden ? $('settings') : document));
+    var root = !$('exit-dialog').hidden ? $('exit-dialog') : (!$('settings-confirm').hidden ? $('settings-confirm') : (!$('page-settings').hidden ? $('page-settings') : document));
     return Array.prototype.filter.call(root.querySelectorAll('button,input,select,summary'), function (element) { return !element.disabled && element.getClientRects().length > 0; });
   }
   function moveFocus(code) {
