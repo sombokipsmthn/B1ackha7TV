@@ -28,39 +28,35 @@ trust_anchor: []
 # list of files in web project (.html,.css etc) and resources
 files:
   - css/cinematic.css
+  - lib/utils.js
+  - components/ui/index.js
   - icon.png
   - index.html
   - main.js
+  - photo-library.js
   - audio-controller.js
+  - motion-system.js
   - tizen-service.js
-  - assets/lucide.js
+  - icon-resolver.js
   - assets/lucide.min.js
-  - assets/prime-video.svg
-  - assets/icon-source.svg
   - assets/VWMK740-01059.jpg
-  - assets/logos/youtube.svg
-  - assets/logos/netflix.svg
-  - assets/logos/prime-video.svg
   - assets/audio/navigation.wav
   - assets/audio/selection.wav
   - assets/audio/back.wav
   - assets/audio/error.wav
   - assets/audio/startup.wav
-  - assets/posters/last-of-us.svg
-  - assets/posters/dune.svg
-  - assets/posters/ted-lasso.svg
-  - assets/posters/our-planet.svg
-  - assets/wallpapers/cinematic-title.svg
-  - assets/fonts/material-icons.css
-  - assets/fonts/material-symbols-outlined.woff
-  - assets/fonts/material-symbols-outlined.woff2
-  - assets/fonts/MaterialSymbolsOutlined-subset.ttf
-  - assets/fonts/MaterialSymbolsOutlined-subset.woff2
-  - assets/wallpapers/abstract-gradient.svg
-  - assets/wallpapers/earth-space.svg
-  - assets/wallpapers/lake-dusk.svg
-  - assets/wallpapers/northern-lights.svg
-  - assets/wallpapers/twilight-mountains.svg
+  - assets/photos/desert-cinema.jpg
+  - assets/photos/evening-sky.jpg
+  - assets/photos/lake-dusk.jpg
+  - assets/photos/live-music.jpg
+  - assets/photos/moody-forest.jpg
+  - assets/photos/night-sky.jpg
+  - assets/photos/nocturnal-city.jpg
+  - assets/photos/photography.jpg
+  - assets/photos/quiet-architecture.jpg
+  - assets/photos/studio-music.jpg
+  - assets/photos/twilight-mountains.jpg
+  - assets/photos/video-camera.jpg
 
 # list of files to exclude based on the matched patterns
 excludes:

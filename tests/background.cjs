@@ -8,22 +8,22 @@ for(const legacy of [false,true]){
  });
  const page=await context.newPage(),requests=[];page.on('request',r=>requests.push(r.url()));
  await page.goto(pathToFileURL(path.resolve('app/index.html')).href);
- // Default cinematic theme uses packaged twilight mountain artwork (non-legacy case)
+ // Default cinematic theme uses locally packaged Unsplash mountain photography.
  if (!legacy) {
    const wallpaperStyle = await page.locator('#wallpaper').getAttribute('style');
-   assert.ok(wallpaperStyle.includes('url(') && wallpaperStyle.includes('twilight-mountains.svg'));
-   assert.ok(requests.some(url=>url.endsWith('twilight-mountains.svg')));
+   assert.ok(wallpaperStyle.includes('twilight-mountains.jpg'));
+   assert.ok(requests.some(url=>url.endsWith('twilight-mountains.jpg')));
  } else {
-   // Legacy case migrates to aurora gradient (no image)
+   // Legacy theme preference migrates to its monochrome gradient.
    assert.ok(!(await page.locator('#wallpaper').getAttribute('style')).includes('url('));
-   assert.ok(!requests.some(url=>url.endsWith('.jpg')));
+   assert.ok(!requests.some(url=>url.endsWith('old-background.jpg')));
  }
  if(legacy){const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('kipsmthn.settings.v1') || localStorage.getItem('b1ackha7tv.settings.v1')));assert.equal(saved.backgroundVersion,2);assert.deepEqual(saved.favorites,['saved.app']);assert.equal(saved.preview,false);}
  // Navigate to settings via sidebar
  await page.locator('#settings-open').click();await page.locator('[data-panel="appearance"]').click();
  await page.locator('#theme-select').selectOption('ember');
  await page.reload();
- // Ember theme uses gradient (no image)
+ // Ember theme keeps the monochrome gradient.
  const wallpaperStyle = await page.locator('#wallpaper').getAttribute('style');
  assert.ok(!wallpaperStyle.includes('url('));
  await context.close();

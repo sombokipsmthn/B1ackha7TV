@@ -8,20 +8,21 @@
   var defaults = { name: 'Kipsmthn', theme: 'cinematic', background: '', backgroundVersion: 2, preview: true, system: false, favorites: null, recentApps: [], animations: true, sounds: true, soundVolume: 25, reducedMotion: false, startupSound: false, homeDestination: 'home', showApps: true, showContinue: true, showFeatured: true, showRecent: true };
   var prefs = Object.assign({}, defaults);
   var themes = {
-    cinematic: 'url("assets/wallpapers/twilight-mountains.svg")',
-    midnight: 'radial-gradient(ellipse at 10% 0%,#244357 0%,transparent 55%),linear-gradient(130deg,#131b33,#090e1b)',
-    aurora: 'radial-gradient(ellipse at 0% 0%,#24746c 0%,transparent 60%),linear-gradient(130deg,#20224c,#101426)',
-    ember: 'radial-gradient(ellipse at 0% 0%,#854b39 0%,transparent 60%),linear-gradient(130deg,#3d263c,#121325)'
+    cinematic: 'url("assets/photos/twilight-mountains.jpg")',
+    midnight: 'linear-gradient(180deg,#141414,#090909)',
+    aurora: 'linear-gradient(180deg,#141414,#090909)',
+    ember: 'linear-gradient(180deg,#141414,#090909)'
   };
   var wallpaperChoices = [
-    { id: 'twilight-mountains', name: 'Twilight Mountains', path: 'assets/wallpapers/twilight-mountains.svg' },
-    { id: 'northern-lights', name: 'Northern Lights', path: 'assets/wallpapers/northern-lights.svg' },
-    { id: 'lake-dusk', name: 'Lake at Dusk', path: 'assets/wallpapers/lake-dusk.svg' },
-    { id: 'earth-space', name: 'Earth from Space', path: 'assets/wallpapers/earth-space.svg' },
-    { id: 'abstract-gradient', name: 'Violet Gradient', path: 'assets/wallpapers/abstract-gradient.svg' },
-    { id: 'cinematic-title', name: 'Cinematic', path: 'assets/wallpapers/cinematic-title.svg' }
+    { id: 'mountains', name: 'Twilight Mountains', photo: 'mountains', path: PhotoLibrary.url('mountains'), focal: '50% 45%' },
+    { id: 'lake', name: 'Lake at Dusk', photo: 'lake', path: PhotoLibrary.url('lake'), focal: '50% 55%' },
+    { id: 'forest', name: 'Quiet Forest', photo: 'forest', path: PhotoLibrary.url('forest'), focal: '50% 50%' },
+    { id: 'desert', name: 'Desert Cinema', photo: 'desert', path: PhotoLibrary.url('desert'), focal: '50% 50%' },
+    { id: 'city', name: 'City at Night', photo: 'city', path: PhotoLibrary.url('city'), focal: '50% 50%' },
+    { id: 'architecture', name: 'Quiet Architecture', photo: 'architecture', path: PhotoLibrary.url('architecture'), focal: '50% 50%' }
   ];
   var currentPage = 'home', currentPanel = 'appearance', allApps = [], editingApps = false;
+  var previewHomeParent = $('preview') ? $('preview').parentNode : null, previewFloatExpanded = false;
   var iconResults = Object.create(null), iconCache = Object.create(null);
   var appRequest = 0, imageRequest = 0, launchGeneration = 0, launchTimer = null;
   var launching = false, previewBlocked = false, previewNeedsShow = true, windowBusy = false, windowVisible = false;
@@ -48,7 +49,11 @@
     if (!saved || typeof saved !== 'object') { return; }
     if (typeof saved.name === 'string') { prefs.name = cleanName(saved.name); }
     if (Object.prototype.hasOwnProperty.call(themes, saved.theme)) { prefs.theme = saved.theme; }
-    if (typeof saved.background === 'string') { prefs.background = saved.background; }
+    if (typeof saved.background === 'string') {
+      var legacyImages = { 'twilight-mountains.svg': 'mountains', 'northern-lights.svg': 'night-sky', 'lake-dusk.svg': 'lake', 'earth-space.svg': 'night-sky', 'abstract-gradient.svg': 'mountains', 'cinematic-title.svg': 'mountains' };
+      var legacyName = saved.background.split('/').pop();
+      prefs.background = legacyImages[legacyName] ? PhotoLibrary.url(legacyImages[legacyName]) : saved.background;
+    }
     if (typeof saved.preview === 'boolean') { prefs.preview = saved.preview; }
     if (typeof saved.system === 'boolean') { prefs.system = saved.system; }
     if (Array.isArray(saved.favorites)) { prefs.favorites = saved.favorites.filter(function (id) { return typeof id === 'string'; }); }
@@ -72,24 +77,33 @@
     if ($('launcher-name')) { $('launcher-name').value = prefs.name; }
     document.title = prefs.name;
   }
-  function safeImagePath(path) { return /^(?:assets\/)[a-zA-Z0-9_\-\/ .]+\.(?:png|jpe?g|webp|svg)$/i.test(path) && path.indexOf('..') === -1; }
+  function safeImagePath(path) { return /^(?:assets\/)[a-zA-Z0-9_\-\/ .]+\.(?:png|jpe?g|webp)$/i.test(path) && path.indexOf('..') === -1; }
   function applyBackground(path, persist) {
     var request = ++imageRequest, wallpaper = $('wallpaper');
     if (!wallpaper) { return; }
+    wallpaper.setAttribute('data-theme', prefs.theme);
     wallpaper.style.backgroundImage = themes[prefs.theme] || themes.cinematic;
+    wallpaper.style.backgroundPosition = 'center 45%';
+    wallpaper.setAttribute('data-photo-fallback', 'none');
     if (!path) { return; }
     if (!safeImagePath(path)) { report('Use a packaged image path such as assets/background.jpg.'); return; }
+    if (prefs.theme !== 'cinematic') { prefs.theme = 'cinematic'; }
     var isPackagedWallpaper = wallpaperChoices.some(function (choice) { return choice.path === path; });
     var image = new Image();
     image.onload = function () {
       if (request !== imageRequest) { return; }
-      wallpaper.style.backgroundImage = 'linear-gradient(rgba(5,10,20,.35),rgba(5,10,20,.62)),url("' + path + '")';
+      wallpaper.setAttribute('data-wallpaper', path);
+      wallpaper.style.backgroundImage = 'linear-gradient(90deg,rgba(5,5,5,.36),rgba(5,5,5,.08) 62%,rgba(5,5,5,.22)),linear-gradient(0deg,rgba(5,5,5,.46),transparent 64%),url("' + path + '")';
+      var choice = wallpaperChoices.filter(function (item) { return item.path === path; })[0];
+      wallpaper.style.backgroundPosition = choice ? choice.focal : 'center';
+      wallpaper.setAttribute('data-photo-fallback', choice ? choice.photo : 'mountains');
       if (persist) { prefs.background = path; save(); report('Custom background saved.'); }
     };
-    image.onerror = function () { if (request === imageRequest) { report('Image was not found in the app package.'); } };
+    image.onerror = function () { if (request === imageRequest) { wallpaper.style.backgroundImage = themes[prefs.theme] || themes.cinematic; wallpaper.removeAttribute('data-wallpaper'); report('Wallpaper unavailable; restored the default photograph.'); } };
     image.src = isPackagedWallpaper ? path.replace(/^assets\//, 'assets/') : path;
   }
   function initIcons(root) {
+    if (window.ShadcnUI && typeof window.ShadcnUI.mount === 'function') { window.ShadcnUI.mount(root || document); }
     if (!window.lucide || typeof window.lucide.createIcons !== 'function') { return; }
     try { window.lucide.createIcons({ root: root || document, icons: window.lucide.icons }); }
     catch (error) { report('Some interface icons could not be initialized.', error); }
@@ -108,25 +122,30 @@
     });
   }
   function showPage(page) {
-    var supported = ['home', 'search', 'apps', 'games', 'recent', 'inputs', 'settings'];
+    var supported = ['home', 'search', 'apps', 'games', 'recent', 'movies', 'media', 'inputs', 'settings'];
     if (supported.indexOf(page) < 0) { page = 'home'; }
     var pageChanged = currentPage !== page;
     currentPage = page;
-    if (pageChanged && document.body.classList.contains('animations-enabled')) {
-      document.body.classList.add('page-transition');
-      if (showPage.transitionTimer) { clearTimeout(showPage.transitionTimer); }
-      showPage.transitionTimer = setTimeout(function () { document.body.classList.remove('page-transition'); }, prefs.reducedMotion ? 120 : 300);
-    }
+    updatePreviewPresentation();
+    if (pageChanged) { previewNeedsShow = true; requestAnimationFrame(function () { syncPreview(); }); }
+    $('content').setAttribute('data-home-view', String(page === 'home'));
+    document.body.setAttribute('data-page', page);
+    if (pageChanged && window.AudioController) { window.AudioController.play('navigate'); }
+    if (pageChanged && window.MotionSystem) { window.MotionSystem.enter($('content')); }
     Array.prototype.forEach.call($$('.page-section'), function (section) {
       var sectionId = 'page-' + page;
       section.hidden = section.id !== sectionId;
     });
     if ($('page-settings')) { $('page-settings').hidden = page !== 'settings'; }
+    if (page === 'movies' || page === 'media') {
+      Array.prototype.forEach.call($$('img[src^="assets/photos/"]', $('page-' + page)), function (image) { image.loading = 'eager'; });
+    }
     setActiveNavigation(page);
     if (page === 'settings') { selectSettingsPanel(currentPanel); refreshSources(); var firstCategory = document.querySelector('.settings-category.active'); if (firstCategory && pageChanged) { firstCategory.focus(); } }
-    else {
+    {
       var pageRoot = $('page-' + page);
       if (pageRoot) { var first = pageRoot.querySelector('button,input,select,[tabindex="0"]'); if (first && pageChanged && page !== 'home') { first.focus(); } else if (pageChanged) { var navButton = document.querySelector('.sidebar-item[data-section="' + page + '"]'); if (navButton) { navButton.focus(); } } }
+      wirePhotoFallbacks(pageRoot);
       if (page === 'apps') { renderAppsPage(); }
       else if (page === 'games') { renderGames(); }
       else if (page === 'recent') { renderRecent(); }
@@ -136,6 +155,7 @@
     }
     if (page === 'search' && $('search-input')) { $('search-input').focus(); }
     if (page === 'home') { applyHomePreferences(); }
+    if (pageChanged && page === 'home' && returnFocus && returnFocus.focus) { var restore = returnFocus; returnFocus = null; restore.focus(); }
   }
   function selectSettingsPanel(name) {
     currentPanel = name;
@@ -192,22 +212,17 @@
   }
   function createAppButton(app, actionVisible, cssClass) {
     var button = document.createElement('button');
-    button.type = 'button'; button.className = cssClass || 'app'; button.setAttribute('data-app-id', app.id); button.title = app.name || app.id;
-    var initial = document.createElement('span'); initial.className = 'initial'; initial.textContent = (app.name || '?').slice(0, 2).toUpperCase(); button.appendChild(initial);
-    var image = document.createElement('img'); image.alt = ''; image.hidden = true; button.appendChild(image);
-    var icon = app.iconPath || '';
-    var cached = iconCache[app.id + '\n' + icon];
-    if (cached) { image.src = cached; image.hidden = false; initial.hidden = true; }
-    else if (icon) {
-      image.onload = function () { image.hidden = false; initial.hidden = true; iconCache[app.id + '\n' + icon] = image.src; iconResults[app.id] = { name: app.name || app.id, failed: false }; iconSummary(); };
-      image.onerror = function () { image.hidden = true; initial.hidden = false; iconResults[app.id] = { name: app.name || app.id, failed: true }; iconSummary(); };
-      image.src = icon;
-    } else if (/prime.?video/i.test(app.name || '')) {
-      image.onload = function () { image.hidden = false; initial.hidden = true; iconResults[app.id] = { name: app.name || app.id, failed: false }; iconSummary(); };
-      image.onerror = function () { image.hidden = true; initial.hidden = false; iconResults[app.id] = { name: app.name || app.id, failed: true }; iconSummary(); };
-      image.src = 'assets/prime-video.svg';
-    }
+    button.type = 'button'; button.className = (cssClass || 'app') + ' shadcn-card'; button.setAttribute('data-app-id', app.id); button.title = app.name || app.id; button.setAttribute('aria-label', app.name || app.id);
     var name = document.createElement('span'); name.className = 'app-name'; name.textContent = app.name || app.id; button.appendChild(name);
+    if (window.IconResolver) {
+      window.IconResolver.resolve(app, function (src, sourceType) {
+        if (!src || !button.isConnected) { return; }
+        var image = document.createElement('img'); image.className = 'app-icon'; image.alt = ''; image.decoding = 'async'; image.src = src;
+        image.onerror = function () { image.remove(); };
+        button.insertBefore(image, name);
+        button.setAttribute('data-icon-source', sourceType);
+      });
+    }
     if (editingApps && actionVisible) {
       var selected = (prefs.favorites || []).indexOf(app.id) >= 0;
       button.setAttribute('aria-pressed', String(selected));
@@ -223,8 +238,28 @@
     });
     return button;
   }
+  function wirePhotoFallbacks(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll('img[src^="assets/photos/"]'), function (image) {
+      if (image.getAttribute('data-fallback-wired') === 'true') { return; }
+      image.setAttribute('data-fallback-wired', 'true');
+      image.onerror = function () { image.hidden = true; if (image.parentNode) { image.parentNode.classList.add('photo-failed'); } };
+    });
+  }
+  function hydratePhotos(root) {
+    Array.prototype.forEach.call((root || document).querySelectorAll('.card-bg[data-photo]'), function (container) {
+      if (container.getAttribute('data-hydrated') === 'true') { return; }
+      var key = container.getAttribute('data-photo');
+      var photo = PhotoLibrary.get(key);
+      if (!photo) { container.setAttribute('data-photo-fallback', 'true'); return; }
+      container.setAttribute('data-hydrated', 'true');
+      var image = document.createElement('img'); image.src = photo.src; image.alt = ''; image.loading = 'lazy'; image.decoding = 'async'; image.style.objectPosition = photo.focal;
+      image.onerror = function () { image.hidden = true; container.setAttribute('data-photo-fallback', 'true'); };
+      container.appendChild(image);
+    });
+  }
   function renderHome() {
     var library = $('apps'), catalog = uniqueApps();
+    hydratePhotos($('page-home'));
     if (!library) { return; }
     ensureFavorites(catalog.catalog);
     var visible = catalog.catalog.filter(function (app) { return (prefs.system || app.show !== false) && (editingApps || prefs.favorites.indexOf(app.id) >= 0); });
@@ -247,15 +282,8 @@
   }
   function renderAppsPage() {
     var grid = $('apps-grid'); if (!grid) { return; }
-    var category = $('apps-category') ? $('apps-category').value : 'all';
     var visible = filterApps(allApps, '');
-    if (category && category !== 'all') { visible = visible.filter(function (app) { return (app.categories || []).some(function (item) { return item.toLowerCase() === category; }); }); }
-    var sort = $('apps-sort') ? $('apps-sort').value : 'alpha';
-    visible.sort(function (a, b) {
-      if (sort === 'favorites') { var ai = (prefs.favorites || []).indexOf(a.id), bi = (prefs.favorites || []).indexOf(b.id); if (ai !== bi) { return (ai < 0 ? Infinity : ai) - (bi < 0 ? Infinity : bi); } }
-      if (sort === 'recent') { var ar = prefs.recentApps.indexOf(a.id), br = prefs.recentApps.indexOf(b.id); if (ar !== br) { return (ar < 0 ? Infinity : ar) - (br < 0 ? Infinity : br); } }
-      return (a.name || a.id).localeCompare(b.name || b.id);
-    });
+    visible.sort(function (a, b) { return (a.name || a.id).localeCompare(b.name || b.id); });
     grid.textContent = ''; visible.forEach(function (app) { grid.appendChild(createAppButton(app, true, 'app app-grid-item')); });
     if ($('apps-empty')) { $('apps-empty').hidden = visible.length > 0; }
   }
@@ -324,9 +352,9 @@
     var gallery = $('wallpaper-gallery'); if (!gallery) { return; }
     gallery.textContent = '';
     wallpaperChoices.forEach(function (choice) {
-      var button = document.createElement('button'), image = document.createElement('span'), label = document.createElement('span');
-      button.type = 'button'; button.className = 'settings-wallpaper-choice' + (prefs.background === choice.path || (!prefs.background && themes[prefs.theme] && themes[prefs.theme].indexOf(choice.path) >= 0) ? ' selected' : ''); button.setAttribute('aria-pressed', String(button.classList.contains('selected'))); button.setAttribute('aria-label', 'Apply ' + choice.name + ' wallpaper');
-      image.className = 'settings-wallpaper-image'; image.style.backgroundImage = 'url("' + choice.path + '")'; label.className = 'settings-wallpaper-label'; label.textContent = choice.name; button.appendChild(image); button.appendChild(label);
+      var button = document.createElement('button'), image = document.createElement('span'), photo = document.createElement('img'), label = document.createElement('span');
+      button.type = 'button'; button.className = 'settings-wallpaper-choice shadcn-card' + (prefs.background === choice.path || (!prefs.background && prefs.theme === 'cinematic' && choice.photo === 'mountains') ? ' selected' : ''); button.setAttribute('aria-pressed', String(button.classList.contains('selected'))); button.setAttribute('aria-label', 'Apply ' + choice.name + ' wallpaper');
+      image.className = 'settings-wallpaper-image'; image.setAttribute('data-wallpaper', choice.id); photo.src = PhotoLibrary.url(choice.photo); photo.alt = ''; photo.loading = 'eager'; photo.decoding = 'async'; photo.onerror = function () { photo.hidden = true; image.classList.add('photo-failed'); }; image.appendChild(photo); label.className = 'settings-wallpaper-label'; label.textContent = choice.name; button.appendChild(image); button.appendChild(label);
       button.addEventListener('click', function () { prefs.theme = 'cinematic'; prefs.background = choice.path; $('theme-select').value = 'cinematic'; $('background-path-enhanced').value = choice.path; save(); applyBackground(choice.path, false); renderWallpaperChoices(); }); gallery.appendChild(button);
     });
   }
@@ -366,24 +394,26 @@
   }
   function openSettingsDialog() {
     settingsDialogFocus = document.activeElement;
+    if (window.AudioController) { window.AudioController.play('select'); }
     $('settings-confirm').hidden = false;
     $('settings-reset-cancel').focus();
   }
   function closeSettingsDialog() {
-    $('settings-confirm').hidden = true;
-    if (settingsDialogFocus && settingsDialogFocus.focus) { settingsDialogFocus.focus(); }
+    var dialog = $('settings-confirm');
+    if (dialog.hidden) { return; }
+    if (window.AudioController) { window.AudioController.play('close'); }
+    var dismiss = function () { dialog.hidden = true; if (settingsDialogFocus && settingsDialogFocus.focus) { settingsDialogFocus.focus(); } };
+    dismiss();
   }
   var settingsDialogFocus = null;
   function resetSettings() {
     try { localStorage.removeItem(storageKey); } catch (error) { report('Settings could not be reset.', error); return; }
     prefs = Object.assign({}, defaults); applyName(); applyBackground('', false); applyExperience(); save(); syncSettingsControls(); renderWallpaperChoices(); renderCurrentPage();
-    closeSettingsDialog(); report('Kipsmthn settings restored to defaults.');
+    closeSettingsDialog(); if (window.AudioController) { window.AudioController.play('success'); } report('Kipsmthn settings restored to defaults.');
   }
   function applyExperience() {
-    document.body.classList.toggle('animations-enabled', prefs.animations);
-    document.body.classList.toggle('reduced-motion', prefs.reducedMotion);
-    document.body.classList.toggle('animations-disabled', !prefs.animations);
-    if (window.AudioController) { window.AudioController.configure({ enabled: prefs.sounds, volume: prefs.soundVolume / 100 }); }
+    if (window.MotionSystem) { window.MotionSystem.apply({ enabled: prefs.animations, reduced: prefs.reducedMotion }); }
+    if (window.AudioController) { window.AudioController.configure({ enabled: prefs.sounds, volume: prefs.soundVolume / 100, startup: prefs.startupSound }); window.AudioController.preload(); }
     syncExperienceControls();
   }
   function toggleExperience(buttonId, key) {
@@ -392,8 +422,7 @@
   }
   function iconSummary() {
     if (!$('icon-status')) { return; }
-    var missing = Object.keys(iconResults).filter(function (id) { return iconResults[id].failed; }).map(function (id) { return iconResults[id].name; });
-    $('icon-status').textContent = missing.length ? 'Pictures unavailable: ' + missing.join(', ') + '. Select Refresh apps to retry.' : 'No missing pictures detected among checked apps.';
+    $('icon-status').textContent = 'App tiles use readable text labels; no decorative logos are loaded.';
   }
 
   function addRecent(id) {
@@ -401,17 +430,22 @@
     prefs.recentApps.unshift(id); prefs.recentApps = prefs.recentApps.slice(0, 20); save();
   }
   function refreshApps() {
-    var request = ++appRequest; iconCache = Object.create(null); iconResults = Object.create(null);
+    var request = ++appRequest;
     TizenService.getAppsInfo(function (list) {
       if (request !== appRequest) { return; }
       allApps = Array.isArray(list) ? list : [];
+      if (window.IconResolver) { window.IconResolver.reconcile(allApps.map(function (app) { return app.id; })); }
       var catalogMode = $('catalog-mode'); if (catalogMode) { catalogMode.textContent = TizenService.isTV() ? 'Installed apps discovered on this TV' : 'Demo catalogue · not installed on this device'; }
-      var catalog = uniqueApps(); ensureFavorites(catalog.catalog); renderCurrentPage(); renderSettingsApps(); report('App list refreshed (' + allApps.length + ' apps).');
+      var catalog = uniqueApps();
+      ensureFavorites(catalog.catalog); renderCurrentPage(); renderSettingsApps();
+      var discoveryError = TizenService.getDiscoveryError && TizenService.getDiscoveryError();
+      report(discoveryError ? 'Application discovery failed.' : 'App list refreshed (' + allApps.length + ' apps).', discoveryError);
     });
   }
   function launch(id, name) {
     if (launching) { return; }
     if (!TizenService.isTV()) { report('Launching apps is unavailable in browser preview.'); return; }
+    if (!TizenService.isInstalledApp || !TizenService.isInstalledApp(id, allApps)) { report('This application is not currently available on this TV. Refresh apps and try again.'); return; }
     var generation = ++launchGeneration, attempt = 0, routes = [], index = 0;
     function add(target) { if (!routes.some(function (route) { return route === target; })) { routes.push(target); } }
     add(id);
@@ -425,7 +459,7 @@
       report(text, error);
     }
     function active(token) { return generation === launchGeneration && attempt === token && launching && !document.hidden; }
-    function stop(error) { clearTimeout(launchTimer); ++launchGeneration; launching = false; previewBlocked = false; previewNeedsShow = true; syncPreview(); message('Could not open ' + name + '. You can try another app or open it from Samsung Home.', error); }
+    function stop(error) { clearTimeout(launchTimer); ++launchGeneration; launching = false; previewBlocked = false; previewNeedsShow = true; syncPreview(); if (window.AudioController) { window.AudioController.play('error'); } message('Could not open ' + name + '. You can try another app or open it from Samsung Home.', error); }
     function next(error) {
       clearTimeout(launchTimer); if (generation !== launchGeneration || document.hidden) { return; }
       if (index >= routes.length) { stop(error || { name: 'LaunchTimeout' }); return; }
@@ -433,13 +467,35 @@
       message(index === 1 ? 'Opening ' + name + '…' : 'Trying another way to open ' + name + '…');
       launchTimer = setTimeout(function () { if (active(token)) { next({ name: 'LaunchTimeout' }); } }, 8000);
       function failed(problem) { if (!active(token) || answered) { return; } answered = true; if (problem && /^(NotFoundError|UnknownError|NotSupportedError)$/.test(problem.name)) { next(problem); } else { stop(problem); } }
-      function accepted() { if (!active(token) || answered) { return; } answered = true; message('Waiting for ' + name + ' to appear…'); }
+      function accepted() { if (!active(token) || answered) { return; } answered = true; if (window.AudioController) { window.AudioController.play('success'); } message('Waiting for ' + name + ' to appear…'); }
       try { TizenService.launchApp(target, name, accepted, failed); } catch (problem) { failed(problem); }
     }
-    launching = true; addRecent(id); syncPreview(); next();
+    launching = true; addRecent(id);
+    if (window.AudioController) { window.AudioController.play('launch'); }
+    if (window.MotionSystem && $('content')) { $('content').classList.add('application-launching'); setTimeout(function () { $('content').classList.remove('application-launching'); }, window.MotionSystem.config.duration.cinematic); }
+    syncPreview(); next();
   }
 
-  function wantedPreview() { return prefs.preview && !document.hidden && !launching && !previewBlocked; }
+  function updatePreviewPresentation() {
+    var preview = $('preview'), panel = $('preview-panel'), floating = $('preview-float'), launcher = $('preview-launcher');
+    if (!preview || !panel || !floating || !launcher || !previewHomeParent) { return; }
+    var onHome = currentPage === 'home';
+    floating.hidden = onHome;
+    if (onHome) {
+      previewHomeParent.appendChild(preview);
+      panel.hidden = true;
+      launcher.setAttribute('aria-expanded', 'false');
+    } else if (previewFloatExpanded) {
+      panel.appendChild(preview);
+      panel.hidden = false;
+      launcher.setAttribute('aria-expanded', 'true');
+    } else {
+      previewHomeParent.appendChild(preview);
+      panel.hidden = true;
+      launcher.setAttribute('aria-expanded', 'false');
+    }
+  }
+  function wantedPreview() { return prefs.preview && !document.hidden && !launching && !previewBlocked && (currentPage === 'home' || previewFloatExpanded); }
   function syncPreview(done) {
     if (!TizenService.isTV()) { if ($('preview-message')) { $('preview-message').textContent = 'TV preview is available on the Samsung TV.'; } if (done) { done(); } return; }
     if (windowBusy) { if (done) { setTimeout(function () { syncPreview(done); }, 50); } return; }
@@ -455,9 +511,16 @@
     }
     try {
       if (desired) {
-        var rect = $('preview-picture').getBoundingClientRect();
+        var previewPicture = $('preview-picture');
+        var rect = previewPicture.getBoundingClientRect();
         var values = [rect.left, rect.top, rect.width, rect.height].map(function (value) { return Math.round(value) + 'px'; });
-        if (rect.width < 100 || rect.height < 100) { finish({ name: 'LayoutError', message: 'Preview layout is not ready.' }); return; }
+        if (rect.width < 100 || rect.height < 100) {
+          var oldParent = previewPicture.parentNode;
+          if (oldParent && oldParent !== document.body) { document.body.appendChild(previewPicture); }
+          rect = previewPicture.getBoundingClientRect();
+          values = [rect.left, rect.top, rect.width, rect.height].map(function (value) { return Math.round(value) + 'px'; });
+          if (rect.width < 100 || rect.height < 100) { finish({ name: 'LayoutError', message: 'Preview layout is not ready.' }); return; }
+        }
         TizenService.showPreview(values, function () { finish(); }, finish);
       } else { TizenService.hidePreview(function () { finish(); }, finish); }
     } catch (error) { finish(error); }
@@ -476,7 +539,7 @@
     TizenService.getSources(function (sources) {
       $('sources').textContent = '';
       (sources || []).forEach(function (source) {
-        var button = document.createElement('button'); button.type = 'button'; button.textContent = source.name;
+        var button = document.createElement('button'); button.type = 'button'; button.className = 'shadcn-button'; button.textContent = source.name;
         button.addEventListener('click', function () { TizenService.setSource(source, function () { readCurrentSource(); previewBlocked = false; previewNeedsShow = true; syncPreview(); report('Input changed.'); }, function (error) { report('Could not change input.', error); }); });
         $('sources').appendChild(button);
       });
@@ -508,10 +571,20 @@
     if ($('run-mode')) { $('run-mode').textContent = TizenService.isTV() ? 'Samsung TV' : 'Browser Preview'; }
   }
   function exitDialog(open) {
-    if (open) { exitFocus = document.activeElement; }
-    if ($('exit-dialog')) { $('exit-dialog').hidden = !open; }
-    var target = open ? $('exit-cancel') : exitFocus;
-    if (target && !target.disabled) { target.focus(); }
+    var dialog = $('exit-dialog');
+    if (open) {
+      exitFocus = document.activeElement;
+      dialog.hidden = false;
+      if (window.AudioController) { window.AudioController.play('select'); }
+      if (window.MotionSystem) { window.MotionSystem.enter(dialog); }
+      $('exit-cancel').focus();
+      return;
+    }
+    if (dialog && !dialog.hidden) {
+      if (window.AudioController) { window.AudioController.play('close'); }
+      var dismiss = function () { dialog.hidden = true; if (exitFocus && !exitFocus.disabled) { exitFocus.focus(); } };
+      if (window.MotionSystem) { window.MotionSystem.dismiss(dialog, dismiss); } else { dismiss(); }
+    }
   }
   function closeLauncher() {
     if (!TizenService.isTV()) { exitDialog(false); report('This browser preview can be closed with its tab.'); return; }
@@ -539,9 +612,9 @@
   }
 
   Array.prototype.forEach.call($$('.sidebar-item'), function (button) { button.addEventListener('click', function () { showPage(button.getAttribute('data-section')); }); });
-  Array.prototype.forEach.call($$('.settings-category'), function (button) { button.addEventListener('click', function () { selectSettingsPanel(button.getAttribute('data-panel')); }); });
-  $('settings-open').addEventListener('click', function () { returnFocus = document.activeElement; currentPanel = 'general'; showPage('settings'); var active = document.querySelector('.settings-category.active'); if (active) { active.focus(); } });
-  $('settings-close').addEventListener('click', function () { showPage('home'); if (returnFocus && returnFocus.focus) { returnFocus.focus(); } });
+  Array.prototype.forEach.call($$('.settings-category'), function (button) { button.addEventListener('click', function () { selectSettingsPanel(button.getAttribute('data-panel')); if (window.AudioController) { window.AudioController.play('select'); } }); });
+  $('settings-open').addEventListener('click', function () { returnFocus = $('settings-open'); currentPanel = 'general'; showPage('settings'); var active = document.querySelector('.settings-category.active'); if (active) { active.focus(); } });
+  Array.prototype.forEach.call($$('.sidebar-item'), function (button) { button.addEventListener('click', function () { if (button.getAttribute('data-section') === 'settings') { returnFocus = button; } else { returnFocus = null; } }); });
   Array.prototype.forEach.call($$('[data-settings-destination]'), function (button) { button.addEventListener('click', function () { showPage(button.getAttribute('data-settings-destination')); }); });
   Array.prototype.forEach.call($$('.setting-toggle[data-pref]'), function (control) {
     control.addEventListener('click', function () {
@@ -567,8 +640,6 @@
   $('background-apply').addEventListener('click', function () { applyBackground($('background-path-enhanced').value.trim(), true); });
   $('apps-refresh').addEventListener('click', refreshApps);
   $('apps-refresh-settings').addEventListener('click', refreshApps);
-  $('apps-category').addEventListener('change', renderAppsPage);
-  $('apps-sort').addEventListener('change', renderAppsPage);
   $('edit-apps').addEventListener('click', function () { editingApps = !editingApps; this.textContent = editingApps ? 'Done editing' : 'Edit apps'; renderAppsPage(); renderHome(); });
   $('edit-apps-home').addEventListener('click', function () { editingApps = !editingApps; renderHome(); });
   $('search-input').addEventListener('input', updateSearch);
@@ -579,6 +650,8 @@
   $('sources-refresh').addEventListener('click', refreshSources);
   $('preview-retry').addEventListener('click', function () { prefs.preview = true; previewBlocked = false; previewNeedsShow = true; save(); updatePreviewToggle(); readCurrentSource(); syncPreview(); });
   $('preview-toggle').addEventListener('click', function () { prefs.preview = !prefs.preview; previewBlocked = false; save(); updatePreviewToggle(); syncPreview(); });
+  $('preview-launcher').addEventListener('click', function () { previewFloatExpanded = true; updatePreviewPresentation(); syncPreview(); $('preview-collapse').focus(); });
+  $('preview-collapse').addEventListener('click', function () { previewFloatExpanded = false; updatePreviewPresentation(); syncPreview(); $('preview-launcher').focus(); });
   $('close-app-settings').addEventListener('click', function () { exitDialog(true); });
   $('exit-cancel').addEventListener('click', function () { exitDialog(false); });
   $('exit-confirm').addEventListener('click', closeLauncher);
@@ -589,22 +662,38 @@
       var id = button.getAttribute('data-app-id');
       if (id === 'all-apps') { showPage('apps'); }
       else if (id === 'hdmi1' || id === 'hdmi2') { var n = id === 'hdmi1' ? 1 : 2; TizenService.getSources(function (sources) { var source = sources.filter(function (item) { return item.type === 'HDMI' && item.number === n; })[0]; if (source) { TizenService.setSource(source, function () { report('Switched to HDMI ' + n); }, function (error) { report('Could not switch input.', error); }); } }); }
-      else { var app = allApps.filter(function (item) { return item.id === id || (id === 'prime' && /prime/i.test(item.name || '')); })[0]; if (app) { launch(app.id, app.name || app.id); } else { launch(id, button.getAttribute('aria-label') || id); } }
+      else { var app = allApps.filter(function (item) { return item.id === id || (id === 'prime' && /prime/i.test(item.name || '')); })[0]; if (app) { launch(app.id, app.name || app.id); } else { report('This shortcut has no matching installed app on this TV.'); } }
     });
   });
 
+  var keyboardNavigation = false, keyboardNavigationTimer = null, lastFocusedControl = null;
+  document.addEventListener('pointerdown', function () { keyboardNavigation = false; }, true);
+  document.addEventListener('pointerover', function (event) {
+    var target = event.target && event.target.closest ? event.target.closest('button,[role="button"],select,input,summary') : null;
+    if (target && !target.disabled && event.relatedTarget && !target.contains(event.relatedTarget) && window.AudioController) { window.AudioController.play('focus'); }
+  }, true);
+  document.addEventListener('focusin', function (event) {
+    if (keyboardNavigation && event.target !== lastFocusedControl && window.AudioController) { window.AudioController.play('focus'); }
+    lastFocusedControl = event.target;
+  });
   document.addEventListener('click', function (event) {
     var target = event.target && event.target.closest ? event.target.closest('button,[role="button"]') : null;
-    if (target && window.AudioController) { window.AudioController.play('select'); }
+    if (!target || !window.AudioController || target.disabled) { return; }
+    if (target.id === 'settings-open' || target.hasAttribute('data-section') || target.hasAttribute('data-settings-destination') || target.classList.contains('settings-category') || target.classList.contains('app') || target.classList.contains('app-grid-item') || target.classList.contains('carousel-item') || target.classList.contains('setting-toggle')) { return; }
+    if (target.id === 'preview-collapse' || target.id === 'settings-reset-cancel' || target.id === 'exit-cancel') { window.AudioController.play('close'); return; }
+    window.AudioController.play('select');
   }, true);
   document.addEventListener('keydown', function (event) {
+    keyboardNavigation = true;
+    clearTimeout(keyboardNavigationTimer);
+    keyboardNavigationTimer = setTimeout(function () { keyboardNavigation = false; }, 500);
     var code = event.keyCode || event.which;
-    if (code === 37 || code === 38 || code === 39 || code === 40) { if (window.AudioController) { window.AudioController.play('nav'); } }
     if (code === 10009 || code === 27 || code === 8) {
       event.preventDefault();
       if (window.AudioController) { window.AudioController.play('back'); }
       if (!$('exit-dialog').hidden) { exitDialog(false); }
       else if (!$('settings-confirm').hidden) { closeSettingsDialog(); }
+      else if (currentPage !== 'home' && previewFloatExpanded) { $('preview-collapse').click(); }
       else if (currentPage === 'settings') { showPage('home'); }
       else if (editingApps) { editingApps = false; renderCurrentPage(); }
       else if (currentPage !== 'home') { showPage('home'); }

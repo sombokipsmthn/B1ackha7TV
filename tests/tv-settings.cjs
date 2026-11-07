@@ -6,7 +6,7 @@ const assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),p
   await c.addInitScript(mode=>{
    window.calls=[];window.shown=0;
    window.tizen={ApplicationControl:function(operation){this.operation=operation;},application:{
-    getAppsInfo:yes=>yes([]),getCurrentApplication:()=>({appInfo:{id:'self'}}),launch:()=>{},
+    getCurrentApplication:()=>({appInfo:{id:'self'}}),getAppsInfo:yes=>yes([]),launch:()=>{},
     findAppControl:(control,yes,no)=>{if(mode==='timeout')return;if(mode==='denied')no({name:'SecurityError'});else yes(mode==='empty'?[]:[{id:'discovered.settings'}]);},
     launchAppControl:(control,id,yes,no)=>{window.calls.push({operation:control.operation,id});if(mode==='launch-error')no({name:'SecurityError'});else yes();}
    },tvwindow:{getSource:()=>({type:'TV',number:0}),show:yes=>{window.shown++;yes();},hide:yes=>yes()}};
@@ -21,7 +21,12 @@ const assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),p
     });
   }
   const p=await c.newPage();await p.goto(pathToFileURL(path.resolve('app/index.html')).href);
-await p.locator('#settings-open').click();await p.locator('[data-panel="system"]').click();await p.locator('#tv-settings-open-enhanced').click();
+  if(mode==='launch-error'){
+   await p.locator('[data-section="apps"]').click();
+   await p.locator('#preview-launcher').click();
+   await p.locator('#preview-panel').waitFor({state:'visible'});
+  }
+  await p.locator('[data-section="settings"]').click();await p.locator('[data-panel="system"]').click();await p.locator('#tv-settings-open-enhanced').click();
   if(mode==='timeout')await p.waitForTimeout(5200);
   assert.equal(await p.locator('#tv-settings-open-enhanced').isEnabled(),true);
   const calls=await p.evaluate(()=>window.calls);

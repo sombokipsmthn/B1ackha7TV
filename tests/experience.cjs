@@ -13,15 +13,25 @@ const { pathToFileURL } = require('node:url');
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(pathToFileURL(path.resolve('app/index.html')).href);
     await page.waitForFunction(() => document.querySelectorAll('[data-lucide].lucide').length > 0);
+    await page.waitForFunction(() => document.querySelectorAll('[data-lucide].lucide').length === document.querySelectorAll('svg.lucide').length && document.querySelectorAll('svg.lucide').length > 0);
 
-    const destinations = ['home', 'search', 'apps', 'games', 'recent', 'inputs', 'settings'];
+    const destinations = ['home', 'search', 'apps', 'games', 'recent', 'movies', 'media', 'inputs', 'settings'];
     for (const destination of destinations) {
       await page.locator(`.sidebar-item[data-section="${destination}"]`).click();
       const selector = `#page-${destination}`;
       await page.locator(selector).waitFor({ state: 'visible' });
       assert.equal(await page.locator(`.sidebar-item[data-section="${destination}"]`).getAttribute('aria-current'), 'page');
-      await page.screenshot({ path: path.resolve(`tests/screenshots/${destination}-1920x1080.png`), fullPage: true });
+      await page.screenshot({ path: path.resolve(`tests/screenshots/experience-${destination}-1920x1080.png`), fullPage: true });
+      if (destination === 'movies') assert.match(await page.locator('#page-movies').innerText(), /No movie catalogue connected/);
+      if (destination === 'media') assert.match(await page.locator('#page-media').innerText(), /Local media is unavailable/);
     }
+
+    await page.locator('[data-panel="general"]').focus();
+    await page.keyboard.press('ArrowDown');
+    assert.equal(await page.evaluate(() => document.activeElement.getAttribute('data-panel')), 'appearance', 'remote down should move between settings categories');
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'theme-select', 'remote right should enter the active settings panel');
+    assert.notEqual(await page.locator('#theme-select').evaluate((element) => getComputedStyle(element).boxShadow), 'none', 'remote focus must have a visible shadcn ring');
 
     await page.locator('[data-panel="appearance"]').click();
     const toggles = [ ['#animations-toggle', 'animations', false], ['#reduced-motion-toggle', 'reducedMotion', true], ['#sounds-toggle', 'sounds', false], ['#startup-sound-toggle', 'startupSound', true] ];
@@ -45,7 +55,7 @@ const { pathToFileURL } = require('node:url');
     assert.equal(prefs.soundVolume, 47);
     assert.equal(await page.locator('[data-panel="appearance"]').count(), 1);
     assert.deepEqual(errors, []);
-    console.log('PASS: all seven destinations, page focus/active state, icon rendering, experience controls, persistence, and reduced-motion behavior.');
+    console.log('PASS: all destinations, Lucide SVG rendering, remote settings focus, experience controls, persistence, and reduced-motion behavior.');
     await context.close();
   } finally { await browser.close(); }
 })().catch((error) => { console.error(error); process.exit(1); });

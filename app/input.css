@@ -1,0 +1,422 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+    --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(0.985 0 0);
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.708 0 0);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
+    --radius: 0.45rem;
+    --glass-bg: rgba(18, 18, 20, 0.62);
+    --glass-bg-subtle: rgba(18, 18, 20, 0.42);
+    --glass-bg-strong: rgba(18, 18, 20, 0.82);
+    --glass-blur: 16px;
+    --glass-blur-subtle: 8px;
+    --glass-blur-strong: 24px;
+    --glass-border: rgba(255, 255, 255, 0.10);
+    --glass-border-subtle: rgba(255, 255, 255, 0.06);
+    --glass-border-strong: rgba(255, 255, 255, 0.16);
+    --glass-highlight: rgba(255, 255, 255, 0.05);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    --glass-shadow-subtle: 0 4px 16px rgba(0, 0, 0, 0.12);
+    --glass-radius-sm: 8px;
+    --glass-radius-md: 14px;
+    --glass-radius-lg: 18px;
+    --glass-radius-xl: 24px;
+    --glass-text-primary: rgba(255, 255, 255, 0.96);
+    --glass-text-secondary: rgba(255, 255, 255, 0.72);
+    --glass-text-muted: rgba(255, 255, 255, 0.52);
+    --glass-transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+    --glass-performance-mode: blur;
+    --sidebar-width: 6.5rem;
+    --safe-area-x: clamp(3rem, 5vw, 7.5rem);
+    --safe-area-y: clamp(2.75rem, 5vh, 5.5rem);
+    --tile-width: clamp(11.25rem, 14vw, 16.5rem);
+    --tile-height: clamp(8rem, 9vw, 10.75rem);
+    --control-height: 3.5rem;
+    --motion-micro: 140ms;
+    --motion-focus: 190ms;
+    --motion-component: 240ms;
+    --motion-page: 320ms;
+    --motion-cinematic: 480ms;
+    --motion-ease-standard: cubic-bezier(0.2, 0, 0, 1);
+    --motion-ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+    --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  }
+  .dark {
+    --background: oklch(0.145 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --popover: oklch(0.205 0 0);
+    --popover-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.704 0.191 22.216);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
+  }
+  * { @apply border-border; }
+  html { @apply bg-background text-foreground; background-color: #090909; }
+  body { @apply m-0 h-screen overflow-hidden bg-background font-sans text-foreground antialiased; background-color: transparent; }
+  button, input, select, textarea { @apply font-sans text-foreground; }
+  button { @apply cursor-pointer; }
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { @apply outline-none ring-2 ring-ring ring-offset-4 ring-offset-background; }
+  :focus:not(:focus-visible) { @apply outline-none; }
+  [hidden] { display: none !important; }
+  ::selection { @apply bg-accent text-accent-foreground; }
+}
+
+@layer components {
+  .shadcn-button { @apply inline-flex min-h-14 items-center justify-center gap-3 whitespace-nowrap border border-input px-5 py-3 text-base font-medium text-secondary-foreground shadow-sm transition-colors; border-radius: 10px; background: var(--glass-bg-subtle); }
+  .shadcn-button:hover { @apply bg-accent text-accent-foreground; }
+  .shadcn-button:disabled { @apply pointer-events-none opacity-50; }
+  .shadcn-button-primary { @apply border-primary bg-primary text-primary-foreground; }
+  .shadcn-button-primary:hover { @apply bg-primary/90 text-primary-foreground; }
+  .shadcn-button-ghost { @apply border-transparent bg-transparent shadow-none; }
+  .shadcn-button-destructive { @apply border-destructive bg-destructive text-destructive-foreground; }
+  .shadcn-card { @apply border text-card-foreground; border-color: var(--glass-border); border-radius: var(--glass-radius-md); background: var(--glass-bg); box-shadow: var(--glass-shadow-subtle); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
+  .shadcn-input, .shadcn-select { @apply min-h-14 border border-input px-4 text-base text-foreground shadow-sm; border-radius: 10px; background: var(--glass-bg-strong); }
+  .shadcn-switch { @apply relative inline-flex min-h-14 min-w-24 items-center justify-center border border-input bg-secondary px-5 text-base font-medium text-secondary-foreground transition-colors; border-radius: 10px; }
+  .shadcn-switch[aria-pressed="true"] { @apply border-primary bg-primary text-primary-foreground; }
+  .shadcn-switch::after { content: ""; @apply absolute right-2 h-3 w-3 rounded-full bg-muted-foreground; }
+  .shadcn-switch[aria-pressed="true"]::after { @apply bg-primary-foreground; }
+
+  #wallpaper { @apply pointer-events-none fixed inset-0 -z-[1] bg-background bg-cover; background-image: url("../assets/photos/twilight-mountains.jpg"); background-position: center 45%; }
+  #wallpaper[data-theme="midnight"], #wallpaper[data-theme="aurora"], #wallpaper[data-theme="ember"] { background-image: linear-gradient(180deg, #141414, #090909); }
+  #wallpaper[data-theme="cinematic"], #wallpaper:not([data-theme]) { background-image: url("../assets/photos/twilight-mountains.jpg"); }
+  #wallpaper::after { content: ""; @apply absolute inset-0; background: linear-gradient(90deg, rgba(5,5,5,.40), rgba(5,5,5,.12) 62%, rgba(5,5,5,.28)), linear-gradient(0deg, rgba(5,5,5,.48), transparent 64%); }
+  body[data-page]:not([data-page="home"]) #wallpaper { display: block; }
+  #wallpaper[data-theme="midnight"]::after, #wallpaper[data-theme="aurora"]::after, #wallpaper[data-theme="ember"]::after { background: none; }
+  #wallpaper[data-wallpaper] { background-size: cover; }
+  body.animations-enabled:not(.reduced-motion) #wallpaper { animation: wallpaper-drift 46s ease-in-out infinite alternate; }
+  @keyframes wallpaper-drift { from { transform: scale(1); } to { transform: scale(1.018); } }
+  body.animations-enabled #content.motion-enter { animation: page-arrive var(--motion-page) var(--motion-ease-enter) both; }
+  body.animations-enabled #content.application-launching { animation: launch-depart var(--motion-cinematic) var(--motion-ease-exit) both; }
+  @keyframes page-arrive { from { opacity: .72; transform: translate3d(.5rem, 0, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+  @keyframes launch-depart { from { opacity: 1; transform: scale(1); } to { opacity: .72; transform: scale(.985); } }
+  body.animations-disabled *, body.animations-disabled *::before, body.animations-disabled *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  body.reduced-motion #wallpaper { animation: none !important; transform: none; }
+
+  .glass, .glass-subtle, .glass-strong, .glass-navigation { color: var(--glass-text-primary); transition: var(--glass-transition); }
+  .glass-subtle { --glass-surface-bg: var(--glass-bg-subtle); --glass-surface-border: var(--glass-border-subtle); --glass-surface-radius: var(--glass-radius-sm); --glass-surface-shadow: var(--glass-shadow-subtle); --glass-surface-blur: var(--glass-blur-subtle); }
+  .glass, .glass-navigation { --glass-surface-bg: var(--glass-bg); --glass-surface-border: var(--glass-border); --glass-surface-radius: var(--glass-radius-md); --glass-surface-shadow: var(--glass-shadow); --glass-surface-blur: var(--glass-blur); }
+  .glass-strong { --glass-surface-bg: var(--glass-bg-strong); --glass-surface-border: var(--glass-border-strong); --glass-surface-radius: var(--glass-radius-lg); --glass-surface-shadow: var(--glass-shadow-subtle); --glass-surface-blur: var(--glass-blur-strong); }
+  .glass, .glass-subtle, .glass-strong, .glass-navigation { background: var(--glass-surface-bg); border: 1px solid var(--glass-surface-border); border-radius: var(--glass-surface-radius); box-shadow: var(--glass-surface-shadow); backdrop-filter: blur(var(--glass-surface-blur)); -webkit-backdrop-filter: blur(var(--glass-surface-blur)); }
+  .glass-navigation { border-radius: 0; box-shadow: none; }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .glass, .glass-subtle, .glass-strong, .glass-navigation { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  }
+  html.glass-performance-safe, body.glass-performance-safe { --glass-performance-mode: off; }
+  html.glass-performance-safe .glass, html.glass-performance-safe .glass-subtle, html.glass-performance-safe .glass-strong, html.glass-performance-safe .glass-navigation, body.glass-performance-safe .glass, body.glass-performance-safe .glass-subtle, body.glass-performance-safe .glass-strong, body.glass-performance-safe .glass-navigation { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  html.glass-performance-safe .glass, body.glass-performance-safe .glass { background: var(--glass-bg); }
+  html.glass-performance-safe .glass-subtle, body.glass-performance-safe .glass-subtle { background: var(--glass-bg-subtle); }
+  html.glass-performance-safe .glass-strong, body.glass-performance-safe .glass-strong { background: var(--glass-bg-strong); }
+  #sidebar { @apply fixed inset-y-0 left-0 z-30 flex flex-col items-center py-8; width: var(--sidebar-width); transition: none; }
+  .sidebar-items { @apply m-0 flex w-full list-none flex-col items-center gap-3 p-0; }
+  .sidebar-items > li { @apply w-full text-center; }
+  .sidebar-label { display: none; }
+  .sidebar-item { @apply mx-auto flex h-16 w-16 items-center justify-center border border-transparent bg-transparent text-muted-foreground; border-radius: var(--glass-radius-sm); transition: transform var(--motion-focus) var(--motion-ease-enter), color var(--motion-focus) var(--motion-ease-standard), background-color var(--motion-focus) var(--motion-ease-standard), border-color var(--motion-focus) var(--motion-ease-standard); transform: translateZ(0); }
+  .sidebar-item:hover, .sidebar-item.active { @apply bg-accent text-accent-foreground; }
+  .sidebar-item.active { @apply border-border; }
+  .sidebar-icon, [data-lucide] { @apply inline-flex h-7 w-7 shrink-0 items-center justify-center; }
+  [data-lucide] svg { @apply h-full w-full; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+  .sidebar-item:focus-visible { @apply z-10; }
+
+  #content { @apply absolute inset-y-0 right-0 flex flex-col gap-10 overflow-x-hidden overflow-y-auto; left: var(--sidebar-width); padding: var(--safe-area-y) var(--safe-area-x); }
+  #content[data-home-view="true"] { padding-top: clamp(19rem, 36vh, 29rem); }
+  .header { @apply pointer-events-none fixed inset-x-0 top-0 z-20 flex items-start justify-between gap-8; left: var(--sidebar-width); min-height: 16rem; padding: var(--safe-area-y) var(--safe-area-x) 0; }
+  body:not([data-page="home"]) .header-left { @apply pointer-events-none opacity-0; }
+  body:not([data-page="home"]) .header-right { @apply invisible; }
+  .header-left { @apply flex items-center; }
+  .brand { @apply flex items-center gap-3 text-xl font-semibold tracking-wide; }
+  .mark { @apply inline-flex h-12 w-12 items-center justify-center rounded-md bg-primary text-sm font-bold text-primary-foreground; }
+  .header-right { @apply pointer-events-auto flex shrink-0 flex-col items-end gap-3; width: 35vw; max-width: 32rem; }
+  .header-top-bar { @apply flex w-full items-start justify-between gap-4; }
+  .clock-group { @apply flex flex-col items-end gap-1 text-right; }
+  #clock { @apply text-3xl font-medium tabular-nums tracking-tight; }
+  #date { @apply text-base text-muted-foreground; }
+  .status-icons { @apply flex items-center gap-3; }
+  .wifi-icon { @apply h-6 w-6 text-muted-foreground; }
+  .icon-btn { @apply shadcn-button h-14 w-14 min-h-14 p-3; }
+  #settings-open { @apply flex; }
+  #preview { @apply w-full overflow-hidden border; border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-md); background: var(--glass-bg-strong); box-shadow: var(--glass-shadow-subtle); }
+  .preview-float { @apply fixed bottom-24 right-8 z-40; }
+  .preview-launcher { @apply flex h-14 w-14 items-center justify-center border text-muted-foreground shadow-sm transition-colors; background: var(--glass-bg); border-color: var(--glass-border); border-radius: var(--glass-radius-xl); }
+  .preview-launcher:hover { @apply bg-accent text-accent-foreground; }
+  .preview-launcher > span { @apply h-6 w-6; }
+  .preview-panel { @apply absolute bottom-full right-0 mb-3 w-[min(28rem,calc(100vw-8rem))] border p-2 shadow-lg; background: var(--glass-bg-strong); border-color: var(--glass-border); border-radius: var(--glass-radius-lg); animation: preview-panel-arrive var(--motion-component) var(--motion-ease-enter) both; }
+  .preview-panel #preview { @apply w-full; }
+  .preview-collapse { @apply absolute right-3 top-3 z-10 flex h-10 w-10 items-center justify-center border text-muted-foreground transition-colors; background: var(--glass-bg); border-color: var(--glass-border); border-radius: var(--glass-radius-sm); }
+  .preview-collapse:hover { @apply bg-accent text-accent-foreground; }
+  .preview-collapse > span { @apply h-5 w-5; }
+  @keyframes preview-panel-arrive { from { opacity: 0; transform: translate3d(0, .375rem, 0) scale(.99); } to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
+  .settings-dialog-backdrop:not([hidden]) { animation: dialog-backdrop-in var(--motion-component) var(--motion-ease-standard) both; }
+  .settings-dialog-backdrop:not([hidden]) .settings-dialog { animation: dialog-in var(--motion-component) var(--motion-ease-enter) both; }
+  .settings-dialog-backdrop.motion-dismiss { animation: dialog-backdrop-out var(--motion-component) var(--motion-ease-exit) both; }
+  .settings-dialog-backdrop.motion-dismiss .settings-dialog { animation: dialog-out var(--motion-component) var(--motion-ease-exit) both; }
+  #exit-dialog.motion-enter { animation: dialog-in var(--motion-component) var(--motion-ease-enter) both; }
+  #exit-dialog.motion-dismiss { animation: dialog-out var(--motion-component) var(--motion-ease-exit) both; }
+  @keyframes dialog-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes dialog-backdrop-out { from { opacity: 1; } to { opacity: 0; } }
+  @keyframes dialog-in { from { opacity: 0; transform: translate3d(0, .5rem, 0) scale(.985); } to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
+  @keyframes dialog-out { from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } to { opacity: 0; transform: translate3d(0, .25rem, 0) scale(.99); } }
+  #preview-picture { @apply relative aspect-video w-full bg-muted; }
+  #preview-message { @apply absolute inset-0 flex items-center justify-center p-4 text-center text-sm text-muted-foreground; }
+  .preview-caption { @apply flex min-h-12 items-center gap-2 border-t px-3 text-sm text-muted-foreground; background: var(--glass-bg-strong); border-color: var(--glass-border-subtle); }
+  .preview-caption > span:nth-child(2) { @apply min-w-0 flex-1 truncate; }
+  .preview-caption button { @apply shadcn-button min-h-10 px-3 py-2 text-sm; }
+  .live-dot { @apply h-2.5 w-2.5 shrink-0 rounded-full bg-primary; }
+  #preview-float { @apply fixed bottom-24 right-8 z-40; }
+  #preview-float > button { @apply shadcn-button; }
+  #preview-panel { @apply absolute bottom-16 right-0 w-[28rem] rounded-lg border bg-card p-4 shadow-sm; }
+  #preview-panel #preview { @apply relative w-full; }
+  #preview-collapse { @apply absolute right-3 top-3 z-10 h-12 min-h-12 w-12 p-3; }
+
+  .page-section { @apply flex min-h-full flex-col gap-8; }
+  .page-head { @apply flex flex-col gap-2; }
+  .apps-page .page-head { @apply flex-row items-center justify-between gap-4; }
+  .apps-actions { @apply flex items-center gap-3; }
+  .page-title { @apply m-0 text-4xl font-semibold tracking-tight; }
+  .page-subtitle { @apply m-0 text-lg text-muted-foreground; }
+  .home-page { @apply gap-10; }
+  .hero { @apply pointer-events-none min-h-24; }
+  .content-section { @apply mb-2; }
+  .section-title { @apply mb-5 text-2xl font-semibold tracking-tight; }
+  .carousel { @apply flex gap-5 overflow-x-auto overflow-y-hidden py-2 pr-2; }
+  .carousel-item { @apply relative flex h-36 w-64 shrink-0 items-center justify-center overflow-hidden border-2 border-transparent p-3 text-left transition-colors; background: var(--glass-bg-subtle); border-radius: var(--glass-radius-md); box-shadow: var(--glass-shadow-subtle); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
+  .carousel-item:focus-visible { @apply border-primary; transform: scale(1.035); }
+  .carousel-item { transition: transform var(--motion-focus) var(--motion-ease-enter), opacity var(--motion-focus) var(--motion-ease-standard), border-color var(--motion-focus) var(--motion-ease-standard), background-color var(--motion-focus) var(--motion-ease-standard); transform-origin: center; }
+  .app, .app-grid-item { transition: transform var(--motion-focus) var(--motion-ease-enter), opacity var(--motion-focus) var(--motion-ease-standard), border-color var(--motion-focus) var(--motion-ease-standard), background-color var(--motion-focus) var(--motion-ease-standard); transform-origin: center; }
+  .app:focus-visible, .app-grid-item:focus-visible { transform: scale(1.025); }
+  .carousel-item.active { @apply border-border; }
+  .app-tile { @apply flex h-full w-full flex-col items-center justify-center gap-3 border p-4; background: var(--glass-bg-subtle); border-radius: var(--glass-radius-sm); }
+  .app-icon { @apply h-12 w-12 text-foreground; }
+  .app-tile .app-name { @apply text-2xl font-medium tracking-wide; }
+  .text-app-tile { @apply border-transparent; }
+  .continue-card, .trending-card { @apply h-52 max-w-[32vw] p-0; width: 24rem; }
+  .card-bg { @apply absolute inset-0 overflow-hidden bg-muted; }
+  .card-bg img { @apply h-full w-full object-cover; }
+  .card-bg[data-photo-fallback="true"] { background-color: #171717; }
+  .trending-card .card-bg { @apply bg-muted; }
+  .card-overlay { @apply absolute inset-0 bg-gradient-to-t to-transparent; background-image: linear-gradient(to top, color-mix(in oklab, var(--background) 95%, transparent), color-mix(in oklab, var(--background) 25%, transparent), transparent); }
+  .card-content { @apply absolute inset-x-0 bottom-0 z-10 p-5 text-left; }
+  .content-title { @apply m-0 text-xl font-semibold; }
+  .content-meta { @apply mb-2 mt-1 text-sm text-muted-foreground; }
+  .progress-bar { @apply h-1.5 overflow-hidden rounded-full bg-muted; }
+  .progress-fill { @apply h-full rounded-full bg-primary; }
+  .progress-25 { width: 25%; } .progress-35 { width: 35%; } .progress-45 { width: 45%; } .progress-65 { width: 65%; }
+
+  .apps-grid, .games-grid, .search-grid { @apply grid grid-cols-[repeat(auto-fill,minmax(var(--tile-width),1fr))] gap-5; }
+  .app, .app-grid-item { @apply shadcn-card flex min-h-40 min-w-0 flex-col items-center justify-center gap-3 p-5 text-center transition-colors; }
+  .app:hover, .app-grid-item:hover, .app:focus-visible, .app-grid-item:focus-visible { @apply border-primary bg-accent; }
+  .app .initial, .app-grid-item .initial { @apply flex h-16 w-16 shrink-0 items-center justify-center rounded-md bg-secondary text-xl font-semibold text-secondary-foreground; }
+  .app .app-icon, .app-grid-item img { @apply h-16 w-16 rounded-md object-contain; }
+  .app-name { @apply max-w-full overflow-hidden text-ellipsis text-base leading-6; }
+  .apps-grid .app-name, .games-grid .app-name, .search-grid .app-name { font-size: clamp(1.25rem, 1.4vw, 1.75rem); line-height: 1.35; font-weight: 500; }
+  .launcher-app-grid .app .app-name { font-size: clamp(1.125rem, 1.25vw, 1.5rem); line-height: 1.35; }
+  .app-action { @apply text-sm text-muted-foreground; }
+  .page-controls { @apply flex flex-wrap items-end gap-5; }
+  .filter-group { @apply flex flex-col gap-2; }
+  .filter-label { @apply text-base font-medium text-muted-foreground; }
+  .filter-select, .setting-select { @apply shadcn-select min-w-48; }
+  .filter-btn, .setting-btn, .primary-btn, .xbox-launch-btn, .settings-source-list button { @apply shadcn-button; }
+  .filter-btn.danger, .setting-btn.danger { @apply border-destructive text-destructive-foreground; }
+  .search-page { @apply gap-6; }
+  .search-hero { @apply m-0; }
+  .search-bar { @apply flex min-h-16 w-full items-center gap-4 border px-5; background: var(--glass-bg-strong); border-color: var(--glass-border); border-radius: var(--glass-radius-md); box-shadow: var(--glass-shadow-subtle); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
+  .search-icon { @apply h-7 w-7 text-muted-foreground; }
+  .search-bar input { @apply min-h-14 min-w-0 flex-1 border-0 bg-transparent p-0 text-xl text-foreground outline-none placeholder:text-muted-foreground; }
+  .search-clear { @apply shadcn-button h-12 w-12 min-h-12 p-3; }
+  .search-results { @apply mx-auto w-full max-w-6xl; }
+  .search-section { @apply mb-8; }
+  .search-section-title { @apply mb-4 text-xl font-semibold; }
+  .search-empty, .empty-state { @apply flex min-h-40 items-center justify-center text-center text-lg text-muted-foreground; }
+  .search-chips { @apply flex flex-wrap gap-4; }
+  .search-chip { @apply shadcn-button rounded-full; }
+  .search-keyboard { @apply mx-auto mt-8 w-full max-w-5xl border p-6; background: var(--glass-bg-strong); border-color: var(--glass-border); border-radius: var(--glass-radius-md); box-shadow: var(--glass-shadow-subtle); }
+  .keyboard-row { @apply mb-3 flex justify-center gap-3; }
+  .key { @apply shadcn-button min-h-16 min-w-14; }
+  .key-wide { @apply min-w-32; }
+  .recent-list { @apply flex flex-col gap-4; }
+  .recent-card { @apply shadcn-card flex min-h-24 w-full flex-row items-center justify-start gap-5 p-5 text-left; }
+  .inputs-grid { @apply grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-5; }
+  .input-tile { @apply shadcn-card flex min-h-28 items-center gap-5 p-5 text-left; }
+  .input-icon { @apply flex h-14 w-14 items-center justify-center rounded-md bg-secondary text-secondary-foreground; }
+  .input-name { @apply flex-1 text-lg font-medium; }
+  .input-status, .settings-status-pill { @apply border px-3 py-2 text-sm text-muted-foreground; background: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-sm); }
+  .xbox-feature { @apply flex items-center gap-6 border p-6; background: var(--glass-bg); border-color: var(--glass-border); border-radius: var(--glass-radius-md); box-shadow: var(--glass-shadow-subtle); }
+  .xbox-artwork { @apply h-16 w-28 rounded-md bg-secondary; }
+  .xbox-info { @apply flex-1; }
+  .xbox-name { @apply text-xl font-semibold; }
+  .empty-destination { @apply min-h-[55vh]; }
+  .destination-empty { @apply flex min-h-[40vh] flex-col items-center justify-center text-center; }
+  .destination-empty > span { @apply mb-5 flex h-14 w-14 items-center justify-center text-muted-foreground; }
+  .destination-empty > span svg { @apply h-9 w-9; }
+  .destination-empty h3 { @apply mb-2 text-2xl font-semibold; }
+  .destination-empty p { @apply m-0 max-w-xl text-lg leading-7 text-muted-foreground; }
+  .photo-page { @apply gap-8; }
+  .photo-feature-grid { @apply grid grid-cols-3 gap-5; }
+  .photo-feature { @apply relative aspect-video overflow-hidden border; background: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-md); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
+  .photo-feature img { @apply h-full w-full object-cover; object-position: center 50%; }
+  .media-feature-grid .photo-feature:first-child img { object-position: center 48%; }
+  .photo-feature::after { content: ""; @apply absolute inset-0; background: linear-gradient(to top, rgba(0,0,0,.62), transparent 48%); }
+  .photo-feature-caption { @apply absolute bottom-5 left-5 z-10 text-2xl font-medium tracking-wide text-white; }
+  .photo-page-note { @apply mt-auto text-base text-muted-foreground; }
+
+  #page-settings.settings-screen { @apply relative z-10 flex min-h-full flex-col bg-transparent; }
+  .settings-topbar { @apply mb-8; }
+  .settings-topbar h1 { @apply m-0 text-4xl font-semibold tracking-tight; }
+  .settings-workspace { @apply grid min-h-0 flex-1 grid-cols-[minmax(15rem,24%)_minmax(0,1fr)] gap-8; }
+  .settings-sidebar { @apply min-h-0 overflow-y-auto border-r pr-4; background: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-md); padding: 1rem; backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
+  .settings-sidebar-heading { @apply px-3 pb-4 text-base font-medium text-muted-foreground; }
+  .settings-categories { @apply m-0 flex list-none flex-col gap-2 p-0; }
+  .settings-category { @apply flex min-h-16 w-full items-center gap-4 border border-transparent bg-transparent px-4 py-3 text-left text-muted-foreground; border-radius: var(--glass-radius-sm); }
+  .settings-category:hover, .settings-category.active { @apply bg-accent text-accent-foreground; }
+  .settings-category.active { @apply border-border; }
+  .settings-category > span:first-child { @apply h-7 w-7; }
+  .settings-category b { @apply block text-base font-medium; }
+  .settings-category small { @apply mt-1 block text-sm text-muted-foreground; }
+  .settings-content-shell { @apply min-h-0 overflow-hidden; }
+  .settings-panel { @apply h-full w-full overflow-auto px-5 pb-8; background: var(--glass-bg-strong); border: 1px solid var(--glass-border-subtle); border-radius: var(--glass-radius-lg); box-shadow: var(--glass-shadow-subtle); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
+  .settings-panel[hidden] { display: none !important; }
+  .settings-panel-heading { @apply mb-6 flex items-center gap-4; }
+  .settings-panel-heading h2 { @apply m-0 text-3xl font-semibold tracking-tight; }
+  .settings-heading-icon { @apply h-8 w-8 text-foreground; }
+  .settings-group { @apply mb-6 border-b pb-5; }
+  .settings-group h3 { @apply mb-3 text-lg font-semibold; }
+  .setting-row { @apply flex min-h-16 items-center justify-between gap-5 px-3 py-2; border-radius: var(--glass-radius-sm); }
+  .setting-row + .setting-row { @apply mt-1; }
+  .setting-label { @apply min-w-0; }
+  .setting-label strong { @apply block text-base font-medium; }
+  .setting-label small, .settings-note { @apply mt-1 block text-sm leading-6 text-muted-foreground; }
+  .setting-control { @apply flex items-center justify-end gap-3; }
+  .setting-toggle { @apply shadcn-switch; }
+  .settings-panel input[type="text"] { @apply shadcn-input min-w-64; }
+  .settings-panel input[type="range"] { @apply h-3 w-72 accent-primary; }
+  .settings-panel input[type="range"]:focus-visible { @apply rounded-sm outline-none ring-2 ring-ring ring-offset-4 ring-offset-background; }
+  .settings-wallpaper-gallery { @apply my-4 grid grid-cols-3 gap-4; }
+  .settings-wallpaper-choice { @apply relative aspect-video overflow-hidden border bg-card text-left; border-radius: var(--glass-radius-sm); }
+  .settings-wallpaper-choice.selected { @apply border-primary ring-1 ring-ring; }
+  .settings-wallpaper-image { @apply absolute inset-0 overflow-hidden bg-muted; }
+  .settings-wallpaper-image img { @apply h-full w-full object-cover; }
+  .settings-wallpaper-image::after { content: ""; @apply absolute inset-0; background-image: linear-gradient(to top, rgba(0,0,0,.72), transparent 75%); }
+  .settings-wallpaper-image.photo-failed { background-color: #171717; }
+  .settings-wallpaper-label { @apply absolute bottom-3 left-3 z-10 text-base font-medium; }
+  .settings-app-list { @apply mt-4 grid grid-cols-2 gap-3; }
+  .settings-app-row { @apply flex items-center justify-between gap-3 border px-4 py-3 text-base; background: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-sm); }
+  .settings-source-list { @apply mt-4 flex flex-wrap gap-3; }
+  .settings-details { @apply text-muted-foreground; }
+  .settings-details summary { @apply min-h-14 cursor-pointer py-4 text-base; }
+  #diagnostics { @apply whitespace-pre-wrap text-sm; }
+  .settings-remote-hints { @apply mt-5 flex justify-end gap-6 text-sm text-muted-foreground; }
+  .settings-remote-hints > span { @apply flex items-center gap-2; }
+  .legacy-controls { @apply hidden; }
+  .settings-dialog-backdrop { @apply fixed inset-0 z-50 flex items-center justify-center p-8; background: var(--glass-bg-strong); }
+  .settings-dialog { @apply glass-strong w-full max-w-2xl p-8; }
+  .settings-dialog h2 { @apply mt-0 text-3xl font-semibold; }
+  .settings-dialog p { @apply text-lg leading-7 text-muted-foreground; }
+  .settings-dialog > div { @apply flex justify-end gap-4; }
+
+  .launcher-library { @apply mt-8; }
+  .launcher-library-heading { @apply mb-4 flex items-center justify-between gap-4; }
+  .launcher-library-heading h3 { @apply m-0 text-xl font-semibold; }
+  .launcher-library-heading #app-count { @apply ml-3 text-base text-muted-foreground; }
+  .launcher-app-grid { @apply grid grid-cols-2 gap-4 pt-3 md:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5; }
+  .launcher-app-grid .app { @apply min-h-28 flex-row justify-start gap-4 p-4 text-left; }
+  .launcher-app-grid .app .app-name { @apply text-base; }
+  .launcher-app-grid .app .initial { @apply min-h-12 min-w-12 items-center justify-center rounded-md bg-transparent text-base font-medium text-foreground; }
+  .launcher-app-grid .app .app-name { @apply text-xl font-medium; }
+  #launch-feedback { @apply mb-4 p-4 text-base text-foreground; }
+  #launch-feedback[hidden] { display: none !important; }
+  #edit-hint, #catalog-mode, #empty { @apply text-sm text-muted-foreground; }
+  #refresh { @apply mb-3; }
+  #library > * { @apply pointer-events-auto; }
+  .footer { @apply fixed bottom-0 z-20 flex items-center justify-between gap-4 border-t px-8 py-3 text-sm text-muted-foreground; left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); background: var(--glass-bg-strong); border-color: var(--glass-border-subtle); }
+  .quick-actions { @apply flex gap-3; }
+  .quick-actions button { @apply shadcn-button min-h-12 px-4 py-2 text-sm; }
+  .nav-hint { @apply text-sm text-muted-foreground; }
+  #status { @apply max-w-[38vw] truncate; }
+  #exit-dialog { @apply fixed inset-0 z-50 flex flex-col items-center justify-center gap-5 p-12; background: var(--glass-bg-strong); }
+  #exit-dialog h2 { @apply text-3xl font-semibold; }
+  #exit-dialog button { @apply shadcn-button min-w-56; }
+}
+
+@layer utilities {
+  .shadcn-card, .app, .app-grid-item, .recent-card, .input-tile, .settings-app-row, #preview-panel { background-color: var(--glass-bg); border-color: var(--glass-border); border-radius: var(--glass-radius-md); }
+  .carousel-item, .app-tile, .photo-feature, .settings-sidebar, .input-status, .settings-status-pill { background-color: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); }
+  .search-bar, .search-keyboard, .settings-panel, .xbox-feature, .settings-dialog { background-color: var(--glass-bg-strong); border-color: var(--glass-border-strong); }
+  .shadcn-button { border-color: var(--glass-border); }
+  .shadcn-switch { border-color: var(--glass-border); }
+  .shadcn-card, .app, .app-grid-item, .carousel-item, .app-tile, .search-bar, .search-keyboard, .photo-feature, .settings-sidebar, .settings-panel, .xbox-feature, .recent-card, .input-tile, .settings-app-row, .settings-dialog, #preview, #preview-panel, .footer { backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    #sidebar, .shadcn-card, .app, .app-grid-item, .carousel-item, .app-tile, .search-bar, .search-keyboard, .photo-feature, .settings-sidebar, .settings-panel, .settings-app-row, .settings-dialog, #preview, #preview-panel, .footer, .xbox-feature, .recent-card, .input-tile { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  }
+  html.glass-performance-safe #sidebar, html.glass-performance-safe .glass, html.glass-performance-safe .glass-subtle, html.glass-performance-safe .glass-strong, html.glass-performance-safe .glass-navigation, html.glass-performance-safe .shadcn-card, html.glass-performance-safe .app, html.glass-performance-safe .app-grid-item, html.glass-performance-safe .carousel-item, html.glass-performance-safe .app-tile, html.glass-performance-safe .search-bar, html.glass-performance-safe .search-keyboard, html.glass-performance-safe .photo-feature, html.glass-performance-safe .settings-sidebar, html.glass-performance-safe .settings-panel, html.glass-performance-safe .settings-app-row, html.glass-performance-safe .settings-dialog, html.glass-performance-safe #preview, html.glass-performance-safe #preview-panel, html.glass-performance-safe .footer, html.glass-performance-safe .xbox-feature, html.glass-performance-safe .recent-card, html.glass-performance-safe .input-tile { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  html.glass-performance-safe .shadcn-card, html.glass-performance-safe .app, html.glass-performance-safe .app-grid-item, html.glass-performance-safe .recent-card, html.glass-performance-safe .input-tile, html.glass-performance-safe .settings-app-row, html.glass-performance-safe #preview, html.glass-performance-safe #preview-panel { background-color: var(--glass-bg); }
+  html.glass-performance-safe .carousel-item, html.glass-performance-safe .app-tile, html.glass-performance-safe .photo-feature, html.glass-performance-safe .settings-sidebar, html.glass-performance-safe .input-status, html.glass-performance-safe .settings-status-pill { background-color: var(--glass-bg-subtle); }
+  html.glass-performance-safe .search-bar, html.glass-performance-safe .search-keyboard, html.glass-performance-safe .settings-panel, html.glass-performance-safe .settings-dialog, html.glass-performance-safe .xbox-feature { background-color: var(--glass-bg-strong); }
+}
+
+@media (min-width: 3000px) {
+  :root { --sidebar-width: 9rem; --safe-area-x: clamp(7.5rem, 5vw, 12rem); --safe-area-y: clamp(5.5rem, 5vh, 9.75rem); --tile-width: clamp(21rem, 14vw, 33.75rem); --tile-height: clamp(14rem, 9vw, 21.625rem); --control-height: 4.75rem; }
+  .sidebar-item { @apply h-20 w-20; }
+  .sidebar-icon, [data-lucide] { @apply h-8 w-8; }
+}
+@media (max-width: 1200px) {
+  :root { --sidebar-width: 5rem; --safe-area-x: 3rem; }
+  #sidebar { @apply w-20; }
+  .sidebar-item { @apply h-14 w-14; }
+  .settings-workspace { @apply grid-cols-[minmax(13rem,30%)_minmax(0,1fr)] gap-4; }
+  .settings-panel { @apply px-4; }
+}
+body.reduced-motion, body.animations-disabled { --motion-micro: 1ms; --motion-focus: 1ms; --motion-component: 1ms; --motion-page: 1ms; --motion-cinematic: 1ms; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  #wallpaper { animation: none !important; transform: none; }
+}

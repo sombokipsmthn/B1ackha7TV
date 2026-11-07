@@ -8,6 +8,25 @@
 
   var TV = window.tizen || null;
   var IS_TV = !!TV && !!TV.application && typeof TV.application.getAppsInfo === 'function';
+  var discoveryError = null;
+
+  function normalizeApp(info) {
+    if (!info || typeof info !== 'object' || typeof info.id !== 'string' || !info.id.trim()) { return null; }
+    var name = typeof info.name === 'string' && info.name.trim() ? info.name.trim() : info.id;
+    var categories = Array.isArray(info.categories) ? info.categories.filter(function (value) { return typeof value === 'string' && value.trim(); }) : [];
+    var visible = typeof info.show === 'boolean' ? info.show : (typeof info.isVisible === 'boolean' ? info.isVisible : true);
+    return {
+      id: info.id.trim(), packageId: typeof info.packageId === 'string' ? info.packageId : '',
+      name: name, version: typeof info.version === 'string' ? info.version : '',
+      iconPath: typeof info.iconPath === 'string' ? info.iconPath : '',
+      categories: categories, show: visible, installed: true, source: 'installed'
+    };
+  }
+
+  function normalizeApps(list) {
+    if (!Array.isArray(list)) { return []; }
+    return list.map(normalizeApp).filter(function (app) { return !!app; });
+  }
 
   // ---------------------------------------------------------------------------
   // Mock data for browser preview
@@ -70,19 +89,28 @@
      * @param {function} callback - receives (apps: AppInfo[])
      */
     getAppsInfo: function (callback) {
-      if (!IS_TV) {
+      if (!TV) {
         // Browser preview: synchronous so tests and initial render behave predictably.
-        callback(MOCK_APPS.slice());
+        callback(normalizeApps(MOCK_APPS).map(function (app) {
+          app.installed = false; app.source = 'development'; return app;
+        }));
         return;
+      }
+      if (!TV.application || typeof TV.application.getAppsInfo !== 'function') {
+        discoveryError = { name: 'NotSupportedError', message: 'Application discovery API unavailable' };
+        callback([]); return;
       }
       try {
         TV.application.getAppsInfo(function (list) {
-          callback(list || []);
+          discoveryError = null;
+          callback(normalizeApps(list));
         }, function (e) {
+          discoveryError = e || { name: 'UnknownError' };
           console.error('getAppsInfo error:', e);
           callback([]);
         });
       } catch (e) {
+        discoveryError = e;
         console.error('getAppsInfo throw:', e);
         callback([]);
       }
@@ -92,14 +120,21 @@
      * Get detailed info for a single app
      */
     getAppInfo: function (appId) {
-      if (!IS_TV) {
+      if (!TV) {
         return MOCK_APPS.find(function (a) { return a.id === appId; }) || null;
       }
+      if (!TV.application || typeof TV.application.getAppInfo !== 'function') { return null; }
       try {
-        return TV.application.getAppInfo(appId);
+        return normalizeApp(TV.application.getAppInfo(appId));
       } catch (e) {
         return null;
       }
+    },
+
+    getDiscoveryError: function () { return discoveryError; },
+
+    isInstalledApp: function (appId, apps) {
+      return typeof appId === 'string' && appId.length > 0 && (apps || []).some(function (app) { return app && app.id === appId && app.installed !== false; });
     },
 
     /**
@@ -132,12 +167,8 @@
      * @param {object} [appControl] - optional ApplicationControl
      */
     launchApp: function (appId, appName, onAccepted, onError, appControl) {
-      if (!IS_TV) {
-        // Browser preview: simulate acceptance after short delay
-        setTimeout(function () { onAccepted(); }, 100);
-        setTimeout(function () { onError({ name: 'LaunchUnavailable', message: 'Launching requires TV hardware' }); }, 200);
-        return;
-      }
+      if (!IS_TV) { if (onError) { onError({ name: 'NotSupportedError', message: 'Launching requires Tizen TV' }); } return; }
+      if (typeof appId !== 'string' || !appId.trim()) { if (onError) { onError({ name: 'NotFoundError', message: 'Invalid application ID' }); } return; }
       if (!TV.application || typeof TV.application.launch !== 'function') {
         onError({ name: 'NotSupported', message: 'Launch API unavailable' });
         return;
@@ -145,11 +176,8 @@
       try {
         var canControl = typeof TV.ApplicationControl === 'function' && typeof TV.application.launchAppControl === 'function';
         var control = appControl || (canControl ? new TV.ApplicationControl('http://tizen.org/appcontrol/operation/default', null, null, null, null, 'SINGLE') : null);
-        if (control) {
-          TV.application.launchAppControl(control, appId, onAccepted, onError);
-        } else {
-          TV.application.launch(appId, onAccepted, onError);
-        }
+        if (control) { TV.application.launchAppControl(control, appId, onAccepted, onError); }
+        else { TV.application.launch(appId, onAccepted, onError); }
       } catch (e) {
         onError(e);
       }
@@ -277,7 +305,7 @@
      * Resolve a filesystem path to a file:// URI (for icons)
      */
     resolvePath: function (path, callback, errorCallback) {
-      if (!IS_TV || !TV.filesystem || !TV.filesystem.resolve) {
+      if (!IS_TV || !TV.filesystem || typeof TV.filesystem.resolve !== 'function') {
         if (errorCallback) { errorCallback({ name: 'NotSupported', message: 'Filesystem API unavailable' }); }
         return;
       }
