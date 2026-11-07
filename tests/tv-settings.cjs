@@ -26,7 +26,7 @@ const assert=require('node:assert/strict'),{pathToFileURL}=require('node:url'),p
    await p.locator('#preview-launcher').click();
    await p.locator('#preview-panel').waitFor({state:'visible'});
   }
-  await p.locator('[data-section="settings"]').click();await p.locator('[data-panel="system"]').click();await p.locator('#tv-settings-open-enhanced').click();
+  await p.locator('[data-section="settings"]').click();await p.locator('[data-panel="about"]').click();await p.locator('#tv-settings-open-enhanced').click();
   if(mode==='timeout')await p.waitForTimeout(5200);
   assert.equal(await p.locator('#tv-settings-open-enhanced').isEnabled(),true);
   const calls=await p.evaluate(()=>window.calls);

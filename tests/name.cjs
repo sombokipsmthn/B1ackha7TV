@@ -9,12 +9,12 @@ const p=await context.newPage();const errors=[];p.on('pageerror',e=>errors.push(
 assert.equal(await p.locator('#launcher-title').innerText(),'Kipsmthn');
 assert.equal(await p.locator('#launcher-mark').innerText(),'K');
 assert.equal(await p.title(),'Kipsmthn');
-await p.locator('#settings-open').click();await p.locator('#launcher-name').fill('  Living   Room  ');await p.locator('#name-save').click();
+await p.locator('#settings-open').click();await p.locator('[data-panel="about"]').click();await p.locator('#launcher-name').fill('  Living   Room  ');await p.locator('#name-save').click();
 assert.equal(await p.locator('#launcher-title').innerText(),'Living Room');assert.equal(await p.locator('#launcher-mark').innerText(),'LR');
 await p.reload();assert.equal(await p.locator('#launcher-title').innerText(),'Living Room');
-const prefs=await p.evaluate(()=>JSON.parse(localStorage.getItem('kipsmthn.settings.v1')));assert.deepEqual(prefs.favorites,['saved.app']);assert.equal(prefs.preview,false);assert.equal(prefs.theme,'ember');
+const prefs=await p.evaluate(()=>JSON.parse(localStorage.getItem('kipsmthn.settings.v1')));assert.deepEqual(prefs.favorites,['saved.app']);assert.equal(prefs.preview,false);assert.equal(prefs.theme,'cinematic','obsolete ember theme safely migrates to cinematic');
 assert.equal(await p.evaluate(()=>localStorage.getItem('b1ackha7tv.settings.v1')),null);
-await p.locator('#settings-open').click();
+await p.locator('#settings-open').click();await p.locator('[data-panel="about"]').click();
 await p.locator('#launcher-name').fill('<img src=x onerror=alert(1)>');await p.locator('#name-save').click();
 assert.equal(await p.locator('#launcher-title img').count(),0);assert.equal(await p.locator('#launcher-title').innerText(),'<img src=x onerror=alert(1)>');
 await p.locator('#launcher-name').fill(' ');await p.locator('#name-save').click();assert.equal(await p.locator('#launcher-title').innerText(),'Kipsmthn');

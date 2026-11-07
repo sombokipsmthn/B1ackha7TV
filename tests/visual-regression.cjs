@@ -129,9 +129,9 @@ const update = process.env.UPDATE_SCREENSHOTS === '1';
     }
 
     await page.locator('.sidebar-item[data-section="settings"]').click();
-    await page.locator('[data-panel="general"]').focus();
+    await page.locator('[data-panel="appearance"]').focus();
     await page.keyboard.press('ArrowDown');
-    assert.equal(await page.evaluate(() => document.activeElement.getAttribute('data-panel')), 'appearance');
+    assert.equal(await page.evaluate(() => document.activeElement.getAttribute('data-panel')), 'home');
     await page.keyboard.press('ArrowRight');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'theme-select');
     assert.notEqual(await page.locator('#theme-select').evaluate((element) => getComputedStyle(element).boxShadow), 'none');

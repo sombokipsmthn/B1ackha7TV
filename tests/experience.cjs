@@ -75,18 +75,28 @@ const { pathToFileURL } = require('node:url');
     await page.locator('#inputs-grid .input-tile').nth(1).click();
     assert.deepEqual(await page.evaluate(() => window.__lastSource), { type: 'HDMI', number: 1, name: 'HDMI 1' }, 'input switching must pass the TV-reported source object');
     await page.locator('.sidebar-item[data-section="settings"]').click();
-    await page.locator('[data-panel="general"]').focus();
+    await page.locator('[data-panel="appearance"]').focus();
     await page.keyboard.press('ArrowDown');
-    assert.equal(await page.evaluate(() => document.activeElement.getAttribute('data-panel')), 'appearance', 'remote down should move between settings categories');
+    assert.equal(await page.evaluate(() => document.activeElement.getAttribute('data-panel')), 'home', 'remote down should move between settings categories');
+    await page.keyboard.press('ArrowDown');
+    assert.equal(await page.evaluate(() => document.activeElement.getAttribute('data-panel')), 'sound-motion', 'category navigation should remain ordered and deterministic');
+    await page.keyboard.press('ArrowUp');
+    assert.equal(await page.evaluate(() => document.activeElement.getAttribute('data-panel')), 'home');
+    await page.keyboard.press('ArrowUp');
     await page.keyboard.press('ArrowRight');
     assert.equal(await page.evaluate(() => document.activeElement.id), 'theme-select', 'remote right should enter the active settings panel');
     assert.notEqual(await page.locator('#theme-select').evaluate((element) => getComputedStyle(element).boxShadow), 'none', 'remote focus must have a visible shadcn ring');
 
     await page.locator('[data-panel="appearance"]').click();
-    const toggles = [ ['#animations-toggle', 'animations', false], ['#reduced-motion-toggle', 'reducedMotion', true], ['#sounds-toggle', 'sounds', false], ['#startup-sound-toggle', 'startupSound', true] ];
+    const toggles = [ ['#animations-toggle', 'animations', false], ['#reduced-motion-toggle', 'reducedMotion', true] ];
     for (const [selector, key, value] of toggles) {
       const control = page.locator(selector);
-      await control.scrollIntoViewIfNeeded();
+      if ((await control.getAttribute('aria-pressed')) !== String(value)) await control.click();
+      assert.equal(await control.getAttribute('aria-pressed'), String(value));
+    }
+    await page.locator('[data-panel="sound-motion"]').click();
+    for (const [selector, value] of [['#sounds-toggle', false], ['#startup-sound-toggle', true]]) {
+      const control = page.locator(selector);
       if ((await control.getAttribute('aria-pressed')) !== String(value)) await control.click();
       assert.equal(await control.getAttribute('aria-pressed'), String(value));
     }

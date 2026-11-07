@@ -21,7 +21,7 @@
     { id: 'city', name: 'City at Night', photo: 'city', path: PhotoLibrary.url('city'), focal: '50% 50%' },
     { id: 'architecture', name: 'Quiet Architecture', photo: 'architecture', path: PhotoLibrary.url('architecture'), focal: '50% 50%' }
   ];
-  var currentPage = 'home', currentPanel = 'appearance', allApps = [], editingApps = false;
+  var currentPage = 'home', currentPanel = 'appearance', allApps = [], editingApps = false, themeSnapshot = null;
   var previewHomeParent = $('preview') ? $('preview').parentNode : null, previewFloatExpanded = false;
   var iconResults = Object.create(null), iconCache = Object.create(null);
   var appRequest = 0, imageRequest = 0, launchGeneration = 0, launchTimer = null;
@@ -48,7 +48,7 @@
     } catch (error) { report('Saved settings could not be read; using defaults.', error); }
     if (!saved || typeof saved !== 'object') { return; }
     if (typeof saved.name === 'string') { prefs.name = cleanName(saved.name); }
-    if (Object.prototype.hasOwnProperty.call(themes, saved.theme)) { prefs.theme = saved.theme; }
+    if (Object.prototype.hasOwnProperty.call(themes, saved.theme) && ['cinematic', 'midnight'].indexOf(saved.theme) >= 0) { prefs.theme = saved.theme; }
     if (typeof saved.background === 'string') {
       var legacyImages = { 'twilight-mountains.svg': 'mountains', 'northern-lights.svg': 'night-sky', 'lake-dusk.svg': 'lake', 'earth-space.svg': 'night-sky', 'abstract-gradient.svg': 'mountains', 'cinematic-title.svg': 'mountains' };
       var legacyName = saved.background.split('/').pop();
@@ -63,7 +63,8 @@
     if (['home', 'apps', 'recent'].indexOf(saved.homeDestination) >= 0) { prefs.homeDestination = saved.homeDestination; }
     if (typeof saved.soundVolume === 'number' && isFinite(saved.soundVolume)) { prefs.soundVolume = Math.max(0, Math.min(100, Math.round(saved.soundVolume))); }
     if (saved.backgroundVersion !== 2) { prefs.background = ''; }
-    if (migrated || saved.backgroundVersion !== 2) {
+    var obsoleteTheme = !!saved.theme && ['cinematic', 'midnight'].indexOf(saved.theme) < 0;
+    if (migrated || saved.backgroundVersion !== 2 || obsoleteTheme) {
       save();
       if (migrated && localStorage.getItem(storageKey)) {
         try { localStorage.removeItem(legacyStorageKey); } catch (ignore) { /* Keep the migrated copy if cleanup is unavailable. */ }
@@ -142,7 +143,7 @@
       Array.prototype.forEach.call($$('img[src^="assets/photos/"]', $('page-' + page)), function (image) { image.loading = 'eager'; });
     }
     setActiveNavigation(page);
-    if (page === 'settings') { selectSettingsPanel(currentPanel); refreshSources(); var firstCategory = document.querySelector('.settings-category.active'); if (firstCategory && pageChanged) { firstCategory.focus(); } }
+    if (page === 'settings') { selectSettingsPanel(currentPanel); var firstCategory = document.querySelector('.settings-category.active'); if (firstCategory && pageChanged) { firstCategory.focus(); } }
     {
       var pageRoot = $('page-' + page);
       if (pageRoot && pageChanged && page !== 'home' && page !== 'search') { var first = pageRoot.querySelector('button,input,select,[tabindex="0"]'); if (first) { first.focus(); } }
@@ -158,7 +159,7 @@
     if (page === 'search' && $('search-input')) { $('search-input').focus(); }
     if (page === 'home') { applyHomePreferences(); }
     if (pageChanged && page !== 'search' && pageFocus[page] && pageFocus[page].isConnected && pageFocus[page].getClientRects().length) { pageFocus[page].focus(); }
-    if (pageChanged && page === 'home' && returnFocus && returnFocus.focus) { var restore = returnFocus; returnFocus = null; restore.focus(); }
+    if (pageChanged && page === 'home' && returnFocus && returnFocus.focus) { var restore = returnFocus; returnFocus = null; if (restore.getClientRects().length) { restore.focus(); } }
   }
   function selectSettingsPanel(name) {
     currentPanel = name;
@@ -170,9 +171,10 @@
     Array.prototype.forEach.call($$('.settings-panel'), function (panel) {
       panel.hidden = panel.id !== 'settings-panel-' + name;
     });
-    if (name === 'about' || name === 'system') { updateDiagnostics(); }
+    if (name === 'about') { updateDiagnostics(); }
     if (name === 'apps') { iconSummary(); renderSettingsApps(); }
     if (name === 'appearance') { renderWallpaperChoices(); syncSettingsControls(); }
+    if (name === 'home' || name === 'sound-motion') { syncSettingsControls(); }
     initIcons($('settings-panel-' + name));
     syncSettingsControls();
   }
@@ -396,7 +398,7 @@
     var list = $('settings-installed-apps'), status = $('settings-apps-status'); if (!list) { return; }
     list.textContent = '';
     var catalog = uniqueApps().catalog;
-    if (status) { status.textContent = TizenService.isTV() ? (catalog.length + ' apps') : 'Demo apps · not installed'; }
+    if (status) { var discoveryError = TizenService.getDiscoveryError && TizenService.getDiscoveryError(); status.textContent = discoveryError ? 'Application discovery failed. Select Refresh apps to try again.' : (TizenService.isTV() ? (catalog.length + ' apps discovered on this TV') : 'Browser preview · sample catalogue, not installed apps'); status.setAttribute('data-state', discoveryError ? 'error' : 'ready'); }
     catalog.slice(0, 16).forEach(function (app) {
       var row = document.createElement('div'), name = document.createElement('span'), state = document.createElement('span');
       row.className = 'settings-app-row'; name.textContent = app.name || app.id;
@@ -436,13 +438,13 @@
     var dialog = $('settings-confirm');
     if (dialog.hidden) { return; }
     if (window.AudioController) { window.AudioController.play('close'); }
-    var dismiss = function () { dialog.hidden = true; if (settingsDialogFocus && settingsDialogFocus.focus) { settingsDialogFocus.focus(); } };
+    var dismiss = function () { dialog.hidden = true; if (settingsDialogFocus && settingsDialogFocus.focus && settingsDialogFocus.getClientRects().length) { settingsDialogFocus.focus(); } };
     dismiss();
   }
   var settingsDialogFocus = null;
   function resetSettings() {
-    try { localStorage.removeItem(storageKey); } catch (error) { report('Settings could not be reset.', error); return; }
-    prefs = Object.assign({}, defaults); applyName(); applyBackground('', false); applyExperience(); save(); syncSettingsControls(); renderWallpaperChoices(); renderCurrentPage();
+    try { localStorage.removeItem(storageKey); localStorage.removeItem(legacyStorageKey); } catch (error) { report('Settings could not be reset.', error); return; }
+    prefs = Object.assign({}, defaults); themeSnapshot = null; currentPanel = 'appearance'; applyName(); applyBackground('', false); applyExperience(); save(); syncSettingsControls(); renderWallpaperChoices(); renderCurrentPage(); setHomeDestination();
     closeSettingsDialog(); if (window.AudioController) { window.AudioController.play('success'); } report('Kipsmthn settings restored to defaults.');
   }
   function applyExperience() {
@@ -465,6 +467,9 @@
   }
   function refreshApps() {
     var request = ++appRequest;
+    var refreshButton = $('apps-refresh-settings');
+    if (refreshButton) { refreshButton.disabled = true; refreshButton.textContent = 'Refreshing…'; }
+    if ($('settings-apps-status')) { $('settings-apps-status').textContent = 'Discovering applications…'; $('settings-apps-status').setAttribute('data-state', 'loading'); }
     TizenService.getAppsInfo(function (list) {
       if (request !== appRequest) { return; }
       allApps = Array.isArray(list) ? list : [];
@@ -473,6 +478,8 @@
       var catalog = uniqueApps();
       ensureFavorites(catalog.catalog); renderCurrentPage(); renderSettingsApps();
       var discoveryError = TizenService.getDiscoveryError && TizenService.getDiscoveryError();
+      if (refreshButton) { refreshButton.disabled = false; refreshButton.textContent = 'Refresh apps'; }
+      if ($('settings-apps-status')) { $('settings-apps-status').textContent = discoveryError ? 'Application discovery failed. Try refreshing again.' : (TizenService.isTV() ? 'Found ' + allApps.length + ' apps on this TV.' : 'Sample catalogue loaded for browser preview; no installed app data is available.'); $('settings-apps-status').setAttribute('data-state', discoveryError ? 'error' : 'ready'); }
       report(discoveryError ? 'Application discovery failed.' : 'App list refreshed (' + allApps.length + ' apps).', discoveryError);
     });
   }
@@ -645,6 +652,7 @@
       return;
     }
     var controls = visibleControls(), active = document.activeElement;
+    if (currentPage === 'settings' && active.classList && active.classList.contains('settings-category') && (code === 38 || code === 40)) { var settingsCategories = Array.prototype.slice.call($$('.settings-category')), settingsIndex = settingsCategories.indexOf(active), settingsNext = settingsCategories[Math.max(0, Math.min(settingsCategories.length - 1, settingsIndex + (code === 38 ? -1 : 1)))]; if (settingsNext) { settingsNext.focus(); } return; }
     if (controls.indexOf(active) < 0) { if (controls[0]) { controls[0].focus(); } return; }
     if (currentPage === 'search' && active.closest && active.closest('.search-chip')) {
       var section = active.closest('.search-section'), chips = Array.prototype.filter.call(section.querySelectorAll('.search-chip'), function (item) { return item.getClientRects().length > 0; }), chipIndex = chips.indexOf(active);
@@ -662,6 +670,7 @@
     if (code === 37 && controls[0] === active && currentPage !== 'search') {
       var activeNav = document.querySelector('.sidebar-item[data-section="' + currentPage + '"]'); if (activeNav) { activeNav.focus(); return; }
     }
+    if (currentPage === 'settings' && active.closest && active.closest('.settings-panel')) { var panelControls = Array.prototype.filter.call(controls, function (element) { return element.closest('.settings-panel') === active.closest('.settings-panel'); }); var panelIndex = panelControls.indexOf(active); if (panelIndex >= 0 && (code === 38 || code === 40)) { var panelNext = panelControls[panelIndex + (code === 38 ? -1 : 1)]; if (panelNext) { panelNext.focus(); panelNext.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } return; } }
     var a = active.getBoundingClientRect(), x = a.left + a.width / 2, y = a.top + a.height / 2;
     var horizontal = code === 37 || code === 39, sign = code === 37 || code === 38 ? -1 : 1, chosen = null, best = Infinity;
     controls.forEach(function (element) {
@@ -675,7 +684,7 @@
 
   Array.prototype.forEach.call($$('.sidebar-item'), function (button) { button.addEventListener('click', function () { showPage(button.getAttribute('data-section')); }); });
   Array.prototype.forEach.call($$('.settings-category'), function (button) { button.addEventListener('click', function () { selectSettingsPanel(button.getAttribute('data-panel')); if (window.AudioController) { window.AudioController.play('select'); } }); });
-  $('settings-open').addEventListener('click', function () { returnFocus = $('settings-open'); currentPanel = 'general'; showPage('settings'); var active = document.querySelector('.settings-category.active'); if (active) { active.focus(); } });
+  $('settings-open').addEventListener('click', function () { returnFocus = $('settings-open'); currentPanel = 'appearance'; showPage('settings'); var active = document.querySelector('.settings-category.active'); if (active) { active.focus(); } });
   Array.prototype.forEach.call($$('.sidebar-item'), function (button) { button.addEventListener('click', function () { if (button.getAttribute('data-section') === 'settings') { returnFocus = button; } else { returnFocus = null; } }); });
   Array.prototype.forEach.call($$('[data-settings-destination]'), function (button) { button.addEventListener('click', function () { showPage(button.getAttribute('data-settings-destination')); }); });
   Array.prototype.forEach.call($$('.setting-toggle[data-pref]'), function (control) {
@@ -698,7 +707,7 @@
   if ($('sources-refresh-system')) { $('sources-refresh-system').addEventListener('click', refreshSources); }
   $('name-save').addEventListener('click', function () { prefs.name = cleanName($('launcher-name').value); applyName(); save(); report('Launcher name saved.'); });
   $('name-reset').addEventListener('click', function () { prefs.name = defaults.name; applyName(); save(); report('Launcher name reset.'); });
-  $('theme-select').addEventListener('change', function () { prefs.theme = Object.prototype.hasOwnProperty.call(themes, this.value) ? this.value : 'cinematic'; prefs.background = ''; applyBackground('', false); save(); renderWallpaperChoices(); });
+  $('theme-select').addEventListener('change', function () { var nextTheme = this.value === 'midnight' ? 'midnight' : 'cinematic'; if (prefs.theme === 'cinematic' && nextTheme !== 'cinematic' && prefs.background) { themeSnapshot = prefs.background; } prefs.theme = nextTheme; if (nextTheme !== 'cinematic') { prefs.background = ''; applyBackground('', false); } else { prefs.background = themeSnapshot || ''; applyBackground(prefs.background, false); } save(); renderWallpaperChoices(); });
   $('background-apply').addEventListener('click', function () { applyBackground($('background-path-enhanced').value.trim(), true); });
   $('apps-refresh').addEventListener('click', refreshApps);
   $('apps-refresh-settings').addEventListener('click', refreshApps);
@@ -709,7 +718,7 @@
   $('clear-recent').addEventListener('click', function () { prefs.recentApps = []; save(); renderRecent(); report('Recent history cleared.'); });
   $('manage-visibility').addEventListener('click', function () { showPage('home'); editingApps = true; renderHome(); });
   $('tv-settings-open-enhanced').addEventListener('click', openTVSettings);
-  $('sources-refresh').addEventListener('click', refreshSources);
+  if ($('sources-refresh')) { $('sources-refresh').addEventListener('click', refreshSources); }
   $('preview-retry').addEventListener('click', function () { prefs.preview = true; previewBlocked = false; previewNeedsShow = true; save(); updatePreviewToggle(); readCurrentSource(); syncPreview(); });
   $('preview-toggle').addEventListener('click', function () { prefs.preview = !prefs.preview; previewBlocked = false; save(); updatePreviewToggle(); syncPreview(); });
   $('preview-launcher').addEventListener('click', function () { previewFloatExpanded = true; updatePreviewPresentation(); syncPreview(); $('preview-collapse').focus(); });
@@ -755,16 +764,16 @@
       if (!$('exit-dialog').hidden) { exitDialog(false); }
       else if (!$('settings-confirm').hidden) { closeSettingsDialog(); }
       else if (currentPage !== 'home' && previewFloatExpanded) { $('preview-collapse').click(); }
-      else if (currentPage === 'settings') { showPage('home'); }
+      else if (currentPage === 'settings') { showPage('home'); if (returnFocus && returnFocus.focus && returnFocus.getClientRects().length) { returnFocus.focus(); returnFocus = null; } }
       else if (editingApps) { editingApps = false; renderCurrentPage(); }
       else if (currentPage !== 'home') { showPage('home'); }
       else { exitDialog(true); }
     } else if (code === 406) { event.preventDefault(); showPage('settings'); var category = document.querySelector('.settings-category.active'); if (category) { category.focus(); } }
     else if (document.activeElement.tagName === 'INPUT' && document.activeElement.type === 'search' && (code === 37 || code === 39)) { /* Keep native search caret editing. */ }
     else if (document.activeElement.tagName === 'INPUT' && document.activeElement.type === 'search' && (code === 37 || code === 39)) { /* Keep native search caret editing. */ }
-    else if (currentPage === 'settings' && code === 39 && document.activeElement.classList.contains('settings-category')) { event.preventDefault(); var panelControl = $('settings-panel-' + currentPanel).querySelector('button,input,select,[tabindex="0"]'); if (panelControl) { panelControl.focus(); } }
+    else if (currentPage === 'settings' && code === 39 && document.activeElement.classList.contains('settings-category')) { event.preventDefault(); var panelControl = $('settings-panel-' + currentPanel).querySelector('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]'); if (panelControl) { panelControl.focus(); } }
     else if (currentPage === 'settings' && code === 37 && $('settings-panel-' + currentPanel).contains(document.activeElement)) { event.preventDefault(); var activeCategory = document.querySelector('.settings-category.active'); if (activeCategory) { activeCategory.focus(); } }
-    else if (currentPage === 'settings' && (code === 38 || code === 40) && document.activeElement.classList.contains('settings-category')) { event.preventDefault(); var categories = Array.prototype.slice.call($$('.settings-category')), ci = categories.indexOf(document.activeElement); categories[Math.max(0, Math.min(categories.length - 1, ci + (code === 38 ? -1 : 1)))].focus(); }
+    else if (currentPage === 'settings' && (code === 38 || code === 40) && document.activeElement.classList.contains('settings-category')) { event.preventDefault(); moveFocus(code); }
     else if (code >= 37 && code <= 40 && !(document.activeElement.tagName === 'INPUT' && (code === 37 || code === 39))) { event.preventDefault(); moveFocus(code); }
     else if (code === 13 && document.activeElement.tagName === 'BUTTON' && !event.repeat) { event.preventDefault(); document.activeElement.click(); }
     else if (code === 9) {

@@ -317,27 +317,25 @@
   .photo-page-note { @apply mt-auto text-base text-muted-foreground; }
 
   #page-settings.settings-screen { @apply relative z-10 flex min-h-full flex-col bg-transparent; }
-  .settings-topbar { @apply mb-8; }
-  .settings-topbar h1 { @apply m-0 text-4xl font-semibold tracking-tight; }
-  .settings-workspace { @apply grid min-h-0 flex-1 grid-cols-[minmax(15rem,24%)_minmax(0,1fr)] gap-8; }
-  .settings-sidebar { @apply min-h-0 overflow-y-auto border-r pr-4; background: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-md); padding: 1rem; backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
-  .settings-sidebar-heading { @apply px-3 pb-4 text-base font-medium text-muted-foreground; }
-  .settings-categories { @apply m-0 flex list-none flex-col gap-2 p-0; }
-  .settings-category { @apply flex min-h-16 w-full items-center gap-4 border border-transparent bg-transparent px-4 py-3 text-left text-muted-foreground; border-radius: var(--glass-radius-sm); }
-  .settings-category:hover, .settings-category.active { @apply bg-accent text-accent-foreground; }
-  .settings-category.active { @apply border-border; }
-  .settings-category > span:first-child { @apply h-7 w-7; }
+  .settings-topbar { @apply mb-6; }
+  .settings-topbar h1 { @apply m-0 text-3xl font-semibold tracking-tight; }
+  .settings-workspace { @apply grid min-h-0 flex-1 grid-cols-[minmax(12rem,19%)_minmax(0,1fr)] gap-5; }
+  .settings-sidebar { @apply min-h-0 overflow-y-auto; background: var(--glass-bg-subtle); border: 1px solid var(--glass-border-subtle); border-radius: var(--glass-radius-md); padding: .65rem; backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
+  .settings-categories { @apply m-0 flex list-none flex-col gap-1 p-0; }
+  .settings-category { @apply flex min-h-14 w-full items-center gap-3 border border-transparent bg-transparent px-3 py-2 text-left text-muted-foreground; border-radius: var(--glass-radius-sm); }
+  .settings-category:hover, .settings-category.active { background: rgba(255,255,255,.07); color: var(--glass-text-primary); }
+  .settings-category.active { border-color: var(--glass-border); }
+  .settings-category > span:first-child { width: 1.1rem; height: 1.1rem; flex: 0 0 1.1rem; color: var(--glass-text-secondary); }
   .settings-category b { @apply block text-base font-medium; }
-  .settings-category small { @apply mt-1 block text-sm text-muted-foreground; }
   .settings-content-shell { @apply min-h-0 overflow-hidden; }
-  .settings-panel { @apply h-full w-full overflow-auto px-5 pb-8; background: var(--glass-bg-strong); border: 1px solid var(--glass-border-subtle); border-radius: var(--glass-radius-lg); box-shadow: var(--glass-shadow-subtle); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
+  .settings-panel { @apply h-full w-full overflow-auto px-7 pb-7; background: var(--glass-bg-strong); border: 1px solid var(--glass-border-subtle); border-radius: var(--glass-radius-lg); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
   .settings-panel[hidden] { display: none !important; }
-  .settings-panel-heading { @apply mb-6 flex items-center gap-4; }
-  .settings-panel-heading h2 { @apply m-0 text-3xl font-semibold tracking-tight; }
-  .settings-heading-icon { @apply h-8 w-8 text-foreground; }
-  .settings-group { @apply mb-6 border-b pb-5; }
-  .settings-group h3 { @apply mb-3 text-lg font-semibold; }
-  .setting-row { @apply flex min-h-16 items-center justify-between gap-5 px-3 py-2; border-radius: var(--glass-radius-sm); }
+  .settings-panel-heading { @apply mb-5 flex items-center; }
+  .settings-panel-heading h2 { @apply m-0 text-2xl font-semibold tracking-tight; }
+  .settings-group { @apply mb-5 border-b pb-4; border-color: var(--glass-border-subtle); }
+  .settings-group:last-child { border-bottom: 0; }
+  .settings-group h3 { @apply mb-2 text-base font-semibold; color: var(--glass-text-secondary); }
+  .setting-row { @apply flex min-h-14 items-center justify-between gap-5 px-3 py-2; border-radius: var(--glass-radius-sm); }
   .setting-row + .setting-row { @apply mt-1; }
   .setting-label { @apply min-w-0; }
   .setting-label strong { @apply block text-base font-medium; }
@@ -345,28 +343,35 @@
   .setting-control { @apply flex items-center justify-end gap-3; }
   .setting-toggle { @apply shadcn-switch; }
   .settings-panel input[type="text"] { @apply shadcn-input min-w-64; }
-  .settings-panel input[type="range"] { @apply h-3 w-72 accent-primary; }
+  .settings-panel input[type="range"] { @apply h-3 w-64 accent-primary; }
   .settings-panel input[type="range"]:focus-visible { @apply rounded-sm outline-none ring-2 ring-ring ring-offset-4 ring-offset-background; }
-  .settings-wallpaper-gallery { @apply my-4 grid grid-cols-3 gap-4; }
+  .settings-wallpaper-gallery { @apply my-3 grid grid-cols-3 gap-3; }
   .settings-wallpaper-choice { @apply relative aspect-video overflow-hidden border bg-card text-left; border-radius: var(--glass-radius-sm); }
   .settings-wallpaper-choice.selected { @apply border-primary ring-1 ring-ring; }
   .settings-wallpaper-image { @apply absolute inset-0 overflow-hidden bg-muted; }
   .settings-wallpaper-image img { @apply h-full w-full object-cover; }
   .settings-wallpaper-image::after { content: ""; @apply absolute inset-0; background-image: linear-gradient(to top, rgba(0,0,0,.72), transparent 75%); }
   .settings-wallpaper-image.photo-failed { background-color: #171717; }
-  .settings-wallpaper-label { @apply absolute bottom-3 left-3 z-10 text-base font-medium; }
-  .settings-app-list { @apply mt-4 grid grid-cols-2 gap-3; }
-  .settings-app-row { @apply flex items-center justify-between gap-3 border px-4 py-3 text-base; background: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-sm); }
-  .settings-source-list { @apply mt-4 flex flex-wrap gap-3; }
+  .settings-wallpaper-label { @apply absolute bottom-3 left-3 z-10 text-sm font-medium; }
+  .settings-app-list { @apply mt-3 grid grid-cols-2 gap-2; }
+  .settings-app-row { @apply flex items-center justify-between gap-3 border px-3 py-2 text-sm; background: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-sm); }
   .settings-details { @apply text-muted-foreground; }
-  .settings-details summary { @apply min-h-14 cursor-pointer py-4 text-base; }
+  .settings-details summary { @apply min-h-12 cursor-pointer py-3 text-base; }
   #diagnostics { @apply whitespace-pre-wrap text-sm; }
   .legacy-controls { @apply hidden; }
-  .settings-dialog-backdrop { @apply fixed inset-0 z-50 flex items-center justify-center p-8; background: var(--glass-bg-strong); }
+  .settings-dialog-backdrop { @apply fixed inset-0 z-50 flex items-center justify-center p-8; background: rgba(0,0,0,.68); }
   .settings-dialog { @apply glass-strong w-full max-w-2xl p-8; }
-  .settings-dialog h2 { @apply mt-0 text-3xl font-semibold; }
-  .settings-dialog p { @apply text-lg leading-7 text-muted-foreground; }
+  .settings-dialog h2 { @apply mt-0 text-2xl font-semibold; }
+  .settings-dialog p { @apply text-base leading-7 text-muted-foreground; }
   .settings-dialog > div { @apply flex justify-end gap-4; }
+  .settings-panel :focus-visible, .settings-category:focus-visible, .settings-wallpaper-choice:focus-visible { outline: 2px solid var(--glass-text-primary); outline-offset: 3px; }
+  .settings-category svg, .settings-category [data-lucide] { width: 1.1rem; height: 1.1rem; stroke-width: 1.7; }
+  .settings-panel .settings-toggle { min-height: 3rem; min-width: 4.8rem; }
+  .settings-app-list:empty { display: none; }
+  #settings-apps-status[data-state="error"] { color: #f0b4b4; }
+  #settings-apps-status[data-state="loading"] { color: var(--glass-text-secondary); }
+  .settings-wallpaper-choice .settings-wallpaper-image { pointer-events: none; }
+  .settings-panel .setting-row:hover { background: rgba(255,255,255,.025); }
 
   .launcher-library { @apply mt-8; }
   .launcher-library-heading { @apply mb-4 flex items-center justify-between gap-4; }
