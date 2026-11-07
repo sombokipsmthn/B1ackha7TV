@@ -37,11 +37,12 @@
   <section id="page-search" class="page-section search-page" hidden aria-label="Search">
     <div class="search-hero"><h2 class="page-title">Search</h2></div>
     <div class="search-bar"><span class="search-icon" data-lucide="search" aria-hidden="true"></span><input type="search" id="search-input" placeholder="Search apps, games and more…" autocomplete="off" spellcheck="false" aria-label="Search"><button id="search-clear" class="search-clear" aria-label="Clear search" hidden><span data-lucide="x" aria-hidden="true"></span></button></div>
-    <div id="search-results" class="search-results" hidden>
-      <div class="search-section"><h3 class="search-section-title">Installed Apps &amp; Games</h3><div id="search-apps" class="search-grid" role="list"></div></div>
-      <div class="search-section"><h3 class="search-section-title">Popular Searches</h3><div id="search-popular" class="search-chips" role="list"></div></div>
+    <div id="search-results" class="search-results">
+      <section class="search-section" id="search-suggested-section"><h3 class="search-section-title">Suggested Apps</h3><p id="search-catalog-note" class="search-disclaimer" hidden></p><div id="search-apps" class="search-grid" role="list" aria-label="Installed application suggestions"></div></section>
+      <section class="search-section" id="search-quick-section"><h3 class="search-section-title">Quick Searches</h3><div id="search-popular" class="search-chips" role="list" aria-label="Quick search suggestions"></div></section>
+      <section class="search-section" id="search-titles-section"><h3 class="search-section-title">Shows &amp; Films to Search</h3><p class="search-disclaimer">Search suggestions only. Availability depends on your installed streaming apps.</p><div id="search-titles" class="search-chips" role="list" aria-label="Show and film search suggestions"></div></section>
     </div>
-    <div id="search-empty" class="search-empty" hidden></div>
+    <div id="search-empty" class="search-empty" hidden role="status"></div>
     <div id="search-keyboard" class="search-keyboard" hidden aria-label="On-screen keyboard">
       <div class="keyboard-row"><button class="key" data-key="Q">Q</button><button class="key" data-key="W">W</button><button class="key" data-key="E">E</button><button class="key" data-key="R">R</button><button class="key" data-key="T">T</button><button class="key" data-key="Y">Y</button><button class="key" data-key="U">U</button><button class="key" data-key="I">I</button><button class="key" data-key="O">O</button><button class="key" data-key="P">P</button></div>
       <div class="keyboard-row"><button class="key" data-key="A">A</button><button class="key" data-key="S">S</button><button class="key" data-key="D">D</button><button class="key" data-key="F">F</button><button class="key" data-key="G">G</button><button class="key" data-key="H">H</button><button class="key" data-key="J">J</button><button class="key" data-key="K">K</button><button class="key" data-key="L">L</button></div>
@@ -112,7 +113,6 @@
         </main>
       </div>
     </div>
-    <footer class="settings-remote-hints"><span><span data-lucide="arrow-up-down" aria-hidden="true"></span> <b>Navigate</b></span><span><span data-lucide="arrow-left-right" aria-hidden="true"></span> <b>Switch panels</b></span><span>OK <b>Select</b></span><span>BACK <b>Return</b></span></footer>
     <div id="settings-confirm" class="settings-dialog-backdrop" hidden><section class="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-confirm-title"><span class="settings-heading-icon" data-lucide="rotate-ccw"></span><h2 id="settings-confirm-title">Reset settings?</h2><p>This restores Kipsmthn preferences to their defaults. Your installed apps and TV settings will not change.</p><div><button id="settings-reset-cancel" class="setting-btn" type="button">Cancel</button><button id="settings-reset-confirm" class="setting-btn danger" type="button">Reset settings</button></div></section></div>
   </section>
 
@@ -135,8 +135,6 @@
       <button class="carousel-item" data-app-id="netflix" role="listitem" aria-label="Netflix" aria-selected="false"><div class="app-tile text-app-tile"><span class="app-name">Netflix</span></div></button>
       <button class="carousel-item" data-app-id="prime" role="listitem" aria-label="Prime Video" aria-selected="false"><div class="app-tile text-app-tile"><span class="app-name">Prime Video</span></div></button>
       <button class="carousel-item" data-app-id="all-apps" role="listitem" aria-label="All Apps" aria-selected="false"><div class="app-tile text-app-tile"><span class="app-name">Apps</span></div></button>
-      <button class="carousel-item" data-app-id="hdmi1" role="listitem" aria-label="HDMI 1" aria-selected="false"><div class="app-tile text-app-tile"><span class="app-name">HDMI 1</span></div></button>
-      <button class="carousel-item" data-app-id="hdmi2" role="listitem" aria-label="HDMI 2" aria-selected="false"><div class="app-tile text-app-tile"><span class="app-name">HDMI 2</span></div></button>
     </div>
     <section id="library" class="launcher-library" aria-label="Installed application shortcuts"><div class="launcher-library-heading"><div><h3 id="library-title">Your apps</h3><span id="app-count"></span></div><button id="edit-apps-home" class="shadcn-button" aria-label="Edit apps"><span data-lucide="pencil" aria-hidden="true"></span><span>Edit apps</span></button></div><p id="launch-feedback" class="shadcn-card" role="status" hidden></p><p id="edit-hint" class="text-muted-foreground" hidden>Select an app to add or remove its Home shortcut. Your apps stay installed.</p><p id="catalog-mode" class="text-muted-foreground" aria-live="polite"></p><button id="refresh" class="shadcn-button" type="button">Refresh apps</button><div id="apps" class="launcher-app-grid" aria-label="Installed applications"></div><p id="empty" class="text-muted-foreground" hidden></p></section>
     </section>
@@ -156,7 +154,7 @@
   </section>
 </main>
 
-<footer class="footer" role="contentinfo"><span class="nav-hint">← → Navigate · Enter Select · ↑ ↓ Sections · Back Exit</span><span id="status" role="status" aria-live="polite">Starting…</span><nav class="quick-actions"><button id="watch-tv">Watch TV full screen</button></nav></footer>
+<p id="status" class="visually-hidden" role="status" aria-live="polite">Starting…</p>
 <div id="exit-dialog" hidden role="dialog" aria-modal="true" aria-label="Close launcher"><h2>Close launcher?</h2><button id="exit-cancel">Keep browsing</button><button id="exit-confirm">Close app</button></div>
 </body>
 </html>

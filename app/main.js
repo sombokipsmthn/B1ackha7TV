@@ -26,7 +26,7 @@
   var iconResults = Object.create(null), iconCache = Object.create(null);
   var appRequest = 0, imageRequest = 0, launchGeneration = 0, launchTimer = null;
   var launching = false, previewBlocked = false, previewNeedsShow = true, windowBusy = false, windowVisible = false;
-  var returnFocus = null, exitFocus = null, log = [];
+  var returnFocus = null, exitFocus = null, pageFocus = Object.create(null), log = [];
 
   function report(message, error) {
     var suffix = error ? ' [' + (error.name || 'Error') + ': ' + (error.message || 'No details') + ']' : '';
@@ -125,6 +125,7 @@
     var supported = ['home', 'search', 'apps', 'games', 'recent', 'movies', 'media', 'inputs', 'settings'];
     if (supported.indexOf(page) < 0) { page = 'home'; }
     var pageChanged = currentPage !== page;
+    if (pageChanged && document.activeElement && document.activeElement !== document.body) { pageFocus[currentPage] = document.activeElement; }
     currentPage = page;
     updatePreviewPresentation();
     if (pageChanged) { previewNeedsShow = true; requestAnimationFrame(function () { syncPreview(); }); }
@@ -144,7 +145,8 @@
     if (page === 'settings') { selectSettingsPanel(currentPanel); refreshSources(); var firstCategory = document.querySelector('.settings-category.active'); if (firstCategory && pageChanged) { firstCategory.focus(); } }
     {
       var pageRoot = $('page-' + page);
-      if (pageRoot) { var first = pageRoot.querySelector('button,input,select,[tabindex="0"]'); if (first && pageChanged && page !== 'home') { first.focus(); } else if (pageChanged) { var navButton = document.querySelector('.sidebar-item[data-section="' + page + '"]'); if (navButton) { navButton.focus(); } } }
+      if (pageRoot && pageChanged && page !== 'home' && page !== 'search') { var first = pageRoot.querySelector('button,input,select,[tabindex="0"]'); if (first) { first.focus(); } }
+      else if (pageChanged && page !== 'home' && page !== 'search') { var navButton = document.querySelector('.sidebar-item[data-section="' + page + '"]'); if (navButton) { navButton.focus(); } }
       wirePhotoFallbacks(pageRoot);
       if (page === 'apps') { renderAppsPage(); }
       else if (page === 'games') { renderGames(); }
@@ -155,6 +157,7 @@
     }
     if (page === 'search' && $('search-input')) { $('search-input').focus(); }
     if (page === 'home') { applyHomePreferences(); }
+    if (pageChanged && page !== 'search' && pageFocus[page] && pageFocus[page].isConnected && pageFocus[page].getClientRects().length) { pageFocus[page].focus(); }
     if (pageChanged && page === 'home' && returnFocus && returnFocus.focus) { var restore = returnFocus; returnFocus = null; restore.focus(); }
   }
   function selectSettingsPanel(name) {
@@ -303,28 +306,59 @@
     });
     if ($('recent-empty')) { $('recent-empty').hidden = found > 0; }
   }
+  var quickSearches = ['Netflix', 'YouTube', 'Prime Video', 'Spotify', 'Live TV', 'Anime', 'Documentaries'];
+  var titleSearches = ['The Last of Us', 'Dune', 'Stranger Things', 'Our Planet'];
+  function appendSearchChips(container, values, query) {
+    if (!container) { return 0; }
+    container.textContent = '';
+    var term = (query || '').trim().toLowerCase(), count = 0;
+    values.filter(function (value) { return !term || value.toLowerCase().indexOf(term) >= 0; }).forEach(function (value) {
+      var button = document.createElement('button'); button.type = 'button'; button.className = 'search-chip'; button.textContent = value; button.setAttribute('role', 'listitem');
+      button.addEventListener('click', function () { var input = $('search-input'); input.value = value; updateSearch(); input.focus(); });
+      container.appendChild(button); count++;
+    });
+    return count;
+  }
   function renderInputs() {
     var grid = $('inputs-grid'); if (!grid) { return; }
     grid.textContent = '';
     TizenService.getSources(function (sources) {
       grid.textContent = '';
       (sources || []).forEach(function (source) {
-        var button = document.createElement('button'); button.className = 'app'; button.textContent = source.name || source.type;
-        button.setAttribute('aria-label', 'Switch to ' + (source.name || source.type));
+        if (!source || typeof source.type !== 'string') { return; }
+        var isTv = source.type.toUpperCase() === 'TV', name = source.name || source.type + (source.number ? ' ' + source.number : '');
+        var button = document.createElement('button'), icon = document.createElement('span'), label = document.createElement('span');
+        button.type = 'button'; button.className = 'input-tile'; button.setAttribute('role', 'listitem'); button.setAttribute('aria-label', 'Switch to ' + name);
+        icon.className = 'input-icon'; icon.setAttribute('data-lucide', isTv ? 'tv' : 'plug-zap'); icon.setAttribute('aria-hidden', 'true');
+        label.className = 'input-name'; label.textContent = name;
+        button.appendChild(icon); button.appendChild(label);
         button.addEventListener('click', function () { TizenService.setSource(source, function () { report('Input changed.'); }, function (error) { report('Could not change input.', error); }); });
         grid.appendChild(button);
       });
+      initIcons(grid);
       if ($('inputs-empty')) { $('inputs-empty').hidden = grid.children.length > 0; }
     });
   }
   function updateSearch() {
-    var input = $('search-input'), results = $('search-results'), grid = $('search-apps'), empty = $('search-empty'), query = input ? input.value : '';
+    var input = $('search-input'), grid = $('search-apps'), empty = $('search-empty'), query = input ? input.value : '';
     if (!grid) { return; }
     grid.textContent = '';
-    var matches = filterApps(allApps, query).sort(function (a, b) { return (a.name || a.id).localeCompare(b.name || b.id); });
+    var matches = filterApps(allApps, query).sort(function (a, b) {
+      var recentA = prefs.recentApps.indexOf(a.id), recentB = prefs.recentApps.indexOf(b.id);
+      if (!query && recentA !== recentB) { return (recentA < 0 ? Infinity : recentA) - (recentB < 0 ? Infinity : recentB); }
+      var favoriteA = (prefs.favorites || []).indexOf(a.id), favoriteB = (prefs.favorites || []).indexOf(b.id);
+      if (!query && favoriteA !== favoriteB) { return (favoriteA < 0 ? Infinity : favoriteA) - (favoriteB < 0 ? Infinity : favoriteB); }
+      return (a.name || a.id).localeCompare(b.name || b.id);
+    });
+    if (!query) { matches = matches.slice(0, 6); }
     matches.forEach(function (app) { grid.appendChild(createAppButton(app, false, 'app app-grid-item')); });
-    if (results) { results.hidden = !query; }
-    if (empty) { empty.hidden = !!query; }
+    var quickCount = appendSearchChips($('search-popular'), quickSearches, query);
+    var titleCount = appendSearchChips($('search-titles'), titleSearches, query);
+    if ($('search-suggested-section')) { $('search-suggested-section').hidden = !!query; }
+    if ($('search-catalog-note')) { $('search-catalog-note').hidden = !!query || TizenService.isTV(); $('search-catalog-note').textContent = 'Browser preview uses demonstration app data; it does not represent apps installed on a TV.'; }
+    if ($('search-quick-section')) { $('search-quick-section').hidden = !quickCount; }
+    if ($('search-titles-section')) { $('search-titles-section').hidden = !titleCount; }
+    if (empty) { empty.hidden = !query || matches.length > 0; empty.textContent = 'No installed app matches “' + query + '”. Try another search.'; }
     if ($('search-clear')) { $('search-clear').hidden = !query; }
   }
   function renderCurrentPage() {
@@ -593,13 +627,41 @@
     try { TizenService.exitApp(); } catch (error) { launching = false; exitDialog(false); report('Could not close the app.', error); syncPreview(); }
   }
   function visibleControls() {
-    var root = !$('exit-dialog').hidden ? $('exit-dialog') : (!$('settings-confirm').hidden ? $('settings-confirm') : (!$('page-settings').hidden ? $('page-settings') : document));
-    return Array.prototype.filter.call(root.querySelectorAll('button,input,select,summary'), function (element) { return !element.disabled && element.getClientRects().length > 0; });
+    var root = !$('exit-dialog').hidden ? $('exit-dialog') : (!$('settings-confirm').hidden ? $('settings-confirm') : $('page-' + currentPage));
+    if (!root) { return []; }
+    return Array.prototype.filter.call(root.querySelectorAll('button,input,select,summary'), function (element) {
+      return !element.disabled && element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden';
+    });
   }
   function moveFocus(code) {
     if (!$('exit-dialog').hidden) { ($('exit-confirm') === document.activeElement ? $('exit-cancel') : $('exit-confirm')).focus(); return; }
+    if (document.activeElement.classList && document.activeElement.classList.contains('sidebar-item')) {
+      var destinations = Array.prototype.slice.call($$('.sidebar-item')), destinationIndex = destinations.indexOf(document.activeElement);
+      if (code === 38 || code === 40) { var destination = destinations[Math.max(0, Math.min(destinations.length - 1, destinationIndex + (code === 38 ? -1 : 1)))]; if (destination) { destination.focus(); } return; }
+      if (code === 39) { var pageControl = visibleControls()[0]; if (pageControl) { pageControl.focus(); } return; }
+    }
+    if (currentPage === 'search' && document.activeElement === $('search-input') && (code === 38 || code === 40)) {
+      if (code === 40) { var firstSuggestion = $('search-results').querySelector('button:not([hidden])'); if (firstSuggestion) { firstSuggestion.focus(); firstSuggestion.scrollIntoView({ block: 'nearest' }); } }
+      return;
+    }
     var controls = visibleControls(), active = document.activeElement;
     if (controls.indexOf(active) < 0) { if (controls[0]) { controls[0].focus(); } return; }
+    if (currentPage === 'search' && active.closest && active.closest('.search-chip')) {
+      var section = active.closest('.search-section'), chips = Array.prototype.filter.call(section.querySelectorAll('.search-chip'), function (item) { return item.getClientRects().length > 0; }), chipIndex = chips.indexOf(active);
+      if (code === 37 && chipIndex === 0) { var searchNav = document.querySelector('.sidebar-item[data-section="search"]'); if (searchNav) { searchNav.focus(); } return; }
+      if (code === 37 || code === 39) { var chipNext = chips[chipIndex + (code === 37 ? -1 : 1)]; if (chipNext) { chipNext.focus(); } return; }
+      var allSections = Array.prototype.filter.call($$('.search-section'), function (item) { return !item.hidden && item.querySelector('.search-chip, .search-grid button'); }), sectionIndex = allSections.indexOf(section), nextSection = allSections[sectionIndex + (code === 38 ? -1 : 1)];
+      if (nextSection) { var nextTarget = nextSection.querySelector('.search-chip, .search-grid button'); if (nextTarget) { nextTarget.focus(); } }
+      else if (code === 38 && sectionIndex === 0) { $('search-input').focus(); }
+      return;
+    }
+    if (currentPage === 'search' && active.matches && active.matches('#search-apps button')) {
+      if (code === 38) { $('search-input').focus(); return; }
+      if (code === 40) { var nextSearchSection = $('search-quick-section').hidden ? $('search-titles-section') : $('search-quick-section'), nextSearchTarget = nextSearchSection && nextSearchSection.querySelector('.search-chip'); if (nextSearchTarget) { nextSearchTarget.focus(); return; } }
+    }
+    if (code === 37 && controls[0] === active && currentPage !== 'search') {
+      var activeNav = document.querySelector('.sidebar-item[data-section="' + currentPage + '"]'); if (activeNav) { activeNav.focus(); return; }
+    }
     var a = active.getBoundingClientRect(), x = a.left + a.width / 2, y = a.top + a.height / 2;
     var horizontal = code === 37 || code === 39, sign = code === 37 || code === 38 ? -1 : 1, chosen = null, best = Infinity;
     controls.forEach(function (element) {
@@ -655,7 +717,6 @@
   $('close-app-settings').addEventListener('click', function () { exitDialog(true); });
   $('exit-cancel').addEventListener('click', function () { exitDialog(false); });
   $('exit-confirm').addEventListener('click', closeLauncher);
-  $('watch-tv').addEventListener('click', function () { launch('org.tizen.tv-viewer', 'TV'); });
   $('launch-xbox').addEventListener('click', function () { var xbox = allApps.filter(function (app) { return /xbox/i.test(app.name || app.id); })[0]; if (xbox) { launch(xbox.id, xbox.name || 'Xbox'); } else { report('Xbox app was not found.'); } });
   Array.prototype.forEach.call($$('.carousel-item'), function (button) {
     button.addEventListener('click', function () {
@@ -699,6 +760,8 @@
       else if (currentPage !== 'home') { showPage('home'); }
       else { exitDialog(true); }
     } else if (code === 406) { event.preventDefault(); showPage('settings'); var category = document.querySelector('.settings-category.active'); if (category) { category.focus(); } }
+    else if (document.activeElement.tagName === 'INPUT' && document.activeElement.type === 'search' && (code === 37 || code === 39)) { /* Keep native search caret editing. */ }
+    else if (document.activeElement.tagName === 'INPUT' && document.activeElement.type === 'search' && (code === 37 || code === 39)) { /* Keep native search caret editing. */ }
     else if (currentPage === 'settings' && code === 39 && document.activeElement.classList.contains('settings-category')) { event.preventDefault(); var panelControl = $('settings-panel-' + currentPanel).querySelector('button,input,select,[tabindex="0"]'); if (panelControl) { panelControl.focus(); } }
     else if (currentPage === 'settings' && code === 37 && $('settings-panel-' + currentPanel).contains(document.activeElement)) { event.preventDefault(); var activeCategory = document.querySelector('.settings-category.active'); if (activeCategory) { activeCategory.focus(); } }
     else if (currentPage === 'settings' && (code === 38 || code === 40) && document.activeElement.classList.contains('settings-category')) { event.preventDefault(); var categories = Array.prototype.slice.call($$('.settings-category')), ci = categories.indexOf(document.activeElement); categories[Math.max(0, Math.min(categories.length - 1, ci + (code === 38 ? -1 : 1)))].focus(); }

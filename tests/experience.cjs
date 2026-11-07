@@ -7,11 +7,22 @@ const { pathToFileURL } = require('node:url');
   const browser = await chromium.launch({ headless: true, channel: process.env.BROWSER_CHANNEL || undefined });
   try {
     const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
-    await context.addInitScript(() => { if (!localStorage.getItem('kipsmthn.settings.v1')) localStorage.setItem('kipsmthn.settings.v1', JSON.stringify({ backgroundVersion: 2, preview: false })); });
+    await context.addInitScript(() => {
+      if (!localStorage.getItem('kipsmthn.settings.v1')) localStorage.setItem('kipsmthn.settings.v1', JSON.stringify({ backgroundVersion: 2, preview: false, favorites: ['youtube', 'netflix'], recentApps: ['netflix'] }));
+      window.tizen = {
+        application: {
+          getCurrentApplication: () => ({ appInfo: { id: 'launcher' } }),
+          getAppsInfo: (success) => success([{ id: 'youtube', name: 'YouTube', show: true }, { id: 'netflix', name: 'Netflix', show: true }, { id: 'calc', name: 'Calculator', show: true }])
+        },
+        systeminfo: { getPropertyValue: (key, success) => success({ connected: [{ type: 'TV', number: 0 }, { type: 'HDMI', number: 1 }] }) },
+        tvwindow: { getSource: () => ({ type: 'TV', number: 0 }), setSource: (source, success) => { window.__lastSource = source; success(); } }
+      };
+    });
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(pathToFileURL(path.resolve('app/index.html')).href);
+    await page.waitForFunction(() => document.querySelectorAll('#apps .app').length === 2);
     await page.waitForFunction(() => document.querySelectorAll('[data-lucide].lucide').length > 0);
     await page.waitForFunction(() => document.querySelectorAll('[data-lucide].lucide').length === document.querySelectorAll('svg.lucide').length && document.querySelectorAll('svg.lucide').length > 0);
 
@@ -26,6 +37,44 @@ const { pathToFileURL } = require('node:url');
       if (destination === 'media') assert.match(await page.locator('#page-media').innerText(), /Local media is unavailable/);
     }
 
+    assert.equal(await page.locator('.footer').count(), 0, 'persistent footer must be removed');
+    assert.equal(await page.locator('#status').evaluate((el) => getComputedStyle(el).position), 'absolute', 'live status should remain visually hidden');
+    await page.locator('.sidebar-item[data-section="search"]').click();
+    await page.waitForFunction(() => document.querySelectorAll('#search-apps .app').length === 3);
+    assert.equal(await page.locator('#search-results').isVisible(), true, 'empty-query suggestions should render');
+    assert.equal(await page.locator('#search-clear').isVisible(), false);
+    assert.equal(await page.locator('#search-popular .search-chip').count(), 7);
+    assert.equal(await page.locator('#search-titles .search-chip').count(), 4);
+    assert.equal(await page.locator('#search-apps .app').first().getAttribute('data-app-id'), 'netflix', 'recent/favorite installed app should rank first');
+    await page.locator('#search-input').fill('you');
+    assert.equal(await page.locator('#search-apps .app').count(), 1);
+    assert.equal(await page.locator('#search-apps .app').first().getAttribute('data-app-id'), 'youtube');
+    assert.equal(await page.locator('#search-clear').isVisible(), true);
+    await page.locator('#search-input').fill('no-such-app');
+    assert.equal(await page.locator('#search-empty').isVisible(), true);
+    await page.locator('#search-clear').click();
+    assert.equal(await page.locator('#search-popular .search-chip').count(), 7, 'clearing should restore quick suggestions');
+    await page.locator('#search-titles .search-chip').filter({ hasText: 'Dune' }).click();
+    assert.equal(await page.locator('#search-input').inputValue(), 'Dune', 'title suggestion should populate query');
+    await page.locator('#search-input').fill('');
+    await page.locator('#search-input').focus();
+    await page.keyboard.press('ArrowDown');
+    assert.ok(await page.evaluate(() => document.activeElement.classList.contains('app')), 'Down should enter suggested apps');
+    await page.locator('#search-popular .search-chip').first().focus();
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await page.evaluate(() => document.activeElement.textContent), 'YouTube', 'Right should move horizontally across quick suggestions');
+    await page.locator('#search-popular .search-chip').first().focus();
+    await page.keyboard.press('ArrowLeft');
+    assert.equal(await page.evaluate(() => document.activeElement.getAttribute('data-section')), 'search', 'left from the first suggestion should return focus to the Search destination');
+    await page.locator('#search-input').focus();
+    assert.equal(await page.locator('#search-input').evaluate((el) => getComputedStyle(el).outlineStyle), 'none', 'input should not have an inner outline');
+    assert.notEqual(await page.locator('.search-bar').evaluate((el) => getComputedStyle(el).boxShadow), 'none');
+    await page.locator('.sidebar-item[data-section="inputs"]').click();
+    await page.waitForFunction(() => document.querySelectorAll('#inputs-grid .input-tile').length === 2);
+    assert.deepEqual(await page.locator('#inputs-grid .input-tile .input-icon').evaluateAll((els) => els.map((el) => el.getAttribute('data-lucide'))), ['tv', 'plug-zap']);
+    await page.locator('#inputs-grid .input-tile').nth(1).click();
+    assert.deepEqual(await page.evaluate(() => window.__lastSource), { type: 'HDMI', number: 1, name: 'HDMI 1' }, 'input switching must pass the TV-reported source object');
+    await page.locator('.sidebar-item[data-section="settings"]').click();
     await page.locator('[data-panel="general"]').focus();
     await page.keyboard.press('ArrowDown');
     assert.equal(await page.evaluate(() => document.activeElement.getAttribute('data-panel')), 'appearance', 'remote down should move between settings categories');
