@@ -5,12 +5,11 @@
   </icon>
   <content src="index.html">
   </content>
-  <access origin="https://cdn.brandfetch.io" subdomains="false" />
   <feature name="http://tizen.org/feature/screen.size.normal.1080.1920">
   </feature>
   <tizen:setting screen-orientation="landscape" context-menu="enable" background-support="disable" encryption="disable" install-location="auto" hwkey-event="enable">
   </tizen:setting>
-  <tizen:application id="Kipsmthn0.Kipsmthn" package="Kipsmthn0" required_version="2.3">
+  <tizen:application id="KipsmthnTV.Kipsmthn" package="KipsmthnTV" required_version="2.3">
   </tizen:application>
   <tizen:privilege name="http://tizen.org/privilege/application.launch">
   </tizen:privilege>

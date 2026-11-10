@@ -1,0 +1,96 @@
+{
+  "deployId": 1,
+  "projectDir": "/Users/kipsmthn/Projects/KipsmthnTV/app",
+  "timestamp": "2026-11-10T18:17:21.742Z",
+  "hashAlgorithm": "xxh3-128",
+  "input": {
+    "tizen-service.js": {
+      "hash": "6660048daa8178d84f14f857f0b5c61c"
+    },
+    "tailwind.config.js": {
+      "hash": "b5f99f7eec5d43d74690175e87a67f9a"
+    },
+    "postcss.config.js": {
+      "hash": "d13ad42266fc82914f0190e682980806"
+    },
+    "photo-library.js": {
+      "hash": "1411dccd5c67f8d250b4e3c3fa99ce12"
+    },
+    "motion-system.js": {
+      "hash": "8dceda0366c60d711e06f3c638139308"
+    },
+    "main.js": {
+      "hash": "5f070bf6dfde25f0fdf93cfc7993a0c9"
+    },
+    "input.css": {
+      "hash": "f071c219d77dbd6bb99cd5a2fc17eabf"
+    },
+    "index.html": {
+      "hash": "d902f96d700da225dbbc90f46ca2cc0b"
+    },
+    "icon.png": {
+      "hash": "fbec867b62aa3ec5bf468f9a1f393159"
+    },
+    "icon-resolver.js": {
+      "hash": "859aeef8ecfba87414cef4ca145a1177"
+    },
+    "config.xml.backup": {
+      "hash": "53994a87e96b7e2535af363349c288a9"
+    },
+    "config.xml": {
+      "hash": "64d093a31b41fb4bf3db6ef867c0973b"
+    },
+    "components.json": {
+      "hash": "fc8dfc1f6db34f812598bb3092fc78e3"
+    },
+    "audio-controller.js": {
+      "hash": "91722106331f7f9884f52da26c034937"
+    },
+    "css/cinematic.css": {
+      "hash": "9d4086fde3b6f33720bc1e23aeb53c78"
+    },
+    "assets/lucide.min.js": {
+      "hash": "893a9995310139e579bbb14fa59be3fa"
+    },
+    "assets/photos/twilight-mountains.jpg": {
+      "hash": "a3d36bc8afe1344fb12c5264dbe56871"
+    },
+    "assets/photos/quiet-architecture.jpg": {
+      "hash": "8de3d85cd2e5dd07b525e00930282550"
+    },
+    "assets/photos/nocturnal-city.jpg": {
+      "hash": "5203e992f4ec1f1a04740bdd85b3a1c7"
+    },
+    "assets/photos/night-sky.jpg": {
+      "hash": "1e8b3c96c1cdc06101354814af7ec09e"
+    },
+    "assets/photos/moody-forest.jpg": {
+      "hash": "64d4dc6278ba3d57738470316df77d82"
+    },
+    "assets/photos/lake-dusk.jpg": {
+      "hash": "b6f789d790c84bb0b83be8fb4a349e87"
+    },
+    "assets/photos/evening-sky.jpg": {
+      "hash": "faa212d748ac72bb07fe5caa2eae7d8e"
+    },
+    "assets/photos/desert-cinema.jpg": {
+      "hash": "9ad7321459b7890776c1b7a77ec547b6"
+    },
+    "assets/audio/startup.wav": {
+      "hash": "c002b50334a4050a9254b14e53343509"
+    },
+    "assets/audio/selection.wav": {
+      "hash": "08a382c268d5125155a3f4f45c113e1b"
+    },
+    "assets/audio/navigation.wav": {
+      "hash": "4cb632cca856bcf62228a38618ec1275"
+    },
+    "assets/audio/error.wav": {
+      "hash": "3376d203484d6d2237e88ce731ffbb29"
+    },
+    "assets/audio/back.wav": {
+      "hash": "68bb7a3814d3fced8736bfc89d075692"
+    }
+  },
+  "output": {}
+}

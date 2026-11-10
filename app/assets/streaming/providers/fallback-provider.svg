@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <rect width="200" height="200" fill="#1a1a2e"/>
-  <circle cx="100" cy="100" r="60" fill="#0f0f1a" stroke="#333" stroke-width="2"/>
-  <text x="100" y="115" font-family="system-ui, sans-serif" font-size="14" fill="#666" text-anchor="middle" font-weight="500">Streaming</text>
-  <text x="100" y="135" font-family="system-ui, sans-serif" font-size="14" fill="#666" text-anchor="middle" font-weight="500">Preview</text>
-</svg>

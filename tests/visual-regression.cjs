@@ -97,7 +97,7 @@ const update = process.env.UPDATE_SCREENSHOTS === '1';
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.goto(pathToFileURL(path.join(root, 'app/index.html')).href);
-    for (const destination of ['home', 'apps', 'movies', 'media', 'settings']) {
+    for (const destination of ['home', 'apps', 'inputs', 'settings']) {
       await page.locator(`.sidebar-item[data-section="${destination}"]`).click();
       await page.locator(`#page-${destination}:not([hidden])`).waitFor();
       if (destination === 'home') {
@@ -107,10 +107,6 @@ const update = process.env.UPDATE_SCREENSHOTS === '1';
           const visible = rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth;
           return !visible || (image.complete && image.naturalWidth > 0);
         }));
-      }
-      if (destination === 'movies' || destination === 'media') {
-        await page.waitForFunction((section) => [...document.querySelectorAll(`#page-${section} img`)].every((image) => image.complete && image.naturalWidth > 0), destination);
-        await page.locator(`#page-${destination} img`).evaluateAll((images) => Promise.all(images.map((image) => image.decode())));
       }
       assert.equal(await page.locator(`.sidebar-item[data-section="${destination}"]`).getAttribute('aria-current'), 'page');
       const screenPath = path.join(baselineDir, `screen-${destination}-1920x1080.png`);
@@ -124,8 +120,6 @@ const update = process.env.UPDATE_SCREENSHOTS === '1';
       assert.equal(screenshot.toString('hex', 0, 8), '89504e470d0a1a0a', `${destination} capture must be a PNG`);
       assert.equal(screenshot.readUInt32BE(16), 1920, `${destination} capture width`);
       assert.equal(screenshot.readUInt32BE(20), 1080, `${destination} capture height`);
-      if (destination === 'movies') assert.match(await page.locator('#page-movies').innerText(), /No movie catalogue connected/);
-      if (destination === 'media') assert.match(await page.locator('#page-media').innerText(), /Local media is unavailable/);
     }
 
     await page.locator('.sidebar-item[data-section="settings"]').click();
@@ -150,6 +144,6 @@ const update = process.env.UPDATE_SCREENSHOTS === '1';
     assert.equal(await page.evaluate(() => document.activeElement.id), 'exit-confirm');
     assert.deepEqual(errors, []);
     await context.close();
-    console.log('PASS: Home at 1080p/4K, all five requested screen captures, no overflow, semantic theme tokens, icon and runtime checks, D-pad settings/Home navigation, visible focus ring, and Back dialog focus.');
+    console.log('PASS: Home at 1080p/4K, remaining-screen captures, no overflow, semantic theme tokens, icon and runtime checks, D-pad settings/Home navigation, visible focus ring, and Back dialog focus.');
   } finally { await browser.close(); }
 })().catch((error) => { console.error(error); process.exit(1); });

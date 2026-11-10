@@ -8,11 +8,10 @@ const read = (relative) => fs.readFileSync(path.join(app, relative), 'utf8');
 const html = read('index.html');
 const manifest = read('tizen_web_project.yaml');
 const css = read('css/cinematic.css');
-const component = read('components/ui/index.js');
 const js = read('main.js');
 
 assert.equal(fs.existsSync(path.join(root, 'MyTvTheme')), false, 'the duplicate app root must not return');
-assert.ok(fs.existsSync(path.join(root, 'archive', 'legacy-MyTvTheme')), 'the old tree must remain preserved in archive/');
+assert.equal(fs.existsSync(path.join(root, 'archive')), false, 'obsolete archive must not be included');
 
 const ids = [...html.matchAll(/\bid=["']([^"']+)["']/g)].map((match) => match[1]);
 const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
@@ -23,19 +22,8 @@ assert.match(html, /<html[^>]*class=["'][^"']*\bdark\b/);
 const localResources = [
   ...[...html.matchAll(/(?:src|href)=["']([^"']+)["']/g)].map((match) => match[1]),
   'icon.png', 'audio-controller.js', 'photo-library.js', 'motion-system.js', 'icon-resolver.js',
-  'lib/utils.js', 'components/ui/index.js',
   'assets/audio/navigation.wav', 'assets/audio/selection.wav', 'assets/audio/back.wav', 'assets/audio/error.wav', 'assets/audio/startup.wav',
-  'assets/photos/desert-cinema.jpg', 'assets/photos/evening-sky.jpg', 'assets/photos/lake-dusk.jpg', 'assets/photos/live-music.jpg', 'assets/photos/moody-forest.jpg', 'assets/photos/night-sky.jpg', 'assets/photos/nocturnal-city.jpg', 'assets/photos/photography.jpg', 'assets/photos/quiet-architecture.jpg', 'assets/photos/studio-music.jpg', 'assets/photos/twilight-mountains.jpg', 'assets/photos/video-camera.jpg',
-  'data/mock-content.js',
-  'services/content-artwork-service.js',
-  'services/dynamic-wallpaper-service.js',
-  'services/viewing-activity-service.js',
-  'services/content-metadata-service.js',
-  'components/continue-watching/ContinueWatchingCard.js',
-  'components/continue-watching/ContinueWatching.js',
-  'components/dynamic-wallpaper/WallpaperTransition.js',
-  'components/dynamic-wallpaper/DynamicWallpaper.js',
-  'components/content/ContentCard.js'
+  'assets/photos/desert-cinema.jpg', 'assets/photos/evening-sky.jpg', 'assets/photos/lake-dusk.jpg', 'assets/photos/moody-forest.jpg', 'assets/photos/night-sky.jpg', 'assets/photos/nocturnal-city.jpg', 'assets/photos/quiet-architecture.jpg', 'assets/photos/twilight-mountains.jpg',
 ].filter((resource) => !/^(?:https?:|data:|#)/i.test(resource));
 
 for (const resource of localResources) {
@@ -43,22 +31,24 @@ for (const resource of localResources) {
   assert.ok(manifest.includes(`- ${resource}`), `Tizen package manifest omits: ${resource}`);
 }
 
-for (const destination of ['home', 'search', 'apps', 'games', 'recent', 'movies', 'media', 'inputs', 'settings']) {
+for (const destination of ['home', 'search', 'apps', 'games', 'recent', 'inputs', 'settings']) {
   assert.match(html, new RegExp(`data-section=["']${destination}["']`), `navigation must expose ${destination}`);
   assert.match(html, new RegExp(`id=["']page-${destination}["']`), `destination ${destination} must have a screen`);
 }
-for (const screen of ['page-home', 'page-apps', 'page-movies', 'page-media']) {
+for (const screen of ['page-home', 'page-apps']) {
   assert.match(html, new RegExp(`id=["']${screen}["'][^>]*class=["'][^"']*page-section`));
 }
 assert.match(html, /id=["']page-settings["'][^>]*class=["'][^"']*settings-screen/);
-assert.ok(html.includes('No movie catalogue connected'), 'Movies must disclose missing catalog integration');
-assert.doesNotMatch(html, /data-panel=["']playback["']/);
-assert.ok(html.includes('no media-library integration'), 'My Media must disclose missing filesystem integration');
+assert.doesNotMatch(html, /data-section=["'](?:movies|media)["']|id=["']page-(?:movies|media)["']/i, 'removed destinations must not be reachable through markup');
+assert.doesNotMatch(js, /['"](?:movies|media)['"]|page-(?:movies|media)|ContinueWatching|DynamicWallpaper|TMDBContentService|brandfetch/i, 'removed modules and external logo client must not remain in runtime routing or handlers');
+assert.doesNotMatch(html, /TMDB|Brandfetch|Continue watching|Streaming artwork preview/i, 'disabled content integrations must not appear in the packaged UI');
 assert.match(html, /<script src=["']photo-library\.js["']/);
 assert.doesNotMatch(html, /assets\/(?:wallpapers|posters|logos)\/[^"']+\.svg/);
 assert.match(html, /class=["'][^"']*text-app-tile/);
 assert.match(read('photo-library.js'), /images\.unsplash\.com/);
 assert.doesNotMatch(read('photo-library.js'), /access[_-]?key|client[_-]?secret/i);
+assert.doesNotMatch(js, /cdn\.brandfetch\.io|api\.themoviedb\.org|api_key|Bearer\s+[A-Za-z0-9._-]{12}/i);
+assert.doesNotMatch(manifest, /tmdb|streaming|ContinueWatching|DynamicWallpaper|Brandfetch/i);
 assert.match(html, /href=["']css\/cinematic\.css["']/);
 assert.match(manifest, /- css\/cinematic\.css/);
 assert.doesNotMatch(manifest, /- css\/style\.css/);
@@ -73,12 +63,10 @@ assert.match(css, /--sidebar-ring:oklch\(0\.556 0 0\)/);
 assert.match(css, /--radius:0\.45rem/);
 assert.match(css, /\.shadcn-button/);
 assert.match(css, /\.settings-category:focus-visible|button:focus-visible/);
-assert.match(component, /role', 'switch'/);
 assert.equal(fs.existsSync(path.join(app, 'components.json')), true);
 assert.equal(fs.existsSync(path.join(app, 'tailwind.config.js')), true);
 assert.equal(fs.existsSync(path.join(app, 'postcss.config.js')), true);
 assert.match(JSON.parse(read('components.json')).tailwind.css, /input\.css/);
-assert.equal(fs.existsSync(path.join(app, 'lib/utils.js')), true);
 assert.match(js, /TizenService\.launchApp/);
 assert.match(js, /TizenService\.showPreview/);
 assert.match(js, /TizenService\.setSource/);
@@ -91,4 +79,4 @@ for (const name of iconNames) {
   assert.ok(new RegExp(`(?:^|,)a\\.${exportedName}=`).test(lucide), `Lucide icon is missing: ${name}`);
 }
 
-console.log('PASS: Tizen packaging, semantic shadcn theme, screens, Lucide icons, no inline styles and preserved API wiring.');
+console.log('PASS: project structure, destinations, visual theme, local assets, Tizen hooks, and absence of removed modules validated.');

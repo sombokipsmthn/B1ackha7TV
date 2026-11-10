@@ -64,6 +64,16 @@
     --tile-width: clamp(11.25rem, 14vw, 16.5rem);
     --tile-height: clamp(8rem, 9vw, 10.75rem);
     --control-height: 3.5rem;
+    --space-page: 2rem;
+    --space-page-home: 2.5rem;
+    --space-grid: 1.25rem;
+    --space-card: 1.25rem;
+    --type-page-title: 2.25rem;
+    --type-page-title-line: 2.5rem;
+    --icon-control-size: 1.25rem;
+    --icon-input-size: 1.5rem;
+    --icon-navigation-size: 1.75rem;
+    --icon-stroke: 1.75;
     --motion-micro: 140ms;
     --motion-focus: 190ms;
     --motion-component: 240ms;
@@ -186,7 +196,8 @@
   .icon-btn { @apply shadcn-button h-14 w-14 min-h-14 p-3; }
   #settings-open { @apply flex; }
   #preview { @apply w-full overflow-hidden border; border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-md); background: var(--glass-bg-strong); box-shadow: var(--glass-shadow-subtle); }
-  .preview-float { @apply fixed bottom-24 right-8 z-40; }
+  .preview-float { @apply fixed right-8 z-40; bottom: var(--safe-area-y); }
+  body[data-page="settings"] #preview-float { left: calc(var(--sidebar-width) + var(--safe-area-x)); right: auto; }
   .preview-launcher { @apply flex h-14 w-14 items-center justify-center border text-muted-foreground shadow-sm transition-colors; background: var(--glass-bg); border-color: var(--glass-border); border-radius: var(--glass-radius-xl); }
   .preview-launcher:hover { @apply bg-accent text-accent-foreground; }
   .preview-launcher > span { @apply h-6 w-6; }
@@ -212,19 +223,20 @@
   .preview-caption > span:nth-child(2) { @apply min-w-0 flex-1 truncate; }
   .preview-caption button { @apply shadcn-button min-h-10 px-3 py-2 text-sm; }
   .live-dot { @apply h-2.5 w-2.5 shrink-0 rounded-full bg-primary; }
-  #preview-float { @apply fixed bottom-24 right-8 z-40; }
+  #preview-float { @apply fixed right-8 z-40; bottom: var(--safe-area-y); }
+  body[data-page="settings"] #preview-float { left: calc(var(--sidebar-width) + var(--safe-area-x)); right: auto; }
   #preview-float > button { @apply shadcn-button; }
   #preview-panel { @apply absolute bottom-16 right-0 w-[28rem] rounded-lg border bg-card p-4 shadow-sm; }
   #preview-panel #preview { @apply relative w-full; }
   #preview-collapse { @apply absolute right-3 top-3 z-10 h-12 min-h-12 w-12 p-3; }
 
-  .page-section { @apply flex min-h-full flex-col gap-8; }
+  .page-section { @apply flex min-h-full flex-col; gap: var(--space-page); }
   .page-head { @apply flex flex-col gap-2; }
   .apps-page .page-head { @apply flex-row items-center justify-between gap-4; }
   .apps-actions { @apply flex items-center gap-3; }
-  .page-title { @apply m-0 text-4xl font-semibold tracking-tight; }
+  .page-title { @apply m-0 font-semibold tracking-tight; font-size: var(--type-page-title); line-height: var(--type-page-title-line); }
   .page-subtitle { @apply m-0 text-lg text-muted-foreground; }
-  .home-page { @apply gap-10; }
+  .home-page { gap: var(--space-page-home); }
   .hero { @apply pointer-events-none min-h-24; }
   .content-section { @apply mb-2; }
   .section-title { @apply mb-5 text-2xl font-semibold tracking-tight; }
@@ -318,8 +330,8 @@
     transition-timing-function: ease-in-out;
   }
 
-  .apps-grid, .games-grid, .search-grid { @apply grid grid-cols-[repeat(auto-fill,minmax(var(--tile-width),1fr))] gap-5; }
-  .app, .app-grid-item { @apply shadcn-card flex min-h-40 min-w-0 flex-col items-center justify-center gap-3 p-5 text-center transition-colors; }
+  .apps-grid, .games-grid, .search-grid { @apply grid grid-cols-[repeat(auto-fill,minmax(var(--tile-width),1fr))]; gap: var(--space-grid); }
+  .app, .app-grid-item { @apply shadcn-card flex min-h-40 min-w-0 flex-col items-center justify-center gap-3 text-center transition-colors; padding: var(--space-card); }
   .app:hover, .app-grid-item:hover, .app:focus-visible, .app-grid-item:focus-visible { @apply border-primary bg-accent; }
   .app .initial, .app-grid-item .initial { @apply flex h-16 w-16 shrink-0 items-center justify-center rounded-md bg-secondary text-xl font-semibold text-secondary-foreground; }
   .app .app-icon, .app-grid-item img { @apply h-16 w-16 rounded-md object-contain; }
@@ -385,7 +397,7 @@
 
   #page-settings.settings-screen { @apply relative z-10 flex min-h-full flex-col bg-transparent; }
   .settings-topbar { @apply mb-6; }
-  .settings-topbar h1 { @apply m-0 text-3xl font-semibold tracking-tight; }
+  .settings-topbar h1 { @apply m-0 font-semibold tracking-tight; font-size: var(--type-page-title); line-height: var(--type-page-title-line); }
   .settings-workspace { @apply grid min-h-0 flex-1 grid-cols-[minmax(12rem,19%)_minmax(0,1fr)] gap-5; }
   .settings-sidebar { @apply min-h-0 overflow-y-auto; background: var(--glass-bg-subtle); border: 1px solid var(--glass-border-subtle); border-radius: var(--glass-radius-md); padding: .65rem; backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
   .settings-categories { @apply m-0 flex list-none flex-col gap-1 p-0; }
@@ -395,7 +407,7 @@
   .settings-category > span:first-child { width: 1.1rem; height: 1.1rem; flex: 0 0 1.1rem; color: var(--glass-text-secondary); }
   .settings-category b { @apply block text-base font-medium; }
   .settings-content-shell { @apply min-h-0 overflow-hidden; }
-  .settings-panel { @apply h-full w-full overflow-auto px-7 pb-7; background: var(--glass-bg-strong); border: 1px solid var(--glass-border-subtle); border-radius: var(--glass-radius-lg); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
+  .settings-panel { @apply h-full w-full overflow-auto px-7; padding-bottom: 8rem; background: var(--glass-bg-strong); border: 1px solid var(--glass-border-subtle); border-radius: var(--glass-radius-lg); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
   .settings-panel[hidden] { display: none !important; }
   .settings-panel-heading { @apply mb-5 flex items-center; }
   .settings-panel-heading h2 { @apply m-0 text-2xl font-semibold tracking-tight; }
@@ -432,7 +444,12 @@
   .settings-dialog p { @apply text-base leading-7 text-muted-foreground; }
   .settings-dialog > div { @apply flex justify-end gap-4; }
   .settings-panel :focus-visible, .settings-category:focus-visible, .settings-wallpaper-choice:focus-visible { outline: 2px solid var(--glass-text-primary); outline-offset: 3px; }
-  .settings-category svg, .settings-category [data-lucide] { width: 1.1rem; height: 1.1rem; stroke-width: 1.7; }
+  .settings-category svg, .settings-category [data-lucide] { width: 1.1rem; height: 1.1rem; stroke-width: var(--icon-stroke); }
+  .filter-btn svg.lucide, .setting-btn svg.lucide, .primary-btn svg.lucide, .xbox-launch-btn svg.lucide, .search-clear svg.lucide, .icon-btn svg.lucide, .shadcn-button svg.lucide, .key svg.lucide, .preview-launcher svg.lucide, .preview-collapse svg.lucide { width: var(--icon-control-size); height: var(--icon-control-size); stroke-width: var(--icon-stroke); }
+  svg.lucide.sidebar-icon { width: var(--icon-navigation-size); height: var(--icon-navigation-size); stroke-width: var(--icon-stroke); }
+  svg.lucide.input-icon { width: var(--icon-input-size); height: var(--icon-input-size); stroke-width: var(--icon-stroke); }
+  .sidebar-icon { width: var(--icon-navigation-size); height: var(--icon-navigation-size); }
+  .settings-panel:focus-within { scroll-padding-bottom: 8rem; }
   .settings-panel .settings-toggle { min-height: 3rem; min-width: 4.8rem; }
   .settings-app-list:empty { display: none; }
   #settings-apps-status[data-state="error"] { color: #f0b4b4; }

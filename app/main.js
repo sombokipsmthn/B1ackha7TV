@@ -5,7 +5,7 @@
   var $$ = function (selector, root) { return (root || document).querySelectorAll(selector); };
   var storageKey = 'kipsmthn.settings.v1';
   var legacyStorageKey = 'b1ackha7tv.settings.v1';
-  var defaults = { name: 'Kipsmthn', theme: 'cinematic', background: '', backgroundVersion: 2, preview: true, system: false, favorites: null, recentApps: [], animations: true, sounds: true, soundVolume: 25, reducedMotion: false, startupSound: false, homeDestination: 'home', showApps: true, showContinue: true, showFeatured: true, showRecent: true };
+  var defaults = { name: 'Kipsmthn', theme: 'cinematic', background: '', backgroundVersion: 2, preview: true, system: false, favorites: null, recentApps: [], animations: true, sounds: true, soundVolume: 25, reducedMotion: false, startupSound: false, homeDestination: 'home', showApps: true, showRecent: true };
   var prefs = Object.assign({}, defaults);
   var themes = {
     cinematic: 'url("assets/photos/twilight-mountains.jpg")',
@@ -27,11 +27,6 @@
   var appRequest = 0, imageRequest = 0, launchGeneration = 0, launchTimer = null;
   var launching = false, previewBlocked = false, previewNeedsShow = true, windowBusy = false, windowVisible = false;
   var returnFocus = null, exitFocus = null, pageFocus = Object.create(null), log = [];
-
-  // New dynamic wallpaper and content components
-  var continueWatchingComponent = null;
-  var dynamicWallpaperComponent = null;
-  var streamingAssetServiceReady = false;
 
   function report(message, error) {
     var suffix = error ? ' [' + (error.name || 'Error') + ': ' + (error.message || 'No details') + ']' : '';
@@ -64,7 +59,7 @@
     if (Array.isArray(saved.favorites)) { prefs.favorites = saved.favorites.filter(function (id) { return typeof id === 'string'; }); }
     var recent = Array.isArray(saved.recentApps) ? saved.recentApps : (Array.isArray(saved.recent) ? saved.recent.map(function (item) { return typeof item === 'string' ? item : item && item.id; }) : []);
     prefs.recentApps = recent.filter(function (id) { return typeof id === 'string'; }).slice(0, 20);
-    ['animations', 'sounds', 'reducedMotion', 'startupSound', 'showApps', 'showContinue', 'showFeatured', 'showRecent'].forEach(function (key) { if (typeof saved[key] === 'boolean') { prefs[key] = saved[key]; } });
+    ['animations', 'sounds', 'reducedMotion', 'startupSound', 'showApps', 'showRecent'].forEach(function (key) { if (typeof saved[key] === 'boolean') { prefs[key] = saved[key]; } });
     if (['home', 'apps', 'recent'].indexOf(saved.homeDestination) >= 0) { prefs.homeDestination = saved.homeDestination; }
     if (typeof saved.soundVolume === 'number' && isFinite(saved.soundVolume)) { prefs.soundVolume = Math.max(0, Math.min(100, Math.round(saved.soundVolume))); }
     if (saved.backgroundVersion !== 2) { prefs.background = ''; }
@@ -109,7 +104,6 @@
     image.src = isPackagedWallpaper ? path.replace(/^assets\//, 'assets/') : path;
   }
   function initIcons(root) {
-    if (window.ShadcnUI && typeof window.ShadcnUI.mount === 'function') { window.ShadcnUI.mount(root || document); }
     if (!window.lucide || typeof window.lucide.createIcons !== 'function') { return; }
     try { window.lucide.createIcons({ root: root || document, icons: window.lucide.icons }); }
     catch (error) { report('Some interface icons could not be initialized.', error); }
@@ -128,14 +122,9 @@
     });
   }
   function showPage(page) {
-    var supported = ['home', 'search', 'apps', 'games', 'recent', 'movies', 'media', 'inputs', 'settings'];
+    var supported = ['home', 'search', 'apps', 'games', 'recent', 'inputs', 'settings'];
     if (supported.indexOf(page) < 0) { page = 'home'; }
     var pageChanged = currentPage !== page;
-
-    // Cleanup home components if leaving home page
-    if (pageChanged && currentPage === 'home') {
-      cleanupHomeComponents();
-    }
 
     if (pageChanged && document.activeElement && document.activeElement !== document.body) { pageFocus[currentPage] = document.activeElement; }
     currentPage = page;
@@ -150,16 +139,12 @@
       section.hidden = section.id !== sectionId;
     });
     if ($('page-settings')) { $('page-settings').hidden = page !== 'settings'; }
-    if (page === 'movies' || page === 'media') {
-      Array.prototype.forEach.call($$('img[src^="assets/photos/"]', $('page-' + page)), function (image) { image.loading = 'eager'; });
-    }
     setActiveNavigation(page);
     if (page === 'settings') { selectSettingsPanel(currentPanel); var firstCategory = document.querySelector('.settings-category.active'); if (firstCategory && pageChanged) { firstCategory.focus(); } }
     {
       var pageRoot = $('page-' + page);
       if (pageRoot && pageChanged && page !== 'home' && page !== 'search') { var first = pageRoot.querySelector('button,input,select,[tabindex="0"]'); if (first) { first.focus(); } }
       else if (pageChanged && page !== 'home' && page !== 'search') { var navButton = document.querySelector('.sidebar-item[data-section="' + page + '"]'); if (navButton) { navButton.focus(); } }
-      wirePhotoFallbacks(pageRoot);
       if (page === 'apps') { renderAppsPage(); }
       else if (page === 'games') { renderGames(); }
       else if (page === 'recent') { renderRecent(); }
@@ -226,24 +211,12 @@
     prefs.favorites = (preferred.length ? preferred : catalog.filter(function (app) { return app.show !== false; })).slice(0, 9).map(function (app) { return app.id; });
     save();
   }
-  function brandfetchDomain(app) {
-    var identity = ((app && (app.name || app.id)) || '').toLowerCase().replace(/[®™]/g, '');
-    var brands = [
-      [/netflix/, 'netflix.com'], [/youtube/, 'youtube.com'], [/prime|amazon/, 'primevideo.com'],
-      [/disney/, 'disneyplus.com'], [/hulu/, 'hulu.com'], [/peacock/, 'peacocktv.com'],
-      [/paramount/, 'paramountplus.com'], [/apple.?tv/, 'apple.com'], [/showmax/, 'showmax.com'],
-      [/plex/, 'plex.tv'], [/crunchyroll/, 'crunchyroll.com'], [/spotify/, 'spotify.com'],
-      [/tubi/, 'tubitv.com'], [/pluto/, 'pluto.tv'], [/max|hbo/, 'max.com']
-    ];
-    for (var i = 0; i < brands.length; i++) { if (brands[i][0].test(identity)) { return brands[i][1]; } }
-    return app && typeof app.domain === 'string' ? app.domain.replace(/^https?:\/\//, '').split('/')[0] : '';
-  }
   function createAppButton(app, actionVisible, cssClass) {
     var button = document.createElement('button');
     button.type = 'button'; button.className = (cssClass || 'app') + ' shadcn-card'; button.setAttribute('data-app-id', app.id); button.title = app.name || app.id; button.setAttribute('aria-label', app.name || app.id);
     var name = document.createElement('span'); name.className = 'app-name'; name.textContent = app.name || app.id; button.appendChild(name);
     function showIcon(src, sourceType) {
-      if (!src || (!button.isConnected && sourceType !== 'brandfetch')) { return; }
+      if (!src || !button.isConnected) { return; }
       var image = document.createElement('img'); image.className = 'app-icon'; image.alt = ''; image.decoding = 'async'; image.src = src;
       image.onerror = function () { image.remove(); };
       var previous = button.querySelector('.app-icon');
@@ -251,8 +224,6 @@
       button.insertBefore(image, name);
       button.setAttribute('data-icon-source', sourceType);
     }
-    var domain = brandfetchDomain(app);
-    if (domain) { showIcon('https://cdn.brandfetch.io/' + encodeURIComponent(domain) + '?c=1idDD29jmTts5E99suk', 'brandfetch'); }
     if (window.IconResolver) {
       window.IconResolver.resolve(app, function (src, sourceType) { if (src) { showIcon(src, sourceType); } });
     }
@@ -271,13 +242,6 @@
     });
     return button;
   }
-  function wirePhotoFallbacks(root) {
-    Array.prototype.forEach.call((root || document).querySelectorAll('img[src^="assets/photos/"]'), function (image) {
-      if (image.getAttribute('data-fallback-wired') === 'true') { return; }
-      image.setAttribute('data-fallback-wired', 'true');
-      image.onerror = function () { image.hidden = true; if (image.parentNode) { image.parentNode.classList.add('photo-failed'); } };
-    });
-  }
   function hydratePhotos(root) {
     Array.prototype.forEach.call((root || document).querySelectorAll('.card-bg[data-photo]'), function (container) {
       if (container.getAttribute('data-hydrated') === 'true') { return; }
@@ -290,36 +254,6 @@
       container.appendChild(image);
     });
   }
-  function renderStreamingPreview() {
-    var carousel = $('trending-carousel'), service = window.TMDBContentService;
-    if (!carousel || !service) { return; }
-    if (!service.isDemoModeEnabled()) { carousel.textContent = ''; return; }
-    var entries = service.createDemoContent();
-    carousel.textContent = '';
-    entries.slice(0, 10).forEach(function (content) {
-      var button = document.createElement('button'); button.type = 'button'; button.className = 'carousel-item trending-card';
-      button.setAttribute('role', 'listitem'); button.setAttribute('data-content-id', content.id);
-      button.setAttribute('aria-label', content.title + ' demo preview, not provider availability');
-      var background = document.createElement('div'); background.className = 'card-bg';
-      var image = document.createElement('img'); image.src = content.landscapeStill || content.backdrop; image.alt = ''; image.loading = 'lazy'; image.decoding = 'async';
-      image.onerror = function () { image.hidden = true; background.setAttribute('data-photo-fallback', 'true'); };
-      background.appendChild(image);
-      var overlay = document.createElement('div'); overlay.className = 'card-overlay';
-      var details = document.createElement('div'); details.className = 'card-content';
-      var title = document.createElement('h3'); title.className = 'content-title'; title.textContent = content.title;
-      var label = document.createElement('p'); label.className = 'content-meta'; label.textContent = 'Demo preview · ' + (content.releaseYear || 'TV series');
-      details.appendChild(title); details.appendChild(label); button.appendChild(background); button.appendChild(overlay); button.appendChild(details);
-      button.addEventListener('focus', function () { if (dynamicWallpaperComponent) { dynamicWallpaperComponent.setContentWallpaper(content); } });
-      button.addEventListener('click', function () { if (dynamicWallpaperComponent) { dynamicWallpaperComponent.setContentWallpaper(content); } });
-      carousel.appendChild(button);
-    });
-  }
-  function updateStreamingDemoControl() {
-    var control = $('tmdb-demo-toggle');
-    if (!control || !window.TMDBContentService) { return; }
-    var enabled = window.TMDBContentService.isDemoModeEnabled();
-    control.setAttribute('aria-pressed', String(enabled)); control.textContent = enabled ? 'On' : 'Off';
-  }
   function renderHome() {
     var library = $('apps'), catalog = uniqueApps();
     hydratePhotos($('page-home'));
@@ -331,44 +265,11 @@
     visible.forEach(function (app) { library.appendChild(createAppButton(app, true, 'app')); });
     if ($('library-title')) { $('library-title').textContent = editingApps ? 'Edit apps' : 'Apps'; }
     if ($('apps-section')) { $('apps-section').hidden = !prefs.showApps; }
-    if ($('continue-section')) { $('continue-section').hidden = !prefs.showContinue; }
-    if ($('trending-section')) { $('trending-section').hidden = !prefs.showFeatured; }
     if ($('recent-home-section')) { $('recent-home-section').hidden = !prefs.showRecent; }
     if ($('catalog-mode')) { $('catalog-mode').textContent = TizenService.isTV() ? 'Installed apps from this TV' : 'Browser preview · demonstration apps'; }
     if ($('app-count')) { $('app-count').textContent = visible.length + (editingApps ? ' available' : ' on Home'); }
     if ($('edit-hint')) { $('edit-hint').hidden = !editingApps; }
     if ($('empty')) { $('empty').hidden = visible.length > 0; if (!visible.length) { $('empty').textContent = 'No apps'; } }
-
-    // Initialize Continue Watching component if not already done
-    if (!continueWatchingComponent && window.ContinueWatching && prefs.showContinue) {
-      var continueContainer = $('continue-section');
-      if (continueContainer) {
-        continueWatchingComponent = window.ContinueWatching.createContinueWatching({
-          container: continueContainer.querySelector('.carousel') || continueContainer,
-          onContentSelect: function(content) {
-            // Handle content selection - could launch the app
-            if (window.AudioController) { window.AudioController.play('select'); }
-            report('Selected: ' + content.title);
-          }
-        });
-      }
-    }
-
-    renderStreamingPreview();
-    // Initialize Dynamic Wallpaper component if not already done
-    if (!dynamicWallpaperComponent && window.DynamicWallpaper) {
-      var wallpaperEl = $('wallpaper');
-      if (wallpaperEl) {
-        dynamicWallpaperComponent = window.DynamicWallpaper.createDynamicWallpaper({
-          wallpaperElement: wallpaperEl,
-          defaultBackdrop: 'assets/photos/twilight-mountains.jpg',
-          onWallpaperChange: function(src, source, id) {
-            // Wallpaper changed - could log or trigger other effects
-          }
-        });
-        applyBackground(prefs.background, false);
-      }
-    }
   }
   function filterApps(apps, query) {
     var term = (query || '').trim().toLowerCase();
@@ -568,10 +469,8 @@
     showPage(destination);
   }
   function applyHomePreferences() {
-    var appSection = $('apps-section'), continueSection = $('continue-section'), featuredSection = $('trending-section'), recentSection = $('recent-home-section');
+    var appSection = $('apps-section'), recentSection = $('recent-home-section');
     if (appSection) { appSection.hidden = !prefs.showApps; }
-    if (continueSection) { continueSection.hidden = !prefs.showContinue; }
-    if (featuredSection) { featuredSection.hidden = !prefs.showFeatured; }
     if (recentSection) { recentSection.hidden = !prefs.showRecent; }
     var recent = $('recent-home-apps');
     if (recent) {
@@ -581,17 +480,6 @@
     renderHome();
   }
 
-  // Cleanup components when leaving home page
-  function cleanupHomeComponents() {
-    if (continueWatchingComponent) {
-      continueWatchingComponent.destroy();
-      continueWatchingComponent = null;
-    }
-    if (dynamicWallpaperComponent) {
-      dynamicWallpaperComponent.destroy();
-      dynamicWallpaperComponent = null;
-    }
-  }
   function handleSettingControl(control) {
     var key = control.getAttribute('data-pref'); if (!key || !Object.prototype.hasOwnProperty.call(defaults, key)) { return; }
     var update = function () { prefs[key] = control.tagName === 'SELECT' ? control.value : !prefs[key]; save(); syncSettingsControls(); if (key.indexOf('show') === 0) { applyHomePreferences(); } if (key === 'animations' || key === 'sounds' || key === 'reducedMotion' || key === 'startupSound') { applyExperience(); } };
@@ -627,7 +515,7 @@
   }
   function iconSummary() {
     if (!$('icon-status')) { return; }
-    $('icon-status').textContent = 'App tiles load Brandfetch logos when a matching brand domain is known; TV-provided icons take priority.';
+    $('icon-status').textContent = 'App tiles use icons reported by Samsung Tizen when available; otherwise, text labels remain visible.';
   }
 
   function addRecent(id) {
@@ -883,7 +771,6 @@
   $('apps-refresh-settings').addEventListener('click', refreshApps);
   $('edit-apps').addEventListener('click', function () { editingApps = !editingApps; this.textContent = editingApps ? 'Done editing' : 'Edit apps'; renderAppsPage(); renderHome(); });
   $('edit-apps-home').addEventListener('click', function () { editingApps = !editingApps; renderHome(); });
-  if ($('tmdb-demo-toggle')) { $('tmdb-demo-toggle').addEventListener('click', function () { window.TMDBContentService.setDemoModeEnabled(!window.TMDBContentService.isDemoModeEnabled()); updateStreamingDemoControl(); renderStreamingPreview(); if (continueWatchingComponent) { continueWatchingComponent.refresh(); } if (!window.TMDBContentService.isDemoModeEnabled() && dynamicWallpaperComponent) { dynamicWallpaperComponent.setDefault(); } }); }
   $('search-input').addEventListener('input', updateSearch);
   $('search-clear').addEventListener('click', function () { $('search-input').value = ''; updateSearch(); $('search-input').focus(); });
   $('clear-recent').addEventListener('click', function () { prefs.recentApps = []; save(); renderRecent(); report('Recent history cleared.'); });
@@ -898,25 +785,7 @@
   $('exit-cancel').addEventListener('click', function () { exitDialog(false); });
   $('exit-confirm').addEventListener('click', closeLauncher);
   $('launch-xbox').addEventListener('click', switchToXboxInput);
-  Array.prototype.forEach.call($$('.streaming-provider-card'), function (button) {
-    function selectProvider() {
-      if (!dynamicWallpaperComponent || !window.TMDBContentService || !window.TMDBContentService.isDemoModeEnabled()) { return; }
-      var providerId = button.getAttribute('data-demo-provider');
-      var provider = window.ContentData && window.ContentData.getProviderConfig(providerId);
-      if (provider) { dynamicWallpaperComponent.setProviderWallpaper(provider); }
-    }
-    button.addEventListener('focus', selectProvider);
-    button.addEventListener('click', selectProvider);
-  });
   Array.prototype.forEach.call($$('.carousel-item[data-app-id]'), function (button) {
-    button.addEventListener('focus', function () {
-      var id = button.getAttribute('data-app-id'), providerIds = { netflix: 'netflix', prime: 'prime-video', disneyplus: 'disney-plus', appletv: 'apple-tv', showmax: 'showmax' };
-      var providerId = providerIds[id];
-      if (providerId && dynamicWallpaperComponent && window.TMDBContentService && window.TMDBContentService.isDemoModeEnabled()) {
-        var provider = window.ContentData && window.ContentData.getProviderConfig(providerId);
-        if (provider) { dynamicWallpaperComponent.setProviderWallpaper(provider); }
-      }
-    });
     button.addEventListener('click', function () {
       var id = button.getAttribute('data-app-id');
       if (id === 'all-apps') { showPage('apps'); }
@@ -979,21 +848,7 @@
   });
   window.addEventListener('resize', function () { previewNeedsShow = true; syncPreview(); });
 
-  loadPrefs(); applyName(); applyBackground(prefs.background, false); applyExperience(); syncSettingsControls(); renderWallpaperChoices(); applyHomePreferences(); updateStreamingDemoControl();
-
-  // Initialize streaming visual preview assets
-  if (window.streamingAssetService && window.STREAMING_VISUAL_PREVIEW !== false) {
-    window.streamingAssetService.initializePreviewAssets().then(function () {
-      streamingAssetServiceReady = true;
-      // Re-render home to use enriched content
-      if (currentPage === 'home') {
-        renderHome();
-      }
-    }).catch(function (error) {
-      console.warn('Streaming asset service initialization failed:', error);
-    });
-  }
-  if (window.AudioController) { window.AudioController.configure({ enabled: prefs.sounds, volume: prefs.soundVolume / 100, startup: prefs.startupSound }); }
+  loadPrefs(); applyName(); applyBackground(prefs.background, false); applyExperience(); syncSettingsControls(); renderWallpaperChoices(); applyHomePreferences();  if (window.AudioController) { window.AudioController.configure({ enabled: prefs.sounds, volume: prefs.soundVolume / 100, startup: prefs.startupSound }); }
   $('theme-select').value = prefs.theme; $('background-path-enhanced').value = prefs.background;
   $('system-toggle').setAttribute('aria-pressed', String(prefs.system)); $('system-toggle').textContent = prefs.system ? 'On' : 'Off';
   updatePreviewToggle(); clock(); setInterval(clock, 30000); initIcons(); updateDiagnostics();
