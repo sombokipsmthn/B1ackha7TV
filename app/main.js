@@ -31,6 +31,7 @@
   // New dynamic wallpaper and content components
   var continueWatchingComponent = null;
   var dynamicWallpaperComponent = null;
+  var streamingAssetServiceReady = false;
 
   function report(message, error) {
     var suffix = error ? ' [' + (error.name || 'Error') + ': ' + (error.message || 'No details') + ']' : '';
@@ -225,18 +226,35 @@
     prefs.favorites = (preferred.length ? preferred : catalog.filter(function (app) { return app.show !== false; })).slice(0, 9).map(function (app) { return app.id; });
     save();
   }
+  function brandfetchDomain(app) {
+    var identity = ((app && (app.name || app.id)) || '').toLowerCase().replace(/[®™]/g, '');
+    var brands = [
+      [/netflix/, 'netflix.com'], [/youtube/, 'youtube.com'], [/prime|amazon/, 'primevideo.com'],
+      [/disney/, 'disneyplus.com'], [/hulu/, 'hulu.com'], [/peacock/, 'peacocktv.com'],
+      [/paramount/, 'paramountplus.com'], [/apple.?tv/, 'apple.com'], [/showmax/, 'showmax.com'],
+      [/plex/, 'plex.tv'], [/crunchyroll/, 'crunchyroll.com'], [/spotify/, 'spotify.com'],
+      [/tubi/, 'tubitv.com'], [/pluto/, 'pluto.tv'], [/max|hbo/, 'max.com']
+    ];
+    for (var i = 0; i < brands.length; i++) { if (brands[i][0].test(identity)) { return brands[i][1]; } }
+    return app && typeof app.domain === 'string' ? app.domain.replace(/^https?:\/\//, '').split('/')[0] : '';
+  }
   function createAppButton(app, actionVisible, cssClass) {
     var button = document.createElement('button');
     button.type = 'button'; button.className = (cssClass || 'app') + ' shadcn-card'; button.setAttribute('data-app-id', app.id); button.title = app.name || app.id; button.setAttribute('aria-label', app.name || app.id);
     var name = document.createElement('span'); name.className = 'app-name'; name.textContent = app.name || app.id; button.appendChild(name);
+    function showIcon(src, sourceType) {
+      if (!src || (!button.isConnected && sourceType !== 'brandfetch')) { return; }
+      var image = document.createElement('img'); image.className = 'app-icon'; image.alt = ''; image.decoding = 'async'; image.src = src;
+      image.onerror = function () { image.remove(); };
+      var previous = button.querySelector('.app-icon');
+      if (previous) { previous.remove(); }
+      button.insertBefore(image, name);
+      button.setAttribute('data-icon-source', sourceType);
+    }
+    var domain = brandfetchDomain(app);
+    if (domain) { showIcon('https://cdn.brandfetch.io/' + encodeURIComponent(domain) + '?c=1idDD29jmTts5E99suk', 'brandfetch'); }
     if (window.IconResolver) {
-      window.IconResolver.resolve(app, function (src, sourceType) {
-        if (!src || !button.isConnected) { return; }
-        var image = document.createElement('img'); image.className = 'app-icon'; image.alt = ''; image.decoding = 'async'; image.src = src;
-        image.onerror = function () { image.remove(); };
-        button.insertBefore(image, name);
-        button.setAttribute('data-icon-source', sourceType);
-      });
+      window.IconResolver.resolve(app, function (src, sourceType) { if (src) { showIcon(src, sourceType); } });
     }
     if (editingApps && actionVisible) {
       var selected = (prefs.favorites || []).indexOf(app.id) >= 0;
@@ -529,7 +547,7 @@
   }
   function iconSummary() {
     if (!$('icon-status')) { return; }
-    $('icon-status').textContent = 'App tiles use readable text labels; no decorative logos are loaded.';
+    $('icon-status').textContent = 'App tiles load Brandfetch logos when a matching brand domain is known; TV-provided icons take priority.';
   }
 
   function addRecent(id) {
@@ -862,6 +880,19 @@
   window.addEventListener('resize', function () { previewNeedsShow = true; syncPreview(); });
 
   loadPrefs(); applyName(); applyBackground(prefs.background, false); applyExperience(); syncSettingsControls(); renderWallpaperChoices(); applyHomePreferences();
+
+  // Initialize streaming visual preview assets
+  if (window.streamingAssetService && window.STREAMING_VISUAL_PREVIEW !== false) {
+    window.streamingAssetService.initializePreviewAssets().then(function () {
+      streamingAssetServiceReady = true;
+      // Re-render home to use enriched content
+      if (currentPage === 'home') {
+        renderHome();
+      }
+    }).catch(function (error) {
+      console.warn('Streaming asset service initialization failed:', error);
+    });
+  }
   if (window.AudioController) { window.AudioController.configure({ enabled: prefs.sounds, volume: prefs.soundVolume / 100, startup: prefs.startupSound }); }
   $('theme-select').value = prefs.theme; $('background-path-enhanced').value = prefs.background;
   $('system-toggle').setAttribute('aria-pressed', String(prefs.system)); $('system-toggle').textContent = prefs.system ? 'On' : 'Off';

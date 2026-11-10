@@ -3,7 +3,7 @@
  *
  * Handles loading, caching, and fallback for content artwork including
  * posters, backdrops, landscape stills, and provider logos.
- * Works with locally bundled demonstration assets.
+ * Works with locally bundled demonstration assets and streaming visual preview.
  */
 
 (function (global) {
@@ -13,7 +13,8 @@
     cacheSize: 50,
     cacheTTL: 5 * 60 * 1000, // 5 minutes
     preloadCount: 3,
-    fallbackImage: 'assets/photos/twilight-mountains.jpg'
+    fallbackImage: 'assets/photos/twilight-mountains.jpg',
+    useStreamingAssets: true // Enable streaming visual preview integration
   };
 
   function ContentArtworkService(config) {
@@ -95,19 +96,47 @@
     return src;
   };
 
-  ContentArtworkService.prototype.getBackdropUrl = function (backdrop) {
+  ContentArtworkService.prototype.getBackdropUrl = function (backdrop, contentId, tmdbId, contentType) {
+    // Try streaming asset service first if enabled and contentId provided
+    if (this.config.useStreamingAssets && contentId && window.streamingAssetService) {
+      var streamingUrl = window.streamingAssetService.getBackdropUrl(contentId, tmdbId, contentType);
+      if (streamingUrl && streamingUrl !== window.streamingAssetService.config.assets.fallbackContentBackdrop) {
+        return streamingUrl;
+      }
+    }
     return this.getImageUrl(backdrop);
   };
 
-  ContentArtworkService.prototype.getLandscapeStillUrl = function (landscapeStill) {
+  ContentArtworkService.prototype.getLandscapeStillUrl = function (landscapeStill, contentId, tmdbId, contentType) {
+    // Try streaming asset service first if enabled and contentId provided
+    if (this.config.useStreamingAssets && contentId && window.streamingAssetService) {
+      var streamingUrl = window.streamingAssetService.getLandscapeStillUrl(contentId, tmdbId, contentType);
+      if (streamingUrl && streamingUrl !== window.streamingAssetService.config.assets.fallbackContentLandscape) {
+        return streamingUrl;
+      }
+    }
     return this.getImageUrl(landscapeStill);
   };
 
-  ContentArtworkService.prototype.getPosterUrl = function (poster) {
+  ContentArtworkService.prototype.getPosterUrl = function (poster, contentId, tmdbId, contentType) {
+    // Try streaming asset service first if enabled and contentId provided
+    if (this.config.useStreamingAssets && contentId && window.streamingAssetService) {
+      var streamingUrl = window.streamingAssetService.getPosterUrl(contentId, tmdbId, contentType);
+      if (streamingUrl && streamingUrl !== window.streamingAssetService.config.assets.fallbackContentPoster) {
+        return streamingUrl;
+      }
+    }
     return this.getImageUrl(poster);
   };
 
-  ContentArtworkService.prototype.getProviderLogoUrl = function (logo) {
+  ContentArtworkService.prototype.getProviderLogoUrl = function (logo, providerId) {
+    // Try streaming asset service first if enabled and providerId provided
+    if (this.config.useStreamingAssets && providerId && window.streamingAssetService) {
+      var streamingUrl = window.streamingAssetService.getProviderLogoUrl(providerId);
+      if (streamingUrl && streamingUrl !== window.streamingAssetService.config.assets.fallbackProviderLogo) {
+        return streamingUrl;
+      }
+    }
     return this.getImageUrl(logo);
   };
 

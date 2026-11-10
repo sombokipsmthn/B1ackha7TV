@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080">
+  <rect width="1920" height="1080" fill="#0a0a0f"/>
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1a1a3a;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#0a0a0f;stop-opacity:0.7" />
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#grad)"/>
+  <text x="960" y="540" font-family="system-ui, sans-serif" font-size="32" fill="#555" text-anchor="middle" font-weight="500">wednesday</text>
+  <text x="960" y="585" font-family="system-ui, sans-serif" font-size="20" fill="#444" text-anchor="middle">TMDB: 153001</text>
+</svg>

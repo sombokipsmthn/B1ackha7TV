@@ -62,6 +62,7 @@ files:
   - services/dynamic-wallpaper-service.js
   - services/viewing-activity-service.js
   - services/content-metadata-service.js
+  - services/streaming-asset-service.js
   - components/continue-watching/ContinueWatchingCard.js
   - components/continue-watching/ContinueWatching.js
   - components/dynamic-wallpaper/WallpaperTransition.js

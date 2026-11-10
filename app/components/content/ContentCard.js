@@ -50,9 +50,17 @@
       var headerRow = document.createElement('div');
       headerRow.className = 'card-header';
 
+      // Use streaming asset service for provider logo if available
+      var providerLogoSrc = this.content.providerLogo;
+      if (window.streamingAssetService && this.content.providerId) {
+        providerLogoSrc = window.streamingAssetService.getProviderLogoUrl(this.content.providerId);
+      } else if (window.contentArtworkService) {
+        providerLogoSrc = window.contentArtworkService.getProviderLogoUrl(this.content.providerLogo);
+      }
+
       var providerLogo = document.createElement('img');
       providerLogo.className = 'provider-logo';
-      providerLogo.src = window.contentArtworkService.getProviderLogoUrl(this.content.providerLogo);
+      providerLogo.src = providerLogoSrc;
       providerLogo.alt = '';
       providerLogo.loading = 'lazy';
       providerLogo.decoding = 'async';
@@ -191,16 +199,54 @@
     var imageUrl;
     switch (this.options.variant) {
       case 'portrait':
-        imageUrl = window.contentArtworkService.getPosterUrl(this.content.poster);
+        if (window.streamingAssetService && this.content.tmdbId) {
+          imageUrl = window.streamingAssetService.getPosterUrl(this.content.id, this.content.tmdbId, this.content.type);
+        } else if (window.contentArtworkService) {
+          imageUrl = window.contentArtworkService.getPosterUrl(this.content.poster, this.content.id, this.content.tmdbId, this.content.type);
+        } else {
+          imageUrl = this.content.poster;
+        }
         break;
       case 'landscape':
-        imageUrl = window.contentArtworkService.getLandscapeStillUrl(this.content.landscapeStill);
+        if (window.streamingAssetService && this.content.tmdbId) {
+          imageUrl = window.streamingAssetService.getLandscapeStillUrl(this.content.id, this.content.tmdbId, this.content.type);
+        } else if (window.contentArtworkService) {
+          imageUrl = window.contentArtworkService.getLandscapeStillUrl(this.content.landscapeStill, this.content.id, this.content.tmdbId, this.content.type);
+        } else {
+          imageUrl = this.content.landscapeStill;
+        }
         break;
       default:
-        imageUrl = window.contentArtworkService.getLandscapeStillUrl(this.content.landscapeStill);
+        if (window.streamingAssetService && this.content.tmdbId) {
+          imageUrl = window.streamingAssetService.getLandscapeStillUrl(this.content.id, this.content.tmdbId, this.content.type);
+        } else if (window.contentArtworkService) {
+          imageUrl = window.contentArtworkService.getLandscapeStillUrl(this.content.landscapeStill, this.content.id, this.content.tmdbId, this.content.type);
+        } else {
+          imageUrl = this.content.landscapeStill;
+        }
     }
 
-    window.contentArtworkService.loadImage(imageUrl).then(function () {
+    // Load via content artwork service for caching
+    if (window.contentArtworkService) {
+      window.contentArtworkService.loadImage(imageUrl).then(function () {
+        var img = document.createElement('img');
+        img.src = imageUrl;
+        img.alt = '';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.style.objectPosition = 'center';
+        img.onerror = function () {
+          img.hidden = true;
+          cardBg.setAttribute('data-photo-fallback', 'true');
+        };
+        cardBg.appendChild(img);
+        this.imageLoaded = true;
+      }.bind(this)).catch(function (error) {
+        console.warn('Failed to load content image:', error);
+        cardBg.setAttribute('data-photo-fallback', 'true');
+      });
+    } else {
+      // Fallback: direct image load
       var img = document.createElement('img');
       img.src = imageUrl;
       img.alt = '';
@@ -213,10 +259,7 @@
       };
       cardBg.appendChild(img);
       this.imageLoaded = true;
-    }.bind(this)).catch(function (error) {
-      console.warn('Failed to load content image:', error);
-      cardBg.setAttribute('data-photo-fallback', 'true');
-    });
+    }
   };
 
   ContentCard.prototype.bindEvents = function () {
