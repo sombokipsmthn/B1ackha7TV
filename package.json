@@ -8,7 +8,7 @@
     "serve": "serve -s app -l 8082",
 
     "build:css": "tailwindcss -c app/tailwind.config.js -i app/input.css -o app/css/cinematic.css --minify",
-    "test": "node tests/project-structure.cjs && node tests/security-packaging.cjs && node tests/experience.cjs && node tests/settings.cjs && node tests/dedup.cjs && node tests/exit.cjs && node tests/tv-settings.cjs && node tests/background.cjs && node tests/launch.cjs && node tests/name.cjs && node tests/visual-regression.cjs && node tests/remote-navigation.cjs",
+    "test": "node tests/project-structure.cjs && node tests/security-packaging.cjs && node tests/experience.cjs && node tests/settings.cjs && node tests/dedup.cjs && node tests/exit.cjs && node tests/tv-settings.cjs && node tests/background.cjs && node tests/launch.cjs && node tests/name.cjs && node tests/visual-regression.cjs && node tests/remote-navigation.cjs && node tests/xbox-games.cjs",
     "test:visual": "node tests/visual-regression.cjs"
   },
   "devDependencies": {

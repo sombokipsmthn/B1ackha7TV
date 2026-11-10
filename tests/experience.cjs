@@ -14,7 +14,7 @@ const { pathToFileURL } = require('node:url');
           getCurrentApplication: () => ({ appInfo: { id: 'launcher' } }),
           getAppsInfo: (success) => success([{ id: 'youtube', name: 'YouTube', show: true }, { id: 'netflix', name: 'Netflix', show: true }, { id: 'calc', name: 'Calculator', show: true }])
         },
-        systeminfo: { getPropertyValue: (key, success) => success({ connected: [{ type: 'TV', number: 0 }, { type: 'HDMI', number: 1 }] }) },
+        systeminfo: { getPropertyValue: (key, success) => success({ connected: [{ type: 'TV', number: 0 }, { type: 'HDMI', number: 1 }, { type: 'HDMI', number: 2 }, { type: 'HDMI', number: 3 }] }) },
         tvwindow: { getSource: () => ({ type: 'TV', number: 0 }), setSource: (source, success) => { window.__lastSource = source; success(); } }
       };
     });
@@ -69,10 +69,36 @@ const { pathToFileURL } = require('node:url');
     assert.equal(await page.locator('#search-input').evaluate((el) => getComputedStyle(el).outlineStyle), 'none', 'input should not have an inner outline');
     assert.notEqual(await page.locator('.search-bar').evaluate((el) => getComputedStyle(el).boxShadow), 'none');
     await page.locator('.sidebar-item[data-section="inputs"]').click();
-    await page.waitForFunction(() => document.querySelectorAll('#inputs-grid .input-tile').length === 2);
-    assert.deepEqual(await page.locator('#inputs-grid .input-tile .input-icon').evaluateAll((els) => els.map((el) => el.getAttribute('data-lucide'))), ['Tv', 'Monitor']);
-    await page.locator('#inputs-grid .input-tile').nth(1).click();
-    assert.deepEqual(await page.evaluate(() => window.__lastSource), { type: 'HDMI', number: 1, name: 'HDMI 1' }, 'input switching must pass the TV-reported source object');
+    await page.waitForFunction(() => document.querySelectorAll('#inputs-grid .input-tile').length === 4);
+    assert.deepEqual(await page.locator('#inputs-grid .input-tile .input-icon').evaluateAll((els) => els.map((el) => el.getAttribute('data-lucide'))), ['Tv', 'Monitor', 'Monitor', 'Monitor']);
+    const inputLayout = await page.locator('#inputs-grid').evaluate((grid) => ({
+      overflow: document.documentElement.scrollHeight > innerHeight,
+      cards: [...grid.children].map((card) => ({
+        x: Math.round(card.getBoundingClientRect().x), y: Math.round(card.getBoundingClientRect().y),
+        width: Math.round(card.getBoundingClientRect().width),
+        tileWidth: Math.round(card.querySelector('.input-tile').getBoundingClientRect().width),
+        tileHeight: Math.round(card.querySelector('.input-tile').getBoundingClientRect().height),
+        configCount: card.querySelectorAll('.input-xbox-config').length
+      }))
+    }));
+    assert.equal(inputLayout.overflow, false, 'Inputs page should fit vertically without 1080p scrolling');
+    assert.ok(inputLayout.cards.every((card) => card.width >= 272 && card.width === card.tileWidth && card.tileHeight === 176), 'source tiles should use consistent dimensions');
+    assert.deepEqual(inputLayout.cards.map((card) => card.configCount), [0, 1, 1, 1], 'only HDMI sources should offer Xbox configuration');
+    for (const [index, source] of [[0, { type: 'TV', number: 0, name: 'TV' }], [1, { type: 'HDMI', number: 1, name: 'HDMI 1' }], [2, { type: 'HDMI', number: 2, name: 'HDMI 2' }], [3, { type: 'HDMI', number: 3, name: 'HDMI 3' }]]) {
+      await page.locator('#inputs-grid .input-tile').nth(index).click();
+      assert.deepEqual(await page.evaluate(() => window.__lastSource), source, `input ${source.name} must pass the TV-reported source object`);
+    }
+    const tileSurface = await page.locator('#apps-carousel [data-app-id="tv"]').evaluate((button) => {
+      const nested = button.querySelector('.app-tile');
+      const style = getComputedStyle(nested);
+      return { background: style.backgroundColor, borderWidth: style.borderWidth, borderRadius: style.borderRadius, shadow: style.boxShadow };
+    });
+    assert.deepEqual(tileSurface, { background: 'rgba(0, 0, 0, 0)', borderWidth: '0px', borderRadius: '14px', shadow: 'none' }, 'homepage input shortcut should not create a nested glass surface');
+    const appSurface = await page.locator('#apps-carousel [data-app-id="youtube"]').evaluate((button) => {
+      const style = getComputedStyle(button), nested = getComputedStyle(button.querySelector('.app-tile'));
+      return { outerBorder: style.borderWidth, nestedBorder: nested.borderWidth, nestedBackground: nested.backgroundColor, outerRadius: style.borderRadius };
+    });
+    assert.deepEqual(appSurface, { outerBorder: '1px', nestedBorder: '0px', nestedBackground: 'rgba(0, 0, 0, 0)', outerRadius: '14px' }, 'homepage App shortcut should have one clean glass surface');
     await page.locator('.sidebar-item[data-section="settings"]').click();
     await page.locator('[data-panel="appearance"]').focus();
     await page.keyboard.press('ArrowDown');

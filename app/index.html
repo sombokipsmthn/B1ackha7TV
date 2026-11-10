@@ -55,14 +55,22 @@
   <section id="page-games" class="page-section games-page" hidden aria-label="Games">
     <div class="page-head"><h2 class="page-title">Games</h2></div>
     <section class="games-hub-section xbox-hub" aria-labelledby="xbox-heading">
+      <div class="games-section-heading"><div><h3 id="xbox-heading">Xbox Dashboard</h3><p id="xbox-account-status" class="games-status" role="status">Xbox profile is not configured.</p></div><button id="xbox-settings-open" class="filter-btn" type="button" aria-expanded="false" aria-controls="xbox-settings"><span data-lucide="settings-2" aria-hidden="true"></span>Configure Xbox</button></div>
       <div class="xbox-feature" id="xbox-feature">
         <div class="xbox-artwork" aria-hidden="true"><span data-lucide="gamepad-2"></span></div>
-        <div class="xbox-info"><h3 class="xbox-name" id="xbox-heading">Xbox Series S</h3><p class="xbox-connection" id="xbox-connection" role="status">Xbox input not configured · Console status unverified · Not connected to Xbox account</p><p class="xbox-highlights">Game Pass and recent play require an authorized Xbox integration.</p></div>
-        <button id="launch-xbox" class="xbox-launch-btn" type="button" aria-label="Switch to Xbox HDMI input"><span data-lucide="monitor" aria-hidden="true"></span>Switch to Xbox HDMI</button>
+        <div class="xbox-info"><p class="xbox-profile-name" id="xbox-gamertag">Gamertag not set</p><p class="xbox-connection" id="xbox-connection" role="status">Account not connected · Online profile data unavailable</p><p class="xbox-highlights">Gamerscore, achievements and recently played games need an authorized Xbox data service. No account data is being shown.</p></div>
       </div>
+      <details id="xbox-settings" class="xbox-settings">
+        <summary>Xbox profile settings</summary>
+        <div class="xbox-settings-fields"><label for="xbox-gamertag-input">Gamertag</label><input id="xbox-gamertag-input" type="text" maxlength="16" autocomplete="off" spellcheck="false" aria-describedby="xbox-settings-note" placeholder="Enter your Gamertag"><p id="xbox-settings-note" class="settings-note">Gamertag-only mode displays the name you enter; it cannot verify your account or retrieve profile photos, score, achievements or play history.</p><p id="xbox-settings-feedback" class="games-status" role="status"></p><div class="xbox-settings-actions"><button id="xbox-gamertag-save" class="setting-btn" type="button">Save Gamertag</button><button id="xbox-gamertag-clear" class="setting-btn" type="button">Clear</button></div></div>
+      </details>
+    </section>
+    <section class="games-hub-section my-xbox-section" aria-labelledby="my-xbox-heading">
+      <div class="games-section-heading"><div><h3 id="my-xbox-heading">My Xbox</h3><p id="xbox-console-status" class="games-status" role="status">Xbox Series S · Console reachability not verified</p></div></div>
+      <div class="my-xbox-controls"><p id="xbox-console-detail">Console details and installed Xbox games are not exposed to this Tizen app. HDMI carries audio/video only.</p><button id="launch-xbox" class="xbox-launch-btn" type="button" aria-label="Switch to Xbox HDMI input"><span data-lucide="monitor" aria-hidden="true"></span>Switch to Xbox HDMI</button><button id="xbox-input-configure" class="filter-btn" type="button"><span data-lucide="plug" aria-hidden="true"></span>Choose HDMI in Inputs</button></div>
     </section>
     <section class="games-hub-section tv-games-section" aria-labelledby="tv-games-heading">
-      <div class="games-section-heading"><div><h3 id="tv-games-heading">Installed on TV</h3><p id="tv-games-status" class="games-status" role="status">Discovering games installed on this TV…</p></div><button id="tv-games-refresh" class="filter-btn" type="button" aria-label="Refresh installed TV games"><span data-lucide="refresh-cw" aria-hidden="true"></span>Refresh</button></div>
+      <div class="games-section-heading"><div><h3 id="tv-games-heading">TV Games</h3><p id="tv-games-status" class="games-status" role="status">Discovering games installed on this TV…</p></div><button id="tv-games-refresh" class="filter-btn" type="button" aria-label="Refresh installed TV games"><span data-lucide="refresh-cw" aria-hidden="true"></span>Refresh</button></div>
       <div class="games-carousel" id="games-grid" role="list" aria-label="Games installed on this TV"></div><p id="games-empty" class="empty-state" hidden>No TV games were identified in the installed applications exposed by this TV.</p>
     </section>
   </section>
@@ -121,7 +129,7 @@
 
   <header class="header" role="banner">
     <div class="header-left"><div class="brand"><span class="mark" id="launcher-mark" role="img" aria-label="Kipsmthn brand icon">B7</span><span id="launcher-title">Kipsmthn</span></div></div>
-    <div class="header-right"><div class="header-top-bar"><div class="clock-group" aria-label="Local date and time"><time id="clock" aria-live="polite"></time><span id="date"></span></div><div class="status-icons"><span class="wifi-icon" data-lucide="wifi" aria-hidden="true"></span><button id="settings-open" class="icon-btn" aria-label="Quick settings"><span data-lucide="settings-2" aria-hidden="true"></span></button></div></div><aside id="preview" aria-label="TV input preview"><div id="preview-picture"><span id="preview-message">Connecting to your TV input…</span></div><div class="preview-caption"><span class="live-dot"></span><span id="source-label">TV / HDMI preview</span><button id="preview-retry">Retry TV</button><button id="preview-toggle">Turn off</button></div></aside></div>
+    <div class="header-right"><div class="header-top-bar"><div class="clock-group" aria-label="Local date and time"><time id="clock" aria-live="polite"></time><span id="date"></span></div><div class="status-icons"><span class="wifi-icon" data-lucide="wifi" aria-hidden="true"></span><button id="settings-open" class="icon-btn" aria-label="Quick settings"><span data-lucide="settings-2" aria-hidden="true"></span></button></div></div><aside id="preview" tabindex="0" role="group" aria-label="TV input preview. Use Right to access preview controls."><div id="preview-picture"><span id="preview-message">Connecting to your TV input…</span></div><div class="preview-caption"><span class="live-dot"></span><span id="source-label">TV / HDMI preview</span><button id="preview-retry">Retry TV</button><button id="preview-toggle">Turn off</button></div></aside></div>
   </header>
 
   <div id="preview-float" hidden>

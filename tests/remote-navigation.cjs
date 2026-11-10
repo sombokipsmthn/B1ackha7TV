@@ -26,6 +26,7 @@ const root = path.resolve(__dirname, '..');
         showRecent: true
       }));
 
+      window.__registeredRemoteKeys = [];
       window.tizen = {
         application: {
           getCurrentApplication: () => ({ appInfo: { id: 'launcher' } }),
@@ -43,7 +44,7 @@ const root = path.resolve(__dirname, '..');
           hide: (yes) => yes && yes()
         },
         tvinputdevice: {
-          registerKey: () => {},
+          registerKey: (key) => { window.__registeredRemoteKeys.push(key); },
           getSupportedKeys: () => []
         },
         systeminfo: {
@@ -61,6 +62,11 @@ const root = path.resolve(__dirname, '..');
     page.on('pageerror', (err) => errors.push(err.message));
     await page.goto(pathToFileURL(path.join(root, 'app/index.html')).href);
     await page.waitForFunction(() => document.querySelectorAll('#apps .app').length >= 3);
+
+    // One registration call per hardware key, with Blue registered once.
+    const registeredRemoteKeys = await page.evaluate(() => window.__registeredRemoteKeys.slice());
+    assert.equal(registeredRemoteKeys.filter((key) => key === 'ColorF3Blue').length, 1, 'ColorF3Blue must not be registered twice');
+    assert.ok(registeredRemoteKeys.includes('MediaPlayPause'), 'Samsung media keys should be registered through tvinputdevice');
 
     // =========================================================================
     // 1. Initial focus on Home landing page
@@ -121,7 +127,22 @@ const root = path.resolve(__dirname, '..');
     await page.keyboard.press('ArrowDown');
     assert.ok(await page.evaluate(() => document.activeElement.matches('.launcher-app-grid .app')), 'Down from carousel should enter apps grid');
 
+    // The header preview is part of the directional graph, not mouse-only UI.
+    await page.locator('#apps-carousel [data-app-id="youtube"]').focus();
+    await page.keyboard.press('ArrowUp');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'preview', 'Up from Home content should reach the TV preview');
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'preview-retry', 'Right from the preview should reach Retry TV');
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'preview-toggle', 'Preview controls should remain reachable');
+    await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ArrowLeft');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'preview', 'Preview controls should return to the preview focus stop');
+    await page.keyboard.press('ArrowLeft');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'settings-open', 'Left from the preview should reach Quick settings');
+
     // Up from apps grid returns to carousel
+    await page.locator('#apps .app').first().focus();
     await page.keyboard.press('ArrowUp');
     assert.ok(await page.evaluate(() => document.activeElement.matches('#apps-carousel .carousel-item')), 'Up from apps grid should return to carousel');
 
@@ -150,6 +171,13 @@ const root = path.resolve(__dirname, '..');
     await page.locator('#apps-carousel [data-app-id="youtube"]').focus();
     await page.keyboard.press('Enter');
     assert.equal(clicks, 1, 'Enter should activate button exactly once');
+
+    // Samsung and alternate OK key names activate once.
+    clicks = 0;
+    await page.evaluate(() => {
+      document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Select', bubbles: true, cancelable: true }));
+    });
+    assert.equal(clicks, 1, 'Samsung Select key should activate the focused control exactly once');
 
     // Legacy keyCode 13 event simulation
     clicks = 0;
@@ -266,6 +294,16 @@ const root = path.resolve(__dirname, '..');
     await page.waitForFunction(() => document.getElementById('settings-confirm').hidden);
     assert.equal(await page.evaluate(() => document.activeElement.id), 'settings-reset', 'Focus must be restored to #settings-reset after dialog cancel');
 
+    // The modal traps arrows and excludes disabled controls.
+    await page.locator('#settings-reset').focus();
+    await page.keyboard.press('Enter');
+    await page.locator('#settings-confirm:not([hidden])').waitFor();
+    await page.locator('#settings-reset-confirm').evaluate((element) => { element.disabled = true; });
+    await page.keyboard.press('ArrowRight');
+    assert.equal(await page.evaluate(() => document.activeElement.id), 'settings-reset-cancel', 'Directional focus must skip disabled dialog controls');
+    await page.keyboard.press('Escape');
+    await page.waitForFunction(() => document.getElementById('settings-confirm').hidden);
+
     // =========================================================================
     // 8. Back key hierarchy & navigation
     // =========================================================================
@@ -307,10 +345,11 @@ const root = path.resolve(__dirname, '..');
     });
     await page.locator('#exit-dialog:not([hidden])').waitFor();
     assert.equal(await page.evaluate(() => document.activeElement.id), 'exit-cancel', 'Samsung keyCode 10009 should trigger Back/Exit dialog');
-
-    await page.evaluate(() => {
-      document.dispatchEvent(new KeyboardEvent('keydown', { keyCode: 10009, which: 10009, bubbles: true, cancelable: true }));
-    });
+    let backDispatches = 0;
+    await page.exposeFunction('countRemoteBack', () => { backDispatches++; });
+    await page.evaluate(() => document.addEventListener('keydown', (event) => { if (event.keyCode === 10009) window.countRemoteBack(); }, { once: true }));
+    await page.evaluate(() => document.dispatchEvent(new KeyboardEvent('keydown', { key: 'XF86Back', bubbles: true, cancelable: true })));
+    assert.equal(backDispatches, 0, 'XF86Back should dismiss the dialog and prevent duplicate bubbling actions');
     await page.waitForFunction(() => document.getElementById('exit-dialog').hidden);
 
     // =========================================================================
@@ -324,6 +363,15 @@ const root = path.resolve(__dirname, '..');
       return false;
     });
     assert.equal(invalidFocus, false, 'Focused element must not be disabled or hidden');
+
+    // Hidden page sections and disabled candidates are excluded from navigation.
+    await page.locator('.sidebar-item[data-section="apps"]').click();
+    await page.locator('#apps-refresh').focus();
+    await page.locator('#apps-refresh').evaluate((element) => { element.disabled = true; });
+    await page.locator('#edit-apps').focus();
+    await page.keyboard.press('ArrowLeft');
+    assert.notEqual(await page.evaluate(() => document.activeElement.id), 'apps-refresh', 'Navigation must not return focus to a disabled control');
+    await page.locator('#apps-refresh').evaluate((element) => { element.disabled = false; });
 
     // =========================================================================
     // 11. Text input caret preservation
@@ -347,6 +395,14 @@ const root = path.resolve(__dirname, '..');
     });
     await page.keyboard.press('ArrowLeft');
     assert.equal(await page.evaluate(() => document.activeElement.getAttribute('data-section')), 'search', 'ArrowLeft at start of input should navigate to sidebar');
+
+    // Search results remain navigable, and hidden suggestion groups are skipped.
+    await page.locator('#search-input').fill('youtube');
+    await page.locator('#search-input').focus();
+    await page.keyboard.press('ArrowDown');
+    assert.ok(await page.evaluate(() => document.activeElement.closest('#search-apps')), 'Down from search should focus a matching app result');
+    await page.keyboard.press('Enter');
+    assert.equal(await page.evaluate(() => document.activeElement.closest('#search-apps') !== null), true, 'Selecting a result should not move focus to a hidden section');
 
     // =========================================================================
     // 12. Complete Screen-by-Screen Navigation Audit (Apps, Games, Recent, Inputs)
@@ -382,12 +438,17 @@ const root = path.resolve(__dirname, '..');
     await page.keyboard.press('ArrowLeft');
     assert.equal(await page.evaluate(() => document.activeElement.getAttribute('data-section')), 'recent');
 
-    // Inputs screen
+    // Inputs screen and actionable per-HDMI configuration controls.
     await page.locator('.sidebar-item[data-section="inputs"]').click();
     await page.waitForFunction(() => !document.getElementById('page-inputs').hidden);
     await page.locator('#inputs-grid .input-tile').first().focus();
     await page.keyboard.press('ArrowLeft');
     assert.equal(await page.evaluate(() => document.activeElement.getAttribute('data-section')), 'inputs');
+    await page.locator('#inputs-grid .input-tile').nth(1).focus();
+    await page.keyboard.press('ArrowDown');
+    assert.equal(await page.evaluate(() => document.activeElement.classList.contains('input-xbox-config')), true, 'Down from HDMI tile should reach its Xbox configuration action');
+    await page.keyboard.press('Enter');
+    assert.deepEqual(await page.evaluate(() => JSON.parse(localStorage.getItem('kipsmthn.xbox-input.v1'))), { type: 'HDMI', number: 1, name: 'HDMI 1' }, 'Enter must activate the focused HDMI configuration button');
 
     assert.deepEqual(errors, [], 'No page errors should have occurred');
     await context.close();

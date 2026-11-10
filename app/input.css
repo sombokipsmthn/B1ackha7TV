@@ -68,6 +68,9 @@
     --space-page-home: 2.5rem;
     --space-grid: 1.25rem;
     --space-card: 1.25rem;
+    --space-settings-panel: clamp(1.25rem, 2vw, 2rem);
+    --space-settings-section: 1.5rem;
+    --space-settings-row: .75rem;
     --type-page-title: 2.25rem;
     --type-page-title-line: 2.5rem;
     --icon-control-size: 1.25rem;
@@ -197,6 +200,7 @@
   .icon-btn { @apply shadcn-button h-14 w-14 min-h-14 p-3; }
   #settings-open { @apply flex; }
   #preview { @apply w-full overflow-hidden border; border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-md); background: var(--glass-bg-strong); box-shadow: var(--glass-shadow-subtle); }
+  #preview:focus-visible, body.keyboard-mode #preview:focus { outline: none; border-color: rgba(255,255,255,.28); box-shadow: 0 8px 30px rgba(255,255,255,.12), 0 0 0 2px rgba(255,255,255,.16); }
   .preview-float { @apply fixed right-8 z-40; bottom: var(--safe-area-y); }
   body[data-page="settings"] #preview-float { left: calc(var(--sidebar-width) + var(--safe-area-x)); right: auto; }
   .preview-launcher { @apply flex h-14 w-14 items-center justify-center border text-muted-foreground shadow-sm transition-colors; background: var(--glass-bg); border-color: var(--glass-border); border-radius: var(--glass-radius-xl); }
@@ -242,20 +246,22 @@
   .content-section { @apply mb-2; }
   .section-title { @apply mb-5 text-2xl font-semibold tracking-tight; }
   .carousel { @apply flex gap-5 overflow-x-auto overflow-y-hidden py-3 pr-2; }
-  .carousel-item { @apply relative flex h-36 w-64 shrink-0 items-center justify-center overflow-hidden border-2 border-transparent p-3 text-left transition-colors; background: var(--glass-bg-subtle); border-radius: var(--glass-radius-md); box-shadow: var(--glass-shadow-subtle); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
+  .carousel-item { @apply relative flex h-36 w-64 shrink-0 items-center justify-center overflow-hidden border border-transparent p-3 text-left transition-colors; background: var(--glass-bg-subtle); border-radius: var(--glass-radius-md); box-shadow: var(--glass-shadow-subtle); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
   .carousel-item:focus-visible, body.keyboard-mode .carousel-item:focus { transform: scale(1.04); box-shadow: 0 8px 30px rgba(255,255,255,.12), 0 0 0 1px rgba(255,255,255,.15); border-color: rgba(255,255,255,.2); }
   .carousel-item { transition: transform 300ms cubic-bezier(0.2, 0, 0, 1), opacity 300ms ease, box-shadow 300ms ease, border-color 300ms ease, background-color 300ms ease; transform-origin: center; }
   .app, .app-grid-item { transition: transform 300ms cubic-bezier(0.2, 0, 0, 1), opacity 300ms ease, box-shadow 300ms ease, border-color 300ms ease, background-color 300ms ease; transform-origin: center; }
   .app:focus-visible, .app-grid-item:focus-visible, body.keyboard-mode .app:focus, body.keyboard-mode .app-grid-item:focus { transform: scale(1.04); box-shadow: 0 8px 30px rgba(255,255,255,.12), 0 0 0 1px rgba(255,255,255,.15); border-color: rgba(255,255,255,.2); background-color: rgba(255,255,255,.06); }
   .carousel-item.active { @apply border-border; }
-  .app-tile { @apply flex h-full w-full flex-col items-center justify-center gap-3 border p-4; background: var(--glass-bg-subtle); border-radius: var(--glass-radius-sm); }
-  .input-app-tile { @apply flex h-full w-full flex-col items-center justify-center gap-2 border p-3; background: var(--glass-bg-subtle); border-radius: var(--glass-radius-sm); }
+  /* The outer carousel tile owns the surface and focus lift. Keeping an inner
+     rounded glass tile made app/input shortcuts read as double-bordered. */
+  .app-tile { @apply flex h-full w-full flex-col items-center justify-center gap-3 p-4; background: transparent; border: 0; border-radius: inherit; }
+  .input-app-tile { @apply flex h-full w-full flex-col items-center justify-center gap-2 p-3; background: transparent; border: 0; border-radius: inherit; }
   .app-icon { @apply h-12 w-12 text-foreground; }
   .app-tile .app-name { @apply text-2xl font-medium tracking-wide; }
   .input-app-tile .input-icon { @apply flex items-center justify-center; width: 28px; height: 28px; }
   .input-app-tile .input-icon svg { width: 24px; height: 24px; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
   .input-app-tile .app-name { @apply text-sm font-medium; }
-  .text-app-tile { @apply border-transparent; }
+  .text-app-tile { border: 0; }
   .continue-card, .trending-card { @apply h-52 max-w-[32vw] p-0; width: 24rem; }
   .card-bg { @apply absolute inset-0 overflow-hidden bg-muted; }
   .card-bg img { @apply h-full w-full object-cover; }
@@ -369,18 +375,42 @@
   .key-wide { @apply min-w-32; }
   .recent-list { @apply flex flex-col gap-4; }
   .recent-card { @apply shadcn-card flex min-h-24 w-full flex-row items-center justify-start gap-5 p-5 text-left; }
-  .inputs-grid { @apply grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-4; }
-  .input-tile { @apply shadcn-card flex flex-col items-center justify-center gap-2 p-4 text-center; min-height: 84px; }
-  .input-tile:focus-visible { border-color: rgba(255,255,255,.2); background: var(--glass-bg); transform: scale(1.04); box-shadow: 0 6px 24px rgba(255,255,255,.10), 0 0 0 1px rgba(255,255,255,.15); }
+  .inputs-grid { @apply grid gap-6; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); max-width: 90rem; align-content: start; }
+  .input-source-card { @apply flex min-w-0 flex-col gap-3; }
+  .input-tile { @apply shadcn-card flex w-full flex-col items-center justify-center gap-3 p-5 text-center; flex: 0 0 11rem; }
+  .input-tile:focus-visible, body.keyboard-mode .input-tile:focus { outline: none; border-color: rgba(255,255,255,.28); background: var(--glass-bg); box-shadow: 0 8px 24px rgba(0,0,0,.24), 0 0 0 2px rgba(255,255,255,.18); }
   .input-tile.active { border-color: var(--glass-border-strong); background: var(--glass-bg); }
+  .input-xbox-config { @apply min-h-14 w-full rounded-md border px-4 text-base font-medium; background: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); }
+  .input-xbox-config:focus-visible, body.keyboard-mode .input-xbox-config:focus { outline: 2px solid rgba(255,255,255,.55); outline-offset: 3px; border-color: var(--glass-border-strong); }
   .input-icon { @apply flex items-center justify-center; width: 28px; height: 28px; }
   .input-icon svg { width: 24px; height: 24px; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
-  .input-name { @apply text-sm font-medium; }
+  .input-name { @apply text-lg font-medium; }
   .input-status, .settings-status-pill { @apply border px-3 py-2 text-sm text-muted-foreground; background: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-sm); }
-  .xbox-feature { @apply flex items-center gap-6 border p-6; background: var(--glass-bg); border-color: var(--glass-border); border-radius: var(--glass-radius-md); box-shadow: var(--glass-shadow-subtle); }
-  .xbox-artwork { @apply h-16 w-28 rounded-md bg-secondary; }
-  .xbox-info { @apply flex-1; }
-  .xbox-name { @apply text-xl font-semibold; }
+  .games-hub-section { @apply flex flex-col gap-3; }
+  .games-section-heading { @apply flex items-center justify-between gap-4; }
+  .games-section-heading h3 { @apply m-0 text-lg font-semibold; }
+  .games-status { @apply m-0 mt-1 text-sm text-muted-foreground; }
+  .xbox-feature { @apply flex items-center gap-5 border p-4; background: var(--glass-bg-strong); border-color: var(--glass-border); border-radius: var(--glass-radius-md); box-shadow: var(--glass-shadow-subtle); }
+  .xbox-artwork { @apply flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-secondary; }
+  .xbox-artwork svg { @apply h-7 w-7; }
+  .xbox-info { @apply min-w-0 flex-1; }
+  .xbox-profile-name { @apply m-0 text-lg font-semibold; }
+  .xbox-connection, .xbox-highlights { @apply mt-1 text-sm text-muted-foreground; }
+  .xbox-highlights { @apply mb-0; }
+  .xbox-settings { @apply border p-3; background: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-sm); }
+  .xbox-settings summary { @apply min-h-12 cursor-pointer py-3 text-base font-medium; }
+  .xbox-settings-fields { @apply flex flex-col gap-3; }
+  .xbox-settings-fields label { @apply text-sm font-medium; }
+  .xbox-settings-fields input { @apply min-h-14 border px-4 text-base text-foreground; background: var(--glass-bg-strong); border-color: var(--glass-border); border-radius: 10px; }
+  .xbox-settings-fields .settings-note { @apply m-0; }
+  .xbox-settings-actions, .my-xbox-controls { @apply flex flex-wrap items-center gap-3; }
+  .my-xbox-controls { @apply justify-between border p-4; background: var(--glass-bg); border-color: var(--glass-border); border-radius: var(--glass-radius-md); }
+  .my-xbox-controls p { @apply m-0 flex-1 text-sm text-muted-foreground; }
+  .games-carousel { @apply flex flex-wrap gap-4; }
+  .tv-game-card { @apply relative; }
+  .tv-game-installed { @apply text-sm text-muted-foreground; }
+  #xbox-settings[open] .xbox-settings-fields { @apply mt-3; }
+  #xbox-gamertag-save:focus-visible, #xbox-gamertag-clear:focus-visible, #xbox-settings summary:focus-visible, .xbox-settings-fields input:focus-visible { outline: 2px solid rgba(255,255,255,.55); outline-offset: 3px; }
   .empty-destination { @apply min-h-[55vh]; }
   .destination-empty { @apply flex min-h-[40vh] flex-col items-center justify-center text-center; }
   .destination-empty > span { @apply mb-5 flex h-14 w-14 items-center justify-center text-muted-foreground; }
@@ -408,24 +438,24 @@
   .settings-category > span:first-child { width: 1.1rem; height: 1.1rem; flex: 0 0 1.1rem; color: var(--glass-text-secondary); }
   .settings-category b { @apply block text-base font-medium; }
   .settings-content-shell { @apply min-h-0 overflow-hidden; }
-  .settings-panel { @apply h-full w-full overflow-auto px-7; padding-bottom: 8rem; background: var(--glass-bg-strong); border: 1px solid var(--glass-border-subtle); border-radius: var(--glass-radius-lg); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
+  .settings-panel { @apply h-full w-full overflow-auto; padding: var(--space-settings-panel); background: var(--glass-bg-strong); border: 1px solid var(--glass-border-subtle); border-radius: var(--glass-radius-lg); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); scroll-padding-block: var(--space-settings-panel); }
   .settings-panel[hidden] { display: none !important; }
-  .settings-panel-heading { @apply mb-5 flex items-center; }
+  .settings-panel-heading { @apply flex items-center; margin-bottom: var(--space-settings-section); }
   .settings-panel-heading h2 { @apply m-0 text-2xl font-semibold tracking-tight; }
-  .settings-group { @apply mb-5 border-b pb-4; border-color: var(--glass-border-subtle); }
-  .settings-group:last-child { border-bottom: 0; }
-  .settings-group h3 { @apply mb-2 text-base font-semibold; color: var(--glass-text-secondary); }
-  .setting-row { @apply flex min-h-14 items-center justify-between gap-5 px-3 py-2; border-radius: var(--glass-radius-sm); }
-  .setting-row + .setting-row { @apply mt-1; }
-  .setting-label { @apply min-w-0; }
-  .setting-label strong { @apply block text-base font-medium; }
-  .setting-label small, .settings-note { @apply mt-1 block text-sm leading-6 text-muted-foreground; }
-  .setting-control { @apply flex items-center justify-end gap-3; }
-  .setting-toggle { @apply shadcn-switch; }
-  .settings-panel input[type="text"] { @apply shadcn-input min-w-64; }
-  .settings-panel input[type="range"] { @apply h-3 w-64 accent-primary; }
+  .settings-group { @apply border-b; margin-bottom: var(--space-settings-section); padding-bottom: var(--space-settings-section); border-color: var(--glass-border-subtle); }
+  .settings-group:last-child { margin-bottom: 0; border-bottom: 0; padding-bottom: 0; }
+  .settings-group h3 { @apply font-semibold; margin-bottom: var(--space-settings-row); font-size: 1.125rem; line-height: 1.5rem; color: var(--glass-text-secondary); }
+  .setting-row { @apply flex items-center justify-between; min-height: var(--control-height); gap: var(--space-settings-row); padding: .625rem .75rem; border-radius: var(--glass-radius-sm); }
+  .setting-row + .setting-row { margin-top: .5rem; }
+  .setting-label { @apply min-w-0; flex: 1 1 0%; }
+  .setting-label strong { @apply block font-medium; font-size: 1.125rem; line-height: 1.5rem; }
+  .setting-label small, .settings-note { @apply block text-muted-foreground; margin-top: .375rem; font-size: 1rem; line-height: 1.5; }
+  .setting-control { @apply flex items-center justify-end; flex: 0 0 auto; gap: .75rem; }
+  .setting-toggle { @apply shadcn-switch; min-height: var(--control-height); }
+  .settings-panel input[type="text"] { @apply shadcn-input; min-width: min(16rem, 100%); max-width: 100%; }
+  .settings-panel input[type="range"] { @apply h-3 accent-primary; width: min(16rem, 100%); }
   .settings-panel input[type="range"]:focus-visible { @apply rounded-sm outline-none ring-2 ring-ring ring-offset-4 ring-offset-background; }
-  .settings-wallpaper-gallery { @apply my-3 grid grid-cols-3 gap-3; }
+  .settings-wallpaper-gallery { @apply grid grid-cols-3; margin-block: var(--space-settings-row); gap: var(--space-settings-row); }
   .settings-wallpaper-choice { @apply relative aspect-video overflow-hidden border bg-card text-left; border-radius: var(--glass-radius-sm); }
   .settings-wallpaper-choice.selected { @apply border-primary ring-1 ring-ring; }
   .settings-wallpaper-image { @apply absolute inset-0 overflow-hidden bg-muted; }
@@ -433,11 +463,11 @@
   .settings-wallpaper-image::after { content: ""; @apply absolute inset-0; background-image: linear-gradient(to top, rgba(0,0,0,.72), transparent 75%); }
   .settings-wallpaper-image.photo-failed { background-color: #171717; }
   .settings-wallpaper-label { @apply absolute bottom-3 left-3 z-10 text-sm font-medium; }
-  .settings-app-list { @apply mt-3 grid grid-cols-2 gap-2; }
-  .settings-app-row { @apply flex items-center justify-between gap-3 border px-3 py-2 text-sm; background: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-sm); }
-  .settings-details { @apply text-muted-foreground; }
-  .settings-details summary { @apply min-h-12 cursor-pointer py-3 text-base; }
-  #diagnostics { @apply whitespace-pre-wrap text-sm; }
+  .settings-app-list { @apply grid grid-cols-2; margin-top: var(--space-settings-row); gap: .75rem; }
+  .settings-app-row { @apply flex items-center justify-between border; gap: .75rem; padding: .75rem 1rem; font-size: 1rem; line-height: 1.5; background: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-sm); }
+  .settings-details { @apply text-muted-foreground; margin-top: var(--space-settings-row); }
+  .settings-details summary { @apply min-h-12 cursor-pointer text-base; padding-block: .75rem; }
+  #diagnostics { @apply whitespace-pre-wrap; margin: .5rem 0 0; font-size: 1rem; line-height: 1.5; }
   .legacy-controls { @apply hidden; }
   .settings-dialog-backdrop { @apply fixed inset-0 z-50 flex items-center justify-center p-8; background: rgba(0,0,0,.68); }
   .settings-dialog { @apply glass-strong w-full max-w-2xl p-8; }
@@ -451,13 +481,32 @@
   svg.lucide.sidebar-icon { width: var(--icon-navigation-size); height: var(--icon-navigation-size); stroke-width: var(--icon-stroke); }
   svg.lucide.input-icon { width: var(--icon-input-size); height: var(--icon-input-size); stroke-width: var(--icon-stroke); }
   .sidebar-icon { width: var(--icon-navigation-size); height: var(--icon-navigation-size); }
-  .settings-panel:focus-within { scroll-padding-bottom: 8rem; }
+  .settings-panel:focus-within { scroll-padding-bottom: var(--space-settings-panel); }
   .settings-panel .settings-toggle { min-height: 3rem; min-width: 4.8rem; }
   .settings-app-list:empty { display: none; }
   #settings-apps-status[data-state="error"] { color: #f0b4b4; }
   #settings-apps-status[data-state="loading"] { color: var(--glass-text-secondary); }
   .settings-wallpaper-choice .settings-wallpaper-image { pointer-events: none; }
   .settings-panel .setting-row:hover { background: rgba(255,255,255,.025); }
+  .settings-category { min-height: var(--control-height); }
+  .settings-category b { font-size: 1.0625rem; line-height: 1.4; }
+  .settings-sidebar { padding: .75rem; }
+  @media (max-width: 1000px) {
+    .settings-workspace { grid-template-columns: minmax(12rem, 30%) minmax(0, 1fr); }
+    .setting-row { align-items: flex-start; flex-direction: column; gap: .75rem; }
+    .setting-control { justify-content: flex-start; flex-wrap: wrap; width: 100%; }
+    .settings-panel .setting-control > * { max-width: 100%; }
+    .settings-panel input[type="range"] { width: min(16rem, 100%); }
+  }
+  @media (max-width: 720px) {
+    .settings-workspace { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); }
+    .settings-sidebar { overflow: visible; }
+    .settings-categories { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .settings-category { min-width: 0; }
+    .settings-category b { font-size: .9375rem; }
+    .settings-panel { min-height: 0; }
+    .settings-app-list { grid-template-columns: minmax(0, 1fr); }
+  }
 
   .launcher-library { @apply mt-8; }
   .launcher-library-heading { @apply mb-4 flex items-center justify-between gap-4; }
@@ -482,15 +531,15 @@
 
 @layer utilities {
   .shadcn-card, .app, .app-grid-item, .recent-card, .input-tile, .settings-app-row, #preview-panel { background-color: var(--glass-bg); border-color: var(--glass-border); border-radius: var(--glass-radius-md); }
-  .carousel-item, .app-tile, .photo-feature, .settings-sidebar, .input-status, .settings-status-pill { background-color: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); }
+  .carousel-item, .photo-feature, .settings-sidebar, .input-status, .settings-status-pill { background-color: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); }
   .search-bar, .search-keyboard, .settings-panel, .xbox-feature, .settings-dialog { background-color: var(--glass-bg-strong); border-color: var(--glass-border-strong); }
   .shadcn-button { border-color: var(--glass-border); }
   .shadcn-switch { border-color: var(--glass-border); }
-  .shadcn-card, .app, .app-grid-item, .carousel-item, .app-tile, .search-bar, .search-keyboard, .photo-feature, .settings-sidebar, .settings-panel, .xbox-feature, .recent-card, .input-tile, .settings-app-row, .settings-dialog, #preview, #preview-panel { backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
+  .shadcn-card, .app, .app-grid-item, .carousel-item, .search-bar, .search-keyboard, .photo-feature, .settings-sidebar, .settings-panel, .xbox-feature, .recent-card, .input-tile, .settings-app-row, .settings-dialog, #preview, #preview-panel { backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    #sidebar, .shadcn-card, .app, .app-grid-item, .carousel-item, .app-tile, .search-bar, .search-keyboard, .photo-feature, .settings-sidebar, .settings-panel, .settings-app-row, .settings-dialog, #preview, #preview-panel, .xbox-feature, .recent-card, .input-tile { backdrop-filter: none; -webkit-backdrop-filter: none; }
+    #sidebar, .shadcn-card, .app, .app-grid-item, .carousel-item, .search-bar, .search-keyboard, .photo-feature, .settings-sidebar, .settings-panel, .settings-app-row, .settings-dialog, #preview, #preview-panel, .xbox-feature, .recent-card, .input-tile { backdrop-filter: none; -webkit-backdrop-filter: none; }
   }
-  html.glass-performance-safe #sidebar, html.glass-performance-safe .glass, html.glass-performance-safe .glass-subtle, html.glass-performance-safe .glass-strong, html.glass-performance-safe .glass-navigation, html.glass-performance-safe .shadcn-card, html.glass-performance-safe .app, html.glass-performance-safe .app-grid-item, html.glass-performance-safe .carousel-item, html.glass-performance-safe .app-tile, html.glass-performance-safe .search-bar, html.glass-performance-safe .search-keyboard, html.glass-performance-safe .photo-feature, html.glass-performance-safe .settings-sidebar, html.glass-performance-safe .settings-panel, html.glass-performance-safe .settings-app-row, html.glass-performance-safe .settings-dialog, html.glass-performance-safe #preview, html.glass-performance-safe #preview-panel, html.glass-performance-safe .footer, html.glass-performance-safe .xbox-feature, html.glass-performance-safe .recent-card, html.glass-performance-safe .input-tile { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  html.glass-performance-safe #sidebar, html.glass-performance-safe .glass, html.glass-performance-safe .glass-subtle, html.glass-performance-safe .glass-strong, html.glass-performance-safe .glass-navigation, html.glass-performance-safe .shadcn-card, html.glass-performance-safe .app, html.glass-performance-safe .app-grid-item, html.glass-performance-safe .carousel-item, html.glass-performance-safe .search-bar, html.glass-performance-safe .search-keyboard, html.glass-performance-safe .photo-feature, html.glass-performance-safe .settings-sidebar, html.glass-performance-safe .settings-panel, html.glass-performance-safe .settings-app-row, html.glass-performance-safe .settings-dialog, html.glass-performance-safe #preview, html.glass-performance-safe #preview-panel, html.glass-performance-safe .footer, html.glass-performance-safe .xbox-feature, html.glass-performance-safe .recent-card, html.glass-performance-safe .input-tile { backdrop-filter: none; -webkit-backdrop-filter: none; }
   html.glass-performance-safe .shadcn-card, html.glass-performance-safe .app, html.glass-performance-safe .app-grid-item, html.glass-performance-safe .recent-card, html.glass-performance-safe .input-tile, html.glass-performance-safe .settings-app-row, html.glass-performance-safe #preview, html.glass-performance-safe #preview-panel { background-color: var(--glass-bg); }
   html.glass-performance-safe .carousel-item, html.glass-performance-safe .app-tile, html.glass-performance-safe .photo-feature, html.glass-performance-safe .settings-sidebar, html.glass-performance-safe .input-status, html.glass-performance-safe .settings-status-pill { background-color: var(--glass-bg-subtle); }
   html.glass-performance-safe .search-bar, html.glass-performance-safe .search-keyboard, html.glass-performance-safe .settings-panel, html.glass-performance-safe .settings-dialog, html.glass-performance-safe .xbox-feature { background-color: var(--glass-bg-strong); }

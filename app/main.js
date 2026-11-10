@@ -328,6 +328,20 @@
     if (/steam\s?link|geforce\s?now|cloud\s?gaming|xbox|game\s?pass|twitch/.test(name)) { return false; }
     return categories.some(function (category) { return /^(game|gaming|games|tizen\.org\/category\/game)$/i.test(category); });
   }
+  var xboxGamertagKey = 'kipsmthn.xbox-gamertag.v1';
+  function readXboxGamertag() {
+    try {
+      var value = localStorage.getItem(xboxGamertagKey) || '';
+      return value.replace(/[\x00-\x1f\x7f]/g, '').replace(/\s+/g, ' ').trim().slice(0, 16);
+    } catch (ignore) { return ''; }
+  }
+  function refreshXboxProfile() {
+    var gamertag = readXboxGamertag(), input = $('xbox-gamertag-input');
+    if ($('xbox-gamertag')) { $('xbox-gamertag').textContent = gamertag || 'Gamertag not set'; }
+    if ($('xbox-account-status')) { $('xbox-account-status').textContent = gamertag ? 'Gamertag saved on this TV · Microsoft account not authenticated' : 'Xbox profile is not configured.'; }
+    if ($('xbox-connection')) { $('xbox-connection').textContent = gamertag ? 'Gamertag-only profile · Account not verified · Profile data unavailable' : 'Account not connected · Online profile data unavailable'; }
+    if (input && document.activeElement !== input) { input.value = gamertag; }
+  }
   function renderGames() {
     var grid = $('games-grid'); if (!grid) { return; }
     var discoveredOnTV = TizenService.isTV();
@@ -336,6 +350,7 @@
     visible.sort(function (a, b) { return (a.name || a.id).localeCompare(b.name || b.id); }).forEach(function (app) {
       var button = createAppButton(app, false, 'app app-grid-item tv-game-card');
       button.setAttribute('role', 'listitem');
+      button.setAttribute('aria-label', 'Launch TV game ' + (app.name || app.id));
       var marker = document.createElement('span'); marker.className = 'tv-game-installed'; marker.textContent = 'Installed on this TV'; button.appendChild(marker);
       grid.appendChild(button);
     });
@@ -343,11 +358,31 @@
     var status = $('tv-games-status'), error = TizenService.getDiscoveryError && TizenService.getDiscoveryError();
     if (status) { status.textContent = !discoveredOnTV ? 'Browser preview · installed TV applications are not available here.' : error ? 'TV application discovery failed. Refresh to try again.' : visible.length ? visible.length + ' game' + (visible.length === 1 ? '' : 's') + ' verified as installed on this TV.' : 'No game apps identified in the TV’s discovered categories.'; }
     if (error && $('games-empty')) { $('games-empty').textContent = 'Could not read this TV’s installed apps. Use Refresh to try again.'; }
-    if ($('xbox-connection')) {
-      var xboxInput = null; try { xboxInput = JSON.parse(localStorage.getItem('kipsmthn.xbox-input.v1') || 'null'); } catch (ignore) { xboxInput = null; }
-      $('xbox-connection').textContent = xboxInput && xboxInput.type === 'HDMI' ? 'Configured input ' + (xboxInput.name || 'HDMI ' + xboxInput.number) + ' · Console status unverified · Not connected to Xbox account' : 'Xbox input not configured · Console status unverified · Not connected to Xbox account';
-    }
+    refreshXboxProfile();
+    var input = null; try { input = JSON.parse(localStorage.getItem('kipsmthn.xbox-input.v1') || 'null'); } catch (ignore) { input = null; }
+    if ($('xbox-console-status')) { $('xbox-console-status').textContent = 'Xbox Series S · Console reachability not verified' + (input && input.type === 'HDMI' ? ' · TV input configured: ' + (input.name || 'HDMI ' + input.number) : ''); }
+    if ($('xbox-console-detail')) { $('xbox-console-detail').textContent = input && input.type === 'HDMI' ? 'Input ' + (input.name || 'HDMI ' + input.number) + ' is saved. Console online status, model data and installed games are not exposed to this Tizen app.' : 'Console details and installed Xbox games are not exposed to this Tizen app. HDMI carries audio/video only. Set the console input in Inputs.'; }
     initIcons(grid);
+  }
+  function saveXboxGamertag() {
+    var field = $('xbox-gamertag-input'), value = field ? field.value.replace(/[\x00-\x1f\x7f]/g, '').replace(/\s+/g, ' ').trim().slice(0, 16) : '';
+    if (!value || /[<>]/.test(value)) {
+      if ($('xbox-settings-feedback')) { $('xbox-settings-feedback').textContent = 'Enter a Gamertag without angle brackets.'; }
+      if (field) { field.focus(); }
+      return;
+    }
+    try { localStorage.setItem(xboxGamertagKey, value); }
+    catch (error) { if ($('xbox-settings-feedback')) { $('xbox-settings-feedback').textContent = 'Could not save the Gamertag on this TV.'; } report('Xbox Gamertag could not be saved.', error); return; }
+    refreshXboxProfile();
+    if ($('xbox-settings-feedback')) { $('xbox-settings-feedback').textContent = 'Gamertag saved on this TV. No Microsoft sign-in or Xbox data was retrieved.'; }
+    report('Xbox Gamertag saved locally.');
+  }
+  function clearXboxGamertag() {
+    try { localStorage.removeItem(xboxGamertagKey); }
+    catch (error) { report('Xbox Gamertag could not be cleared.', error); return; }
+    if ($('xbox-gamertag-input')) { $('xbox-gamertag-input').value = ''; }
+    if ($('xbox-settings-feedback')) { $('xbox-settings-feedback').textContent = 'Saved Gamertag cleared from this TV.'; }
+    refreshXboxProfile();
   }
   function switchToXboxInput() {
     var button = $('launch-xbox'); if (button) { button.disabled = true; }
@@ -423,16 +458,18 @@
         button.addEventListener('click', function () {
           TizenService.setSource(source, function () { report('Input changed.'); }, function (error) { report('Could not change input.', error); });
         });
+        var inputCard = document.createElement('div'); inputCard.className = 'input-source-card';
+        inputCard.appendChild(button);
         if (String(source.type).toUpperCase() === 'HDMI') {
-          var inputCard = document.createElement('div'); inputCard.className = 'input-source-card'; inputCard.appendChild(button);
           var configureXbox = document.createElement('button'); configureXbox.type = 'button'; configureXbox.className = 'input-xbox-config'; configureXbox.textContent = 'Set as Xbox input'; configureXbox.setAttribute('aria-label', 'Set ' + name + ' as Xbox input');
           configureXbox.addEventListener('click', function () {
             try { localStorage.setItem('kipsmthn.xbox-input.v1', JSON.stringify({ type: 'HDMI', number: Number(source.number), name: name })); } catch (error) { report('Xbox input setting could not be saved.', error); return; }
             if ($('xbox-connection')) { $('xbox-connection').textContent = 'Xbox input set to ' + name + ' · Console online status not verified'; }
             report(name + ' is configured as the Xbox input.');
           });
-          inputCard.appendChild(configureXbox); grid.appendChild(inputCard);
-        } else { grid.appendChild(button); }
+          inputCard.appendChild(configureXbox);
+        }
+        grid.appendChild(inputCard);
       });
       initIcons(grid);
       if ($('inputs-empty')) { $('inputs-empty').hidden = grid.children.length > 0; }
@@ -453,7 +490,7 @@
     matches.forEach(function (app) { grid.appendChild(createAppButton(app, false, 'app app-grid-item')); });
     var quickCount = appendSearchChips($('search-popular'), quickSearches, query);
     var titleCount = appendSearchChips($('search-titles'), titleSearches, query);
-    if ($('search-suggested-section')) { $('search-suggested-section').hidden = !!query; }
+    if ($('search-suggested-section')) { $('search-suggested-section').hidden = matches.length === 0; }
     if ($('search-catalog-note')) { $('search-catalog-note').hidden = !!query || TizenService.isTV(); $('search-catalog-note').textContent = 'Browser preview uses demonstration app data; it does not represent apps installed on a TV.'; }
     if ($('search-quick-section')) { $('search-quick-section').hidden = !quickCount; }
     if ($('search-titles-section')) { $('search-titles-section').hidden = !titleCount; }
@@ -534,7 +571,7 @@
     var dialog = $('settings-confirm');
     if (dialog.hidden) { return; }
     if (window.AudioController) { window.AudioController.play('close'); }
-    var dismiss = function () { dialog.hidden = true; if (settingsDialogFocus && settingsDialogFocus.focus && settingsDialogFocus.getClientRects().length) { settingsDialogFocus.focus(); } };
+    var dismiss = function () { dialog.hidden = true; if (isInteractive(settingsDialogFocus)) { settingsDialogFocus.focus(); } };
     dismiss();
   }
   var settingsDialogFocus = null;
@@ -719,7 +756,7 @@
     }
     if (dialog && !dialog.hidden) {
       if (window.AudioController) { window.AudioController.play('close'); }
-      var dismiss = function () { dialog.hidden = true; if (exitFocus && !exitFocus.disabled) { exitFocus.focus(); } };
+      var dismiss = function () { dialog.hidden = true; if (isInteractive(exitFocus)) { exitFocus.focus(); } };
       if (window.MotionSystem) { window.MotionSystem.dismiss(dialog, dismiss); } else { dismiss(); }
     }
   }
@@ -730,8 +767,8 @@
     try { TizenService.exitApp(); } catch (error) { launching = false; exitDialog(false); report('Could not close the app.', error); syncPreview(); }
   }
   function isInteractive(el) {
-    if (!el || !el.isConnected || el.disabled) { return false; }
-    if (el.hidden || getComputedStyle(el).visibility === 'hidden' || el.getClientRects().length === 0) { return false; }
+    if (!el || !el.isConnected || el.disabled || (el.matches && el.matches(':disabled')) || el.getAttribute('aria-disabled') === 'true') { return false; }
+    if (el.hidden || el.closest('[hidden], [inert], [aria-hidden="true"]') || getComputedStyle(el).visibility === 'hidden' || el.getClientRects().length === 0) { return false; }
     return true;
   }
   function findClosestX(fromEl, candidates) {
@@ -746,11 +783,22 @@
     });
     return best;
   }
+  function focusableSelector() {
+    return 'button,a[href],input,select,textarea,summary,[role="button"],[role="link"],[role="checkbox"],[role="switch"],[role="slider"],[role="option"],[contenteditable="true"],[tabindex]:not([tabindex="-1"])';
+  }
+  function firstInteractive(root, selector) {
+    if (!root) { return null; }
+    var candidates = selector ? root.querySelectorAll(selector) : root.querySelectorAll(focusableSelector());
+    for (var i = 0; i < candidates.length; i++) {
+      if (isInteractive(candidates[i])) { return candidates[i]; }
+    }
+    return null;
+  }
   function visibleControls() {
     var root = !$('exit-dialog').hidden ? $('exit-dialog') : (!$('settings-confirm').hidden ? $('settings-confirm') : $('page-' + currentPage));
     if (!root) { return []; }
-    return Array.prototype.filter.call(root.querySelectorAll('button,input,select,summary,[tabindex="0"]'), function (element) {
-      return !element.disabled && element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden';
+    return Array.prototype.filter.call(root.querySelectorAll(focusableSelector()), function (element) {
+      return isInteractive(element);
     });
   }
   function normalizeKeyEvent(event) {
@@ -783,11 +831,20 @@
     var dir = typeof dirOrCode === 'string' ? dirOrCode : (dirOrCode === 37 ? 'left' : dirOrCode === 38 ? 'up' : dirOrCode === 39 ? 'right' : 'down');
 
     if (!$('exit-dialog').hidden) {
-      ($('exit-confirm') === document.activeElement ? $('exit-cancel') : $('exit-confirm')).focus();
+      var exitTargets = visibleControls();
+      if (exitTargets.length > 1) {
+        var exitIndex = exitTargets.indexOf(document.activeElement);
+        var exitTarget = exitTargets[exitIndex === 0 ? 1 : 0];
+        if (exitTarget) { exitTarget.focus(); }
+      }
       return;
     }
     if (!$('settings-confirm').hidden) {
-      ($('settings-reset-confirm') === document.activeElement ? $('settings-reset-cancel') : $('settings-reset-confirm')).focus();
+      var dialogTargets = visibleControls();
+      var modalPosition = dialogTargets.indexOf(document.activeElement);
+      var dialogDelta = dir === 'left' || dir === 'up' ? -1 : 1;
+      var dialogTarget = dialogTargets[Math.max(0, Math.min(dialogTargets.length - 1, modalPosition + dialogDelta))];
+      if (dialogTarget) { dialogTarget.focus(); }
       return;
     }
 
@@ -827,18 +884,21 @@
       if (dir === 'left') { return; }
     }
 
-    if (active === $('settings-open') || active === $('preview-retry') || active === $('preview-toggle') || active === $('preview-launcher') || active === $('preview-collapse')) {
+    if (active === $('settings-open') || active === $('preview') || active === $('preview-retry') || active === $('preview-toggle') || active === $('preview-launcher') || active === $('preview-collapse')) {
       if (dir === 'left') {
         if (active === $('preview-toggle') && isInteractive($('preview-retry'))) { $('preview-retry').focus(); return; }
-        if (active === $('preview-retry') && isInteractive($('settings-open'))) { $('settings-open').focus(); return; }
+        if (active === $('preview-retry') && isInteractive($('preview'))) { $('preview').focus(); return; }
+        if (active === $('preview') && isInteractive($('settings-open'))) { $('settings-open').focus(); return; }
         var sidebarTarget = document.querySelector('.sidebar-item[data-section="' + currentPage + '"]');
         if (sidebarTarget) { sidebarTarget.focus(); return; }
       }
       if (dir === 'right') {
         if (active === $('settings-open')) {
+          if (isInteractive($('preview'))) { $('preview').focus(); return; }
           if (isInteractive($('preview-retry'))) { $('preview-retry').focus(); return; }
           if (isInteractive($('preview-toggle'))) { $('preview-toggle').focus(); return; }
         }
+        if (active === $('preview') && isInteractive($('preview-retry'))) { $('preview-retry').focus(); return; }
         if (active === $('preview-retry') && isInteractive($('preview-toggle'))) { $('preview-toggle').focus(); return; }
       }
       if (dir === 'down') {
@@ -848,10 +908,32 @@
       return;
     }
 
+    if (currentPage === 'games') {
+      if (active.id === 'xbox-gamertag-input' && dir === 'down') { $('xbox-gamertag-save').focus(); return; }
+      if (active.id === 'xbox-gamertag-save' && dir === 'up') { $('xbox-gamertag-input').focus(); return; }
+      if (active.id === 'xbox-gamertag-clear' && dir === 'left') { $('xbox-gamertag-save').focus(); return; }
+      if (active.id === 'xbox-gamertag-save' && dir === 'right') { $('xbox-gamertag-clear').focus(); return; }
+      if (active.id === 'xbox-gamertag-clear' && dir === 'right') { return; }
+      if (active.id === 'xbox-settings-open' && dir === 'down') { $('launch-xbox').focus(); return; }
+      if (active.id === 'tv-games-refresh' && dir === 'left') { var gamesSidebar = document.querySelector('.sidebar-item[data-section="games"]'); if (gamesSidebar) { gamesSidebar.focus(); return; } }
+      if (active.id === 'launch-xbox' && dir === 'up') { $('xbox-settings-open').focus(); return; }
+      if (active.id === 'launch-xbox' && dir === 'right' && isInteractive($('xbox-input-configure'))) { $('xbox-input-configure').focus(); return; }
+      if (active.id === 'xbox-input-configure' && dir === 'left') { $('launch-xbox').focus(); return; }
+      var gameCards = Array.prototype.slice.call($$('#games-grid .tv-game-card'));
+      var gameCardIndex = gameCards.indexOf(active);
+      if (gameCardIndex >= 0 && dir === 'left') {
+        if (gameCardIndex === 0) { var gamesNav = document.querySelector('.sidebar-item[data-section="games"]'); if (gamesNav) { gamesNav.focus(); return; } }
+        else { gameCards[gameCardIndex - 1].focus(); return; }
+      }
+      if (gameCardIndex >= 0 && dir === 'right') { if (gameCardIndex + 1 < gameCards.length) { gameCards[gameCardIndex + 1].focus(); } return; }
+      if (gameCardIndex >= 0 && dir === 'up') { $('tv-games-refresh').focus(); return; }
+      if (active.id === 'tv-games-refresh' && dir === 'up') { $('launch-xbox').focus(); return; }
+    }
+
     if (currentPage === 'search') {
       if (active === $('search-input')) {
         if (dir === 'down') {
-          var firstSuggestion = $('search-results').querySelector('button:not([hidden]):not(:disabled)');
+          var firstSuggestion = firstInteractive($('search-results'));
           if (firstSuggestion) { firstSuggestion.focus(); firstSuggestion.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
         }
         if (dir === 'left') {
@@ -866,7 +948,7 @@
       if (active === $('search-clear')) {
         if (dir === 'left') { $('search-input').focus(); return; }
         if (dir === 'down') {
-          var firstSuggestion = $('search-results').querySelector('button:not([hidden]):not(:disabled)');
+          var firstSuggestion = firstInteractive($('search-results'));
           if (firstSuggestion) { firstSuggestion.focus(); firstSuggestion.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
         }
         return;
@@ -889,16 +971,16 @@
         var sectionIndex = allSections.indexOf(section);
         if (dir === 'up') {
           if (sectionIndex === 0) {
-            var appTarget = $('search-apps').querySelector('button:not(:disabled)') || $('search-input');
+            var appTarget = firstInteractive($('search-apps')) || $('search-input');
             if (appTarget) { appTarget.focus(); appTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
           } else if (allSections[sectionIndex - 1]) {
-            var prevTarget = allSections[sectionIndex - 1].querySelector('.search-chip, .search-grid button');
+            var prevTarget = firstInteractive(allSections[sectionIndex - 1], '.search-chip, .search-grid button');
             if (prevTarget) { prevTarget.focus(); prevTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
           }
         }
         if (dir === 'down') {
           if (sectionIndex < allSections.length - 1 && allSections[sectionIndex + 1]) {
-            var nextTarget = allSections[sectionIndex + 1].querySelector('.search-chip, .search-grid button');
+            var nextTarget = firstInteractive(allSections[sectionIndex + 1], '.search-chip, .search-grid button');
             if (nextTarget) { nextTarget.focus(); nextTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
           } else if ($('search-keyboard') && !$('search-keyboard').hidden) {
             var firstKey = $('search-keyboard').querySelector('.key');
@@ -1036,8 +1118,8 @@
         return;
       }
       if (dir === 'up') {
-        if (carousel.id === 'apps-carousel' && isInteractive($('settings-open'))) {
-          $('settings-open').focus(); return;
+        if (carousel.id === 'apps-carousel' && isInteractive($('preview'))) {
+          $('preview').focus(); return;
         }
         if (carousel.id === 'trending-carousel') {
           var libraryApps = Array.prototype.slice.call($$('#apps .app'));
@@ -1121,6 +1203,10 @@
     if (chosen) {
       chosen.focus();
       chosen.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    } else if (currentPage !== 'home' && dir === 'down' && isInteractive($('preview-launcher'))) {
+      // The floating preview is pinned outside page layout. At a page's bottom
+      // edge, make it discoverable with the remote instead of stranding it.
+      $('preview-launcher').focus();
     }
   }
 
@@ -1170,6 +1256,10 @@
   $('exit-cancel').addEventListener('click', function () { exitDialog(false); });
   $('exit-confirm').addEventListener('click', closeLauncher);
   $('launch-xbox').addEventListener('click', switchToXboxInput);
+  if ($('xbox-settings-open')) { $('xbox-settings-open').addEventListener('click', function () { var settings = $('xbox-settings'); settings.open = !settings.open; this.setAttribute('aria-expanded', String(settings.open)); if (settings.open) { $('xbox-gamertag-input').focus(); } }); }
+  if ($('xbox-gamertag-save')) { $('xbox-gamertag-save').addEventListener('click', saveXboxGamertag); }
+  if ($('xbox-gamertag-clear')) { $('xbox-gamertag-clear').addEventListener('click', clearXboxGamertag); }
+  if ($('xbox-input-configure')) { $('xbox-input-configure').addEventListener('click', function () { showPage('inputs'); }); }
   Array.prototype.forEach.call($$('.carousel-item[data-app-id]'), function (button) {
     button.addEventListener('click', function () {
       var id = button.getAttribute('data-app-id');
@@ -1210,9 +1300,17 @@
 
     if (action === 'back') {
       event.preventDefault();
+      if (event.repeat) { return; }
       if (window.AudioController) { window.AudioController.play('back'); }
       if (!$('exit-dialog').hidden) { exitDialog(false); }
       else if (!$('settings-confirm').hidden) { closeSettingsDialog(); }
+      else if (document.activeElement && document.activeElement.closest && document.activeElement.closest('details[open]')) {
+        var openDetails = document.activeElement.closest('details[open]');
+        openDetails.open = false;
+        var summary = openDetails.querySelector('summary');
+        if (summary) { summary.focus(); }
+        if (openDetails.id === 'xbox-settings' && $('xbox-settings-open')) { $('xbox-settings-open').setAttribute('aria-expanded', 'false'); }
+      }
       else if (currentPage !== 'home' && previewFloatExpanded) { $('preview-collapse').click(); }
       else if (editingApps) {
         editingApps = false;
@@ -1238,6 +1336,7 @@
 
     if (action === 'settings') {
       event.preventDefault();
+      if (event.repeat) { return; }
       returnFocus = document.activeElement;
       currentPanel = 'appearance';
       showPage('settings');
@@ -1287,6 +1386,7 @@
         if (active.id === 'launcher-name') { event.preventDefault(); $('name-save').click(); return; }
         if (active.id === 'background-path-enhanced') { event.preventDefault(); $('background-apply').click(); return; }
         if (active.id === 'search-input') { event.preventDefault(); updateSearch(); return; }
+        if (active.id === 'xbox-gamertag-input') { event.preventDefault(); saveXboxGamertag(); return; }
         return;
       }
       if (active.tagName === 'BUTTON' || active.tagName === 'A' || active.tagName === 'SUMMARY' || active.getAttribute('role') === 'button' || active.hasAttribute('tabindex')) {
@@ -1321,9 +1421,10 @@
   updatePreviewToggle(); clock(); setInterval(clock, 30000); initIcons(); updateDiagnostics();
   if (TizenService.isTV()) {
     document.body.classList.add('keyboard-mode');
-    TizenService.registerKey('ColorF3Blue');
     if (typeof TizenService.registerKeys === 'function') {
       TizenService.registerKeys(['ColorF0Red', 'ColorF1Green', 'ColorF2Yellow', 'ColorF3Blue', 'MediaPlay', 'MediaPause', 'MediaStop', 'MediaFastForward', 'MediaRewind', 'MediaPlayPause']);
+    } else {
+      TizenService.registerKey('ColorF3Blue');
     }
   }
   refreshApps(); readCurrentSource(); setHomeDestination();
