@@ -11,7 +11,7 @@ const { pathToFileURL } = require('node:url');
       localStorage.setItem('b1ackha7tv.settings.v1', JSON.stringify({
         backgroundVersion: 2, theme: 'midnight', background: 'assets/photos/lake-dusk.jpg', favorites: ['sample'],
         preview: false, system: false, sounds: false, soundVolume: 47, reducedMotion: true,
-        homeDestination: 'recent', showApps: false, showContinue: false, showFeatured: true, showRecent: false
+        homeDestination: 'recent', showApps: false, showRecent: false
       }));
       window.__discoveryMode = 'ok';
       window.__discoveryCalls = 0;
@@ -68,14 +68,12 @@ const { pathToFileURL } = require('node:url');
     assert.equal((await page.evaluate(() => JSON.parse(localStorage.getItem('kipsmthn.settings.v1')))).soundVolume, 63);
 
     await page.locator('[data-panel="home"]').click();
-    for (const [key, value] of [['showApps', true], ['showContinue', true], ['showFeatured', false], ['showRecent', true]]) {
+    for (const [key, value] of [['showApps', true], ['showRecent', true]]) {
       const toggle = page.locator(`#settings-panel-home [data-pref="${key}"]`);
       await toggle.click();
       assert.equal((await page.evaluate(() => JSON.parse(localStorage.getItem('kipsmthn.settings.v1'))))[key], value);
     }
     assert.equal(await page.locator('#apps-section').evaluate((el) => el.hidden), false);
-    assert.equal(await page.locator('#continue-section').evaluate((el) => el.hidden), false);
-    assert.equal(await page.locator('#trending-section').evaluate((el) => el.hidden), true);
     assert.equal(await page.locator('#recent-home-section').evaluate((el) => el.hidden), false);
     await page.locator('#home-destination').selectOption('apps');
     assert.equal((await page.evaluate(() => JSON.parse(localStorage.getItem('kipsmthn.settings.v1')))).homeDestination, 'apps');
@@ -87,11 +85,11 @@ const { pathToFileURL } = require('node:url');
     prefs = await page.evaluate(() => JSON.parse(localStorage.getItem('kipsmthn.settings.v1')));
     assert.equal(prefs.soundVolume, 63);
     assert.equal(prefs.homeDestination, 'apps');
-    assert.equal(prefs.showFeatured, false);
     assert.equal(await page.locator('#page-apps').isVisible(), true);
 
     await page.locator('[data-section="settings"]').click();
     await page.locator('[data-panel="apps"]').click();
+    await page.locator('#settings-panel-apps:not([hidden])').waitFor();
     await page.waitForFunction(() => document.querySelectorAll('#settings-installed-apps .settings-app-row').length === 1);
     assert.match(await page.locator('#settings-apps-status').innerText(), /1 apps discovered/);
     await page.locator('#apps-refresh-settings').click();
@@ -110,10 +108,16 @@ const { pathToFileURL } = require('node:url');
     assert.equal(await page.locator('#edit-hint').isVisible(), true);
 
     await page.evaluate(() => { window.__discoveryMode = 'ok'; });
+    await page.locator('[data-section="settings"]').click();
+    await page.locator('#page-settings:not([hidden])').waitFor();
+    await page.locator('[data-panel="apps"]').click();
+    await page.locator('#settings-panel-apps:not([hidden])').waitFor();
     await page.locator('#apps-refresh-settings').click();
     await page.waitForFunction(() => document.querySelector('#settings-apps-status').getAttribute('data-state') === 'ready');
     await page.locator('[data-section="settings"]').click();
+    await page.locator('#page-settings:not([hidden])').waitFor();
     await page.locator('[data-panel="about"]').click();
+    await page.locator('#settings-panel-about:not([hidden])').waitFor();
     assert.equal(await page.locator('#app-version').innerText(), '0.8.0');
     await page.locator('#settings-reset').click();
     await page.locator('#settings-confirm').waitFor({ state: 'visible' });
@@ -127,8 +131,6 @@ const { pathToFileURL } = require('node:url');
     assert.equal(prefs.soundVolume, 25);
     assert.equal(prefs.homeDestination, 'home');
     assert.equal(prefs.showApps, true);
-    assert.equal(prefs.showContinue, true);
-    assert.equal(prefs.showFeatured, true);
     assert.equal(prefs.showRecent, true);
     assert.deepEqual(prefs.favorites, ['sample'], 'default favourites are reseeded from the discovered application catalogue');
     assert.equal(await page.locator('#page-home').isVisible(), true);

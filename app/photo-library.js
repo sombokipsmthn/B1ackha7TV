@@ -11,11 +11,7 @@
     forest: { src: 'assets/photos/moody-forest.jpg', source: 'https://images.unsplash.com/photo-1448375240586-882707db888b', focal: '50% 50%', alt: 'Atmospheric forest canopy' },
     desert: { src: 'assets/photos/desert-cinema.jpg', source: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35', focal: '50% 50%', alt: 'Sculpted desert landscape' },
     city: { src: 'assets/photos/nocturnal-city.jpg', source: 'https://images.unsplash.com/photo-1519501025264-65ba15a82390', focal: '50% 50%', alt: 'City skyline at night' },
-    architecture: { src: 'assets/photos/quiet-architecture.jpg', source: 'https://images.unsplash.com/photo-1511818966892-d7d671e672a2', focal: '50% 50%', alt: 'Minimalist architectural facade' },
-    music: { src: 'assets/photos/live-music.jpg', source: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30', focal: '50% 50%', alt: 'Live music performance' },
-    studio: { src: 'assets/photos/studio-music.jpg', source: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d', focal: '50% 50%', alt: 'Music studio equipment' },
-    photography: { src: 'assets/photos/photography.jpg', source: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32', focal: '50% 50%', alt: 'Camera ready for photography' },
-    video: { src: 'assets/photos/video-camera.jpg', source: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81', focal: '50% 50%', alt: 'Video camera in use' }
+    architecture: { src: 'assets/photos/quiet-architecture.jpg', source: 'https://images.unsplash.com/photo-1511818966892-d7d671e672a2', focal: '50% 50%', alt: 'Minimalist architectural facade' }
   };
 
   function get(key) { return photos[key] || null; }

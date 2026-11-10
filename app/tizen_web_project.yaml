@@ -1,35 +1,21 @@
 # Project type [web_app, test_runner]
 project_type: web_app
 
-# Default profile, Tizen API version
+# Samsung consumer TV Tizen Web App
 profile: tv-samsung
 api_version: "10.0"
-
-# Build type [Debug/ Release/ Test]
-build_type: Debug
-
-# Output name for application
+build_type: Release
 output_name: Kipsmthn
-
-# Output path for build
 output_path: ""
+opt: true
 
-# Enable size optimization of wgt for web workspace
-opt: false
-
-# Signing profile to be used for Tizen package signing
-# If value is empty: "", active signing profile will be used
-# Else If value is ".", default signing profile will be used
+# Select and sign with a locally installed Samsung author/distributor profile.
 signing_profile: ""
-
-# list of certs in web project (.trust-anchor)
 trust_anchor: []
 
-# list of files in web project (.html,.css etc) and resources
+# Runtime files only: all listed resources exist and are referenced by the app.
 files:
   - css/cinematic.css
-  - lib/utils.js
-  - components/ui/index.js
   - icon.png
   - index.html
   - main.js
@@ -39,7 +25,6 @@ files:
   - tizen-service.js
   - icon-resolver.js
   - assets/lucide.min.js
-  - assets/VWMK740-01059.jpg
   - assets/audio/navigation.wav
   - assets/audio/selection.wav
   - assets/audio/back.wav
@@ -48,194 +33,20 @@ files:
   - assets/photos/desert-cinema.jpg
   - assets/photos/evening-sky.jpg
   - assets/photos/lake-dusk.jpg
-  - assets/photos/live-music.jpg
   - assets/photos/moody-forest.jpg
   - assets/photos/night-sky.jpg
   - assets/photos/nocturnal-city.jpg
-  - assets/photos/photography.jpg
   - assets/photos/quiet-architecture.jpg
-  - assets/photos/studio-music.jpg
   - assets/photos/twilight-mountains.jpg
-  - assets/photos/video-camera.jpg
-  - data/streaming-metadata.json
-  - data/mock-content.js
-  - assets/streaming/content/ted-lasso-poster.jpg
-  - assets/streaming/content/ted-lasso-backdrop.jpg
-  - assets/streaming/content/ted-lasso-landscape.jpg
-  - assets/streaming/content/ted-lasso-logo.png
-  - assets/streaming/content/severance-poster.jpg
-  - assets/streaming/content/severance-backdrop.jpg
-  - assets/streaming/content/severance-landscape.jpg
-  - assets/streaming/content/severance-logo.png
-  - assets/streaming/content/stranger-things-poster.jpg
-  - assets/streaming/content/stranger-things-backdrop.jpg
-  - assets/streaming/content/stranger-things-landscape.jpg
-  - assets/streaming/content/stranger-things-logo.png
-  - assets/streaming/content/wednesday-poster.jpg
-  - assets/streaming/content/wednesday-backdrop.jpg
-  - assets/streaming/content/wednesday-landscape.jpg
-  - assets/streaming/content/wednesday-logo.png
-  - assets/streaming/content/the-boys-poster.jpg
-  - assets/streaming/content/the-boys-backdrop.jpg
-  - assets/streaming/content/the-boys-landscape.jpg
-  - assets/streaming/content/the-boys-logo.png
-  - assets/streaming/content/reacher-poster.jpg
-  - assets/streaming/content/reacher-backdrop.jpg
-  - assets/streaming/content/reacher-landscape.jpg
-  - assets/streaming/content/reacher-logo.png
-  - assets/streaming/content/the-bear-poster.jpg
-  - assets/streaming/content/the-bear-backdrop.jpg
-  - assets/streaming/content/the-bear-landscape.jpg
-  - assets/streaming/content/the-bear-logo.png
-  - assets/streaming/content/the-mandalorian-poster.jpg
-  - assets/streaming/content/the-mandalorian-backdrop.jpg
-  - assets/streaming/content/the-mandalorian-landscape.jpg
-  - assets/streaming/content/the-mandalorian-logo.png
-  - assets/streaming/content/the-crown-poster.jpg
-  - assets/streaming/content/the-crown-backdrop.jpg
-  - assets/streaming/content/the-crown-landscape.jpg
-  - assets/streaming/content/the-crown-logo.png
-  - assets/streaming/content/house-of-dragon-poster.jpg
-  - assets/streaming/content/house-of-dragon-backdrop.jpg
-  - assets/streaming/content/house-of-dragon-landscape.jpg
-  - assets/streaming/content/house-of-dragon-logo.png
-  - assets/streaming/providers/netflix-logo.webp
-  - assets/streaming/providers/apple-tv-logo.webp
-  - assets/streaming/providers/prime-video-logo.webp
-  - assets/streaming/providers/disney-plus-logo.webp
-  - assets/streaming/providers/showmax-logo.webp
-  - assets/streaming/providers/youtube-logo.webp
-  - assets/streaming/providers/plex-logo.webp
-  - assets/streaming/providers/crunchyroll-logo.webp
-  - data/streaming-metadata.json
-  - assets/streaming/content/house-of-dragon-landscape.jpg
-  - assets/streaming/content/house-of-dragon-logo.png
-  - assets/streaming/content/house-of-dragon-backdrop.jpg
-  - assets/streaming/content/house-of-dragon-poster.jpg
-  - assets/streaming/content/the-crown-landscape.jpg
-  - assets/streaming/content/the-crown-backdrop.jpg
-  - assets/streaming/content/the-crown-poster.jpg
-  - assets/streaming/content/the-crown-logo.png
-  - assets/streaming/content/the-mandalorian-landscape.jpg
-  - assets/streaming/content/the-mandalorian-backdrop.jpg
-  - assets/streaming/content/the-mandalorian-poster.jpg
-  - assets/streaming/content/the-mandalorian-logo.png
-  - assets/streaming/content/the-bear-poster.jpg
-  - assets/streaming/content/reacher-landscape.jpg
-  - assets/streaming/content/reacher-poster.jpg
-  - assets/streaming/content/reacher-backdrop.jpg
-  - assets/streaming/content/reacher-logo.png
-  - assets/streaming/content/the-boys-logo.png
-  - assets/streaming/content/the-boys-landscape.jpg
-  - assets/streaming/content/the-boys-backdrop.jpg
-  - assets/streaming/content/the-boys-poster.jpg
-  - assets/streaming/content/wednesday-landscape.jpg
-  - assets/streaming/content/wednesday-backdrop.jpg
-  - assets/streaming/content/wednesday-poster.jpg
-  - assets/streaming/content/wednesday-logo.png
-  - assets/streaming/content/stranger-things-landscape.jpg
-  - assets/streaming/content/stranger-things-backdrop.jpg
-  - assets/streaming/content/stranger-things-poster.jpg
-  - assets/streaming/content/stranger-things-logo.png
-  - assets/streaming/content/severance-landscape.jpg
-  - assets/streaming/content/severance-backdrop.jpg
-  - assets/streaming/content/severance-poster.jpg
-  - assets/streaming/content/ted-lasso-landscape.jpg
-  - assets/streaming/content/ted-lasso-backdrop.jpg
-  - assets/streaming/content/ted-lasso-logo.png
-  - assets/streaming/content/ted-lasso-poster.jpg
-  - assets/streaming/providers/crunchyroll-logo.webp
-  - assets/streaming/providers/plex-logo.webp
-  - assets/streaming/providers/youtube-logo.webp
-  - assets/streaming/providers/showmax-logo.webp
-  - assets/streaming/providers/disney-plus-logo.webp
-  - assets/streaming/providers/prime-video-logo.webp
-  - assets/streaming/providers/apple-tv-logo.webp
-  - assets/streaming/providers/netflix-logo.webp
-  - data/streaming-metadata.js
-  - data/tmdb-catalog.js
-  - data/tmdb-demo-catalog.js
-  - services/tmdb-content-service.js
-  - assets/streaming/manifest.json
-  - assets/streaming/content/fallback-backdrop.svg
-  - assets/streaming/content/fallback-landscape.svg
-  - assets/streaming/content/fallback-poster.svg
-  - assets/streaming/content/house-of-dragon-backdrop.svg
-  - assets/streaming/content/house-of-dragon-landscape.svg
-  - assets/streaming/content/house-of-dragon-poster.svg
-  - assets/streaming/content/reacher-backdrop.svg
-  - assets/streaming/content/reacher-landscape.svg
-  - assets/streaming/content/reacher-poster.svg
-  - assets/streaming/content/severance-backdrop.svg
-  - assets/streaming/content/severance-landscape.svg
-  - assets/streaming/content/severance-poster.svg
-  - assets/streaming/content/stranger-things-backdrop.svg
-  - assets/streaming/content/stranger-things-landscape.svg
-  - assets/streaming/content/stranger-things-poster.svg
-  - assets/streaming/content/ted-lasso-backdrop.svg
-  - assets/streaming/content/ted-lasso-landscape.svg
-  - assets/streaming/content/ted-lasso-poster.svg
-  - assets/streaming/content/the-bear-backdrop.svg
-  - assets/streaming/content/the-bear-landscape.svg
-  - assets/streaming/content/the-bear-poster.svg
-  - assets/streaming/content/the-mandalorian-backdrop.svg
-  - assets/streaming/content/the-mandalorian-landscape.svg
-  - assets/streaming/content/the-mandalorian-poster.svg
-  - assets/streaming/content/wednesday-backdrop.svg
-  - assets/streaming/content/wednesday-landscape.svg
-  - assets/streaming/content/wednesday-poster.svg
-  - assets/streaming/content/house-of-dragon-logo.svg
-  - assets/streaming/content/reacher-logo.svg
-  - assets/streaming/content/severance-logo.svg
-  - assets/streaming/content/stranger-things-logo.svg
-  - assets/streaming/content/ted-lasso-logo.svg
-  - assets/streaming/content/the-bear-logo.svg
-  - assets/streaming/content/the-mandalorian-logo.svg
-  - assets/streaming/content/wednesday-logo.svg
-  - assets/streaming/providers/apple-tv-logo.svg
-  - assets/streaming/providers/crunchyroll-logo.svg
-  - assets/streaming/providers/disney-plus-logo.svg
-  - assets/streaming/providers/fallback-provider.svg
-  - assets/streaming/providers/netflix-logo.svg
-  - assets/streaming/providers/prime-video-logo.svg
-  - assets/streaming/providers/showmax-logo.svg
-  - assets/streaming/providers/plex-logo.svg
-  - assets/streaming/providers/youtube-logo.svg
-  - services/content-artwork-service.js
-  - services/dynamic-wallpaper-service.js
-  - services/viewing-activity-service.js
-  - services/content-metadata-service.js
-  - services/streaming-asset-service.js
-  - components/continue-watching/ContinueWatchingCard.js
-  - components/continue-watching/ContinueWatching.js
-  - components/dynamic-wallpaper/WallpaperTransition.js
-  - components/dynamic-wallpaper/DynamicWallpaper.js
-  - components/content/ContentCard.js
 
-# list of files to exclude based on the matched patterns
 excludes:
   - Build/*
   - Debug/*
-  - Directory.Build.targets
   - Release/*
-  - Test/*
-  - \.Build/.*
-  - \.buildResult/.*
-  - \.csproj
-  - \.externalToolBuilders/.*
-  - \.gn
-  - \.obj/.*
-  - \.package/.*
-  - \.project
-  - \.rds_delta
-  - \.sdk_delta.info
-  - \.settings/.*
-  - \.sign/.*
-  - \.tizen-ui-builder-tool.xml
-  - \.tproject
-  - \.wgt
+  - .buildResult/*
+  - .package/*
+  - .sign/*
+  - '*.wgt'
   - tizen_web_project.yaml
-  - webUnitTest/*
 
-# project dependencies
 deps: []

@@ -5,7 +5,6 @@
   </icon>
   <content src="index.html">
   </content>
-  <access origin="https://cdn.brandfetch.io" subdomains="false" />
   <feature name="http://tizen.org/feature/screen.size.normal.1080.1920">
   </feature>
   <tizen:setting screen-orientation="landscape" context-menu="enable" background-support="disable" encryption="disable" install-location="auto" hwkey-event="enable">

@@ -2,8 +2,6 @@
 
 A remote-friendly, open-source launcher for Samsung Tizen TVs. Choose your main apps, launch them from one screen, and browse alongside a TV/HDMI preview.
 
-![Browser preview; installed apps and live TV require a real TV](docs/preview.jpg)
-
 ## Features
 
 - Installed-app discovery using the public Tizen API, with saved Home shortcuts and an Edit apps catalogue.
@@ -15,7 +13,7 @@ A remote-friendly, open-source launcher for Samsung Tizen TVs. Choose your main 
 
 ## Compatibility and limits
 
-Developed against a Samsung 2020 TU-series TV running Tizen 5.5. The launcher and the v0.7.1 app-launch repair were confirmed working on that hardware; v0.8.0 adds a display-name setting verified in browser regression tests with simulated TV APIs. Other models and firmware need testing. The SDK API version in the YAML describes the build tooling, not a guarantee of device support.
+A prior project revision was reported working on a Samsung 2020 TU-series TV running Tizen 5.5. This cleanup revision has only been tested in browser automation; it has not been installed or tested on a physical TV. Other models and firmware need testing. The SDK API version in the YAML describes build tooling, not a guarantee of device support.
 
 Only apps returned and launchable through public APIs can appear and open. Some hidden/system apps and icons are inaccessible. The preview uses the tuner or HDMI source retained by the TV; it cannot reproduce a streaming app's picture, and restoring yesterday's channel is controlled by the TV. This app cannot replace Samsung Home or guarantee startup. System Settings support varies by device.
 
@@ -24,11 +22,11 @@ Only apps returned and launchable through public APIs can appear and open. Some 
 
 - `app/` is the **only active Samsung Tizen web application**. Import this folder into Tizen Studio and build from its `config.xml` and `tizen_web_project.yaml`.
 - `tests/` contains browser regression tests for the active app.
-- `docs/` contains project documentation and preview assets.
-- `archive/legacy-MyTvTheme/` preserves the older experimental app tree for reference only. Do not import or package it.
-- `Kipsmthn.code-workspace` opens the repository root without adding the archived app as a second project.
+- `app/` contains only the launcher runtime, Tizen manifest, essential wallpapers, icons, and sound cues.
+- `tests/` contains browser regression tests and screenshot baselines.
+- `Kipsmthn.code-workspace` opens the repository root.
 
-The app is intentionally still a single HTML/CSS/JavaScript Tizen web app. The older `components/`, `pages/` and `services/` files were not wired into the active `index.html` entry point, so they remain archived rather than being mixed into the runtime.
+The production web app remains a single HTML/CSS/JavaScript Tizen application; no server is required.
 
 ## Install on your own Samsung TV
 
@@ -61,7 +59,7 @@ Use **Edit apps** to add/remove Home shortcuts (not uninstall apps). Use **TV & 
 
 ## Browser preview and tests
 
-Open `app/index.html` to preview the layout. From the repository root, run `npm test` to check the active app; the archived project is not part of the test or build path. Real installed apps, live TV, input switching, and app launching require a Samsung TV; the browser does not mirror your TV.
+Open `app/index.html` to preview the layout. From the repository root, run `npm test` to check the active app. Obsolete backup/archive trees have been removed. Real installed apps, live TV, input switching, and app launching require a Samsung TV; the browser does not mirror your TV.
 
 ```text
 npm install

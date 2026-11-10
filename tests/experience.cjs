@@ -26,16 +26,15 @@ const { pathToFileURL } = require('node:url');
     await page.waitForFunction(() => document.querySelectorAll('[data-lucide].lucide').length > 0);
     await page.waitForFunction(() => document.querySelectorAll('[data-lucide].lucide').length === document.querySelectorAll('svg.lucide').length && document.querySelectorAll('svg.lucide').length > 0);
 
-    const destinations = ['home', 'search', 'apps', 'games', 'recent', 'movies', 'media', 'inputs', 'settings'];
+    const destinations = ['home', 'search', 'apps', 'games', 'recent', 'inputs', 'settings'];
     for (const destination of destinations) {
       await page.locator(`.sidebar-item[data-section="${destination}"]`).click();
       const selector = `#page-${destination}`;
       await page.locator(selector).waitFor({ state: 'visible' });
       assert.equal(await page.locator(`.sidebar-item[data-section="${destination}"]`).getAttribute('aria-current'), 'page');
       await page.screenshot({ path: path.resolve(`tests/screenshots/experience-${destination}-1920x1080.png`), fullPage: true });
-      if (destination === 'movies') assert.match(await page.locator('#page-movies').innerText(), /No movie catalogue connected/);
-      if (destination === 'media') assert.match(await page.locator('#page-media').innerText(), /Local media is unavailable/);
     }
+    assert.equal(await page.locator('.sidebar-item[data-section="movies"], .sidebar-item[data-section="media"], #page-movies, #page-media').count(), 0, 'removed destinations must not be reachable');
 
     assert.equal(await page.locator('.footer').count(), 0, 'persistent footer must be removed');
     assert.equal(await page.locator('#status').evaluate((el) => getComputedStyle(el).position), 'absolute', 'live status should remain visually hidden');

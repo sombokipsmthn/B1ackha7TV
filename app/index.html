@@ -7,29 +7,10 @@
 <link rel="stylesheet" href="css/cinematic.css">
 <script src="assets/lucide.min.js"></script>
 <script src="photo-library.js"></script>
-<script src="lib/utils.js"></script>
-<script src="components/ui/index.js"></script>
 <script src="audio-controller.js"></script>
 <script src="motion-system.js"></script>
 <script src="tizen-service.js" defer></script>
 <script src="icon-resolver.js" defer></script>
-
-<!-- New services for cinematic content experience -->
-<script src="data/streaming-metadata.js"></script>
-<script src="data/mock-content.js"></script>
-<script src="data/tmdb-catalog.js"></script>
-<script src="data/tmdb-demo-catalog.js"></script>
-<script src="services/tmdb-content-service.js"></script>
-<script src="services/streaming-asset-service.js"></script>
-<script src="services/content-artwork-service.js"></script>
-<script src="services/dynamic-wallpaper-service.js"></script>
-<script src="services/viewing-activity-service.js"></script>
-<script src="services/content-metadata-service.js"></script>
-<script src="components/continue-watching/ContinueWatchingCard.js"></script>
-<script src="components/continue-watching/ContinueWatching.js"></script>
-<script src="components/dynamic-wallpaper/WallpaperTransition.js"></script>
-<script src="components/dynamic-wallpaper/DynamicWallpaper.js"></script>
-<script src="components/content/ContentCard.js"></script>
 
 <script src="main.js" defer></script>
 </head>
@@ -44,8 +25,6 @@
     <li><button class="sidebar-item" data-section="apps" aria-label="Apps"><span class="sidebar-icon" data-lucide="grid-2x2" aria-hidden="true"></span></button></li>
     <li><button class="sidebar-item" data-section="games" aria-label="Games"><span class="sidebar-icon" data-lucide="gamepad-2" aria-hidden="true"></span></button></li>
     <li><button class="sidebar-item" data-section="recent" aria-label="Recent"><span class="sidebar-icon" data-lucide="history" aria-hidden="true"></span></button></li>
-    <li><button class="sidebar-item" data-section="movies" aria-label="Movies"><span class="sidebar-icon" data-lucide="film" aria-hidden="true"></span></button></li>
-    <li><button class="sidebar-item" data-section="media" aria-label="My Media"><span class="sidebar-icon" data-lucide="folder-open" aria-hidden="true"></span></button></li>
     <li><button class="sidebar-item" data-section="inputs" aria-label="Inputs"><span class="sidebar-icon" data-lucide="Tv" aria-hidden="true"></span></button></li>
     <li><button class="sidebar-item" data-section="settings" aria-label="Settings"><span class="sidebar-icon" data-lucide="settings-2" aria-hidden="true"></span></button></li>
   </ul>
@@ -92,9 +71,6 @@
     <div class="page-head"><h2 class="page-title">Recent</h2></div><div class="page-controls"><div class="filter-group"><button id="clear-recent" class="filter-btn danger" aria-label="Clear recent history"><span data-lucide="trash-2" aria-hidden="true"></span>Clear History</button></div></div><div class="recent-list" id="recent-list" role="list" aria-label="Recent apps"></div><p id="recent-empty" class="empty-state" hidden>No recent apps</p>
   </section>
 
-  <section id="page-movies" class="page-section empty-destination photo-page" hidden aria-label="Movies"><div class="page-head"><h2 class="page-title">Movies</h2><p class="page-subtitle">Cinematic landscapes, ready for your collection.</p></div><div class="photo-feature-grid" role="list" aria-label="Cinematic photography"><article class="photo-feature" role="listitem"><img src="assets/photos/desert-cinema.jpg" alt="Sculpted desert landscape beneath an open sky" loading="lazy" decoding="async"><span class="photo-feature-caption">Desert Cinema</span></article><article class="photo-feature" role="listitem"><img src="assets/photos/nocturnal-city.jpg" alt="City skyline after dark" loading="lazy" decoding="async"><span class="photo-feature-caption">City at Night</span></article><article class="photo-feature" role="listitem"><img src="assets/photos/quiet-architecture.jpg" alt="Minimalist architectural study" loading="lazy" decoding="async"><span class="photo-feature-caption">Quiet Architecture</span></article></div><p class="photo-page-note">No movie catalogue connected. Connect a supported content provider to show your movie catalogue.</p></section>
-  <section id="page-media" class="page-section empty-destination photo-page" hidden aria-label="My Media"><div class="page-head"><h2 class="page-title">My Media</h2><p class="page-subtitle">A quiet home for music, video, and photographs.</p></div><div class="photo-feature-grid media-feature-grid" role="list" aria-label="Personal media collections"><article class="photo-feature" role="listitem"><img src="assets/photos/live-music.jpg" alt="Live music on stage" loading="lazy" decoding="async"><span class="photo-feature-caption">Music</span></article><article class="photo-feature" role="listitem"><img src="assets/photos/video-camera.jpg" alt="Camera set for filming" loading="lazy" decoding="async"><span class="photo-feature-caption">Video</span></article><article class="photo-feature" role="listitem"><img src="assets/photos/photography.jpg" alt="A camera prepared for a photograph" loading="lazy" decoding="async"><span class="photo-feature-caption">Photographs</span></article></div><p class="photo-page-note">Local media is unavailable. This launcher has no media-library integration or permission to discover local files.</p></section>
-
   <section id="page-inputs" class="page-section" hidden aria-label="Inputs"><div class="page-head"><h2 class="page-title">Inputs</h2></div><div class="inputs-grid" id="inputs-grid" role="list" aria-label="Input sources"></div><p id="inputs-empty" class="empty-state" hidden>No inputs</p></section>
 
   <section id="page-settings" class="settings-screen" hidden aria-label="Kipsmthn TV settings">
@@ -116,7 +92,7 @@
         <main class="settings-panel" id="settings-panel-home" hidden role="tabpanel" aria-labelledby="home-heading">
           <div class="settings-panel-heading"><h2 id="home-heading">Home Screen</h2></div>
           <section class="settings-group"><h3>Startup</h3><div class="setting-row"><div class="setting-label"><strong>Default destination</strong><small>Choose the first page shown when Kipsmthn opens</small></div><div class="setting-control"><select id="home-destination" class="setting-select" data-pref="homeDestination"><option value="home">Home</option><option value="apps">Apps</option><option value="recent">Recent</option></select></div></div></section>
-          <section class="settings-group"><h3>Home sections</h3><div class="setting-row"><div class="setting-label"><strong>Streaming artwork demo</strong><small>Sample content and progress only; provider availability and viewing history are not provided</small></div><div class="setting-control"><button id="tmdb-demo-toggle" class="setting-toggle" type="button" aria-label="Streaming artwork demo"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Installed apps</strong><small>Show your pinned application shortcuts</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showApps" aria-label="Installed apps on Home"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Continue watching</strong><small>Show sample picks, not account viewing history</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showContinue" aria-label="Continue watching on Home"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Featured content</strong><small>Show launcher-provided featured selections</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showFeatured" aria-label="Featured content on Home"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Recently launched</strong><small>Show apps opened from this launcher</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showRecent" aria-label="Recently launched on Home"></button></div></div></section>
+          <section class="settings-group"><h3>Home sections</h3><div class="setting-row"><div class="setting-label"><strong>Installed apps</strong><small>Show your pinned application shortcuts</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showApps" aria-label="Installed apps on Home"></button></div></div><div class="setting-row"><div class="setting-label"><strong>Recently launched</strong><small>Show apps opened from this launcher</small></div><div class="setting-control"><button class="setting-toggle" type="button" data-pref="showRecent" aria-label="Recently launched on Home"></button></div></div></section>
         </main>
         <main class="settings-panel" id="settings-panel-sound-motion" hidden role="tabpanel" aria-labelledby="sound-motion-heading">
           <div class="settings-panel-heading"><h2 id="sound-motion-heading">Sound &amp; Motion</h2></div>
@@ -168,16 +144,12 @@
     </div>
     <section id="library" class="launcher-library" aria-label="Installed application shortcuts"><div class="launcher-library-heading"><div><h3 id="library-title">Your apps</h3><span id="app-count"></span></div><button id="edit-apps-home" class="shadcn-button" aria-label="Edit apps"><span data-lucide="pencil" aria-hidden="true"></span><span>Edit apps</span></button></div><p id="launch-feedback" class="shadcn-card" role="status" hidden></p><p id="edit-hint" class="text-muted-foreground" hidden>Select an app to add or remove its Home shortcut. Your apps stay installed.</p><p id="catalog-mode" class="text-muted-foreground" aria-live="polite"></p><button id="refresh" class="shadcn-button" type="button">Refresh apps</button><div id="apps" class="launcher-app-grid" aria-label="Installed applications"></div><p id="empty" class="text-muted-foreground" hidden></p></section>
     </section>
-    <section id="streaming-providers-section" class="content-section" aria-labelledby="streaming-providers-title"><h2 id="streaming-providers-title" class="section-title">Streaming artwork preview</h2><p class="search-disclaimer">Demo provider selection only. TMDB artwork does not indicate availability in your region or installed apps.</p><div id="streaming-providers-carousel" class="carousel" role="list" aria-label="Streaming provider demo selectors"><button class="carousel-item streaming-provider-card" type="button" role="listitem" data-demo-provider="netflix" aria-label="Netflix artwork demo"><img src="assets/streaming/providers/netflix-logo.svg" alt="Netflix" loading="lazy"><span>Netflix · Demo</span></button><button class="carousel-item streaming-provider-card" type="button" role="listitem" data-demo-provider="apple-tv" aria-label="Apple TV Plus artwork demo"><img src="assets/streaming/providers/apple-tv-logo.svg" alt="Apple TV+" loading="lazy"><span>Apple TV+ · Demo</span></button><button class="carousel-item streaming-provider-card" type="button" role="listitem" data-demo-provider="prime-video" aria-label="Prime Video artwork demo"><img src="assets/streaming/providers/prime-video-logo.svg" alt="Prime Video" loading="lazy"><span>Prime Video · Demo</span></button><button class="carousel-item streaming-provider-card" type="button" role="listitem" data-demo-provider="disney-plus" aria-label="Disney Plus artwork demo"><img src="assets/streaming/providers/disney-plus-logo.svg" alt="Disney+" loading="lazy"><span>Disney+ · Demo</span></button><button class="carousel-item streaming-provider-card" type="button" role="listitem" data-demo-provider="showmax" aria-label="Showmax artwork demo"><img src="assets/streaming/providers/showmax-logo.svg" alt="Showmax" loading="lazy"><span>Showmax · Demo</span></button></div></section>
-    <section id="continue-section" class="content-section" aria-labelledby="continue-title"><h2 id="continue-title" class="section-title">Continue watching</h2><p class="search-disclaimer">Sample progress only; this launcher does not know your viewing history.</p><div class="carousel" id="continue-carousel" role="list" aria-label="Continue watching">
-      <!-- Populated dynamically by ContinueWatching component -->
-    </div></section>
     <section id="recent-home-section" class="content-section" aria-labelledby="recent-home-title" hidden><h2 id="recent-home-title" class="section-title">Recently launched</h2><div id="recent-home-apps" class="carousel" role="list" aria-label="Recently launched apps"></div></section>
-    <section id="trending-section" class="content-section" aria-labelledby="trending-title"><h2 id="trending-title" class="section-title">Trending</h2><div class="carousel" id="trending-carousel" role="list" aria-label="Trending now">
-      <button class="carousel-item trending-card" data-content-id="trending-1" role="listitem" aria-label="Trending content 1"><div class="card-bg" data-photo="night-sky"></div><div class="card-overlay"></div><div class="card-content"><h3 class="content-title">Stranger Things</h3></div></button>
-      <button class="carousel-item trending-card" data-content-id="trending-2" role="listitem" aria-label="Trending content 2"><div class="card-bg" data-photo="lake"></div><div class="card-overlay"></div><div class="card-content"><h3 class="content-title">The Crown</h3></div></button>
-      <button class="carousel-item trending-card" data-content-id="trending-3" role="listitem" aria-label="Trending content 3"><div class="card-bg" data-photo="forest"></div><div class="card-overlay"></div><div class="card-content"><h3 class="content-title">Wednesday</h3></div></button>
-      <button class="carousel-item trending-card" data-content-id="trending-4" role="listitem" aria-label="Trending content 4"><div class="card-bg" data-photo="mountains"></div><div class="card-overlay"></div><div class="card-content"><h3 class="content-title">House of Dragon</h3></div></button>
+    <section id="trending-section" class="content-section" aria-labelledby="trending-title"><h2 id="trending-title" class="section-title">Featured</h2><div class="carousel" id="trending-carousel" role="list" aria-label="Featured photography">
+      <button class="carousel-item trending-card" data-content-id="featured-night-sky" role="listitem" aria-label="Night sky photography"><div class="card-bg" data-photo="night-sky"></div><div class="card-overlay"></div><div class="card-content"><h3 class="content-title">Night Sky</h3></div></button>
+      <button class="carousel-item trending-card" data-content-id="featured-evening-sky" role="listitem" aria-label="Evening sky photography"><div class="card-bg" data-photo="evening-sky"></div><div class="card-overlay"></div><div class="card-content"><h3 class="content-title">Evening Sky</h3></div></button>
+      <button class="carousel-item trending-card" data-content-id="featured-forest" role="listitem" aria-label="Forest photography"><div class="card-bg" data-photo="forest"></div><div class="card-overlay"></div><div class="card-content"><h3 class="content-title">Quiet Forest</h3></div></button>
+      <button class="carousel-item trending-card" data-content-id="featured-mountains" role="listitem" aria-label="Mountain photography"><div class="card-bg" data-photo="mountains"></div><div class="card-overlay"></div><div class="card-content"><h3 class="content-title">Twilight Mountains</h3></div></button>
     </div></section>
   </section>
 </main>

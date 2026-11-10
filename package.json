@@ -6,8 +6,7 @@
   "license": "MIT",
   "scripts": {
     "build:css": "tailwindcss -c app/tailwind.config.js -i app/input.css -o app/css/cinematic.css --minify",
-    "tmdb:refresh": "node scripts/refresh-tmdb-catalog.cjs",
-    "test": "node tests/project-structure.cjs && node tests/tmdb-integration.cjs && node tests/tmdb-api.cjs && node tests/experience.cjs && node tests/settings.cjs && node tests/dedup.cjs && node tests/exit.cjs && node tests/tv-settings.cjs && node tests/background.cjs && node tests/launch.cjs && node tests/name.cjs && node tests/visual-regression.cjs",
+    "test": "node tests/project-structure.cjs && node tests/security-packaging.cjs && node tests/experience.cjs && node tests/settings.cjs && node tests/dedup.cjs && node tests/exit.cjs && node tests/tv-settings.cjs && node tests/background.cjs && node tests/launch.cjs && node tests/name.cjs && node tests/visual-regression.cjs",
     "test:visual": "node tests/visual-regression.cjs"
   },
   "devDependencies": {
