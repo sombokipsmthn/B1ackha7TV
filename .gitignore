@@ -11,6 +11,7 @@ signature*.xml
 profiles.xml
 .env
 .env.*
+!.env.example
 *.local.*
 certificates/
 SamsungCertificate/
@@ -32,3 +33,5 @@ playwright-report/
 app/assets/background*
 app/assets/*photo*
 app/assets/*family*
+# TMDB API response cache may contain local metadata refresh results
+app/data/.tmdb-cache.json

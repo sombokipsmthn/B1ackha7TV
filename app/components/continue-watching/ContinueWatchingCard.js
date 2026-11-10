@@ -114,7 +114,7 @@
 
   ContinueWatchingCard.prototype.getAriaLabel = function () {
     var content = this.content;
-    var providerName = content.providerId.replace('-', ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    var providerName = (content.providerId || 'Demo').replace('-', ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
     var label = content.title + ' - Continue ';
     if (content.season && content.episode) {
       label += 'Season ' + content.season + ' Episode ' + content.episode;
@@ -137,10 +137,11 @@
     }
 
     // Add provider name
-    var providerName = content.providerId
+    var providerName = (content.providerId || 'Demo')
       .split('-')
       .map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); })
       .join(' ');
+    if (content.demoLabel) { parts.push('· Demo preview'); }
     parts.push('· ' + providerName);
 
     // Add demo indicator
@@ -178,7 +179,9 @@
 
     // Use streaming asset service for landscape still if available
     var landscapeUrl;
-    if (window.streamingAssetService && this.content.tmdbId) {
+    if (this.content.landscapeStill) {
+      landscapeUrl = this.content.landscapeStill;
+    } else if (window.streamingAssetService && this.content.tmdbId) {
       landscapeUrl = window.streamingAssetService.getLandscapeStillUrl(this.content.id, this.content.tmdbId, this.content.type);
     } else if (window.contentArtworkService) {
       landscapeUrl = window.contentArtworkService.getLandscapeStillUrl(this.content.landscapeStill, this.content.id, this.content.tmdbId, this.content.type);

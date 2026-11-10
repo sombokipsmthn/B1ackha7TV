@@ -31,20 +31,15 @@
   };
 
   ContinueWatching.prototype.loadContent = function () {
-    // Get enriched viewing activity
-    return window.viewingActivityService.getContinueWatching().then(function (activity) {
-      if (activity.length > 0) {
-        // Use viewing activity data
-        this.contentList = activity.map(function (a) { return a.content; });
-      } else {
-        // Fallback to mock content sorted by progress
-        this.contentList = window.contentMetadataService.getContinueWatchingContent();
-      }
-
-      // Limit to max items
-      this.contentList = this.contentList.slice(0, this.options.maxItems);
-
-      // Preload backdrops for smooth transitions
+    var demoEnabled = window.TMDBContentService && window.TMDBContentService.isDemoModeEnabled();
+    var authorised = window.viewingActivityService && window.viewingActivityService.isUsingAuthorisedSource();
+    var source = demoEnabled
+      ? Promise.resolve(window.TMDBContentService.createDemoContent())
+      : (authorised ? window.viewingActivityService.getContinueWatching().then(function (activity) {
+        return activity.map(function (record) { return record.content; });
+      }) : Promise.resolve([]));
+    return source.then(function (items) {
+      this.contentList = items.slice(0, this.options.maxItems);
       return window.dynamicWallpaperService.preloadBackdrops(this.contentList);
     }.bind(this));
   };
@@ -66,10 +61,7 @@
       return card;
     }.bind(this));
 
-    // Initialize focus on first card if none focused
-    if (this.cards.length > 0 && this.focusedIndex === -1) {
-      this.setFocus(0);
-    }
+    // Do not move remote focus during initialization; preserve launcher startup focus.
   };
 
   ContinueWatching.prototype.bindSubscriptions = function () {

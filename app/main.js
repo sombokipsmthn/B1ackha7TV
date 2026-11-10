@@ -290,6 +290,36 @@
       container.appendChild(image);
     });
   }
+  function renderStreamingPreview() {
+    var carousel = $('trending-carousel'), service = window.TMDBContentService;
+    if (!carousel || !service) { return; }
+    if (!service.isDemoModeEnabled()) { carousel.textContent = ''; return; }
+    var entries = service.createDemoContent();
+    carousel.textContent = '';
+    entries.slice(0, 10).forEach(function (content) {
+      var button = document.createElement('button'); button.type = 'button'; button.className = 'carousel-item trending-card';
+      button.setAttribute('role', 'listitem'); button.setAttribute('data-content-id', content.id);
+      button.setAttribute('aria-label', content.title + ' demo preview, not provider availability');
+      var background = document.createElement('div'); background.className = 'card-bg';
+      var image = document.createElement('img'); image.src = content.landscapeStill || content.backdrop; image.alt = ''; image.loading = 'lazy'; image.decoding = 'async';
+      image.onerror = function () { image.hidden = true; background.setAttribute('data-photo-fallback', 'true'); };
+      background.appendChild(image);
+      var overlay = document.createElement('div'); overlay.className = 'card-overlay';
+      var details = document.createElement('div'); details.className = 'card-content';
+      var title = document.createElement('h3'); title.className = 'content-title'; title.textContent = content.title;
+      var label = document.createElement('p'); label.className = 'content-meta'; label.textContent = 'Demo preview · ' + (content.releaseYear || 'TV series');
+      details.appendChild(title); details.appendChild(label); button.appendChild(background); button.appendChild(overlay); button.appendChild(details);
+      button.addEventListener('focus', function () { if (dynamicWallpaperComponent) { dynamicWallpaperComponent.setContentWallpaper(content); } });
+      button.addEventListener('click', function () { if (dynamicWallpaperComponent) { dynamicWallpaperComponent.setContentWallpaper(content); } });
+      carousel.appendChild(button);
+    });
+  }
+  function updateStreamingDemoControl() {
+    var control = $('tmdb-demo-toggle');
+    if (!control || !window.TMDBContentService) { return; }
+    var enabled = window.TMDBContentService.isDemoModeEnabled();
+    control.setAttribute('aria-pressed', String(enabled)); control.textContent = enabled ? 'On' : 'Off';
+  }
   function renderHome() {
     var library = $('apps'), catalog = uniqueApps();
     hydratePhotos($('page-home'));
@@ -324,6 +354,7 @@
       }
     }
 
+    renderStreamingPreview();
     // Initialize Dynamic Wallpaper component if not already done
     if (!dynamicWallpaperComponent && window.DynamicWallpaper) {
       var wallpaperEl = $('wallpaper');
@@ -335,6 +366,7 @@
             // Wallpaper changed - could log or trigger other effects
           }
         });
+        applyBackground(prefs.background, false);
       }
     }
   }
@@ -349,12 +381,51 @@
     grid.textContent = ''; visible.forEach(function (app) { grid.appendChild(createAppButton(app, true, 'app app-grid-item')); });
     if ($('apps-empty')) { $('apps-empty').hidden = visible.length > 0; }
   }
-  function isGame(app) { return (app.categories || []).some(function (category) { return /^(game|gaming)$/i.test(category); }); }
+  function isGame(app) {
+    var categories = Array.isArray(app.categories) ? app.categories.map(function (item) { return String(item).toLowerCase(); }) : [];
+    var name = String(app.name || app.id || '').toLowerCase();
+    if (categories.some(function (category) { return /stream|video|entertainment|utility|system|media/.test(category); })) { return false; }
+    if (/steam\s?link|geforce\s?now|cloud\s?gaming|xbox|game\s?pass|twitch/.test(name)) { return false; }
+    return categories.some(function (category) { return /^(game|gaming|games|tizen\.org\/category\/game)$/i.test(category); });
+  }
   function renderGames() {
     var grid = $('games-grid'); if (!grid) { return; }
-    var visible = filterApps(allApps, '').filter(isGame); grid.textContent = '';
-    visible.sort(function (a, b) { return (a.name || a.id).localeCompare(b.name || b.id); }).forEach(function (app) { grid.appendChild(createAppButton(app, true, 'app app-grid-item')); });
+    var discoveredOnTV = TizenService.isTV();
+    var visible = discoveredOnTV ? allApps.filter(function (app) { return app && app.installed === true && app.show !== false && isGame(app); }) : [];
+    grid.textContent = '';
+    visible.sort(function (a, b) { return (a.name || a.id).localeCompare(b.name || b.id); }).forEach(function (app) {
+      var button = createAppButton(app, false, 'app app-grid-item tv-game-card');
+      button.setAttribute('role', 'listitem');
+      var marker = document.createElement('span'); marker.className = 'tv-game-installed'; marker.textContent = 'Installed on this TV'; button.appendChild(marker);
+      grid.appendChild(button);
+    });
     if ($('games-empty')) { $('games-empty').hidden = visible.length > 0; }
+    var status = $('tv-games-status'), error = TizenService.getDiscoveryError && TizenService.getDiscoveryError();
+    if (status) { status.textContent = !discoveredOnTV ? 'Browser preview · installed TV applications are not available here.' : error ? 'TV application discovery failed. Refresh to try again.' : visible.length ? visible.length + ' game' + (visible.length === 1 ? '' : 's') + ' verified as installed on this TV.' : 'No game apps identified in the TV’s discovered categories.'; }
+    if (error && $('games-empty')) { $('games-empty').textContent = 'Could not read this TV’s installed apps. Use Refresh to try again.'; }
+    if ($('xbox-connection')) {
+      var xboxInput = null; try { xboxInput = JSON.parse(localStorage.getItem('kipsmthn.xbox-input.v1') || 'null'); } catch (ignore) { xboxInput = null; }
+      $('xbox-connection').textContent = xboxInput && xboxInput.type === 'HDMI' ? 'Configured input ' + (xboxInput.name || 'HDMI ' + xboxInput.number) + ' · Console status unverified · Not connected to Xbox account' : 'Xbox input not configured · Console status unverified · Not connected to Xbox account';
+    }
+    initIcons(grid);
+  }
+  function switchToXboxInput() {
+    var button = $('launch-xbox'); if (button) { button.disabled = true; }
+    TizenService.getSources(function (sources) {
+      var configured = null;
+      try { configured = JSON.parse(localStorage.getItem('kipsmthn.xbox-input.v1') || 'null'); } catch (ignore) { configured = null; }
+      var preferred = configured && String(configured.type).toUpperCase() === 'HDMI' ? (sources || []).filter(function (source) { return source && String(source.type).toUpperCase() === 'HDMI' && Number(source.number) === Number(configured.number); })[0] : null;
+      if (!TizenService.isTV() || !preferred) {
+        if (button) { button.disabled = false; }
+        report(!TizenService.isTV() ? 'Xbox HDMI switching requires the Samsung TV.' : 'Xbox input is not configured or is unavailable. Open Inputs and set the correct HDMI port as Xbox input.');
+        return;
+      }
+      TizenService.setSource(preferred, function () {
+        if (button) { button.disabled = false; }
+        if ($('xbox-connection')) { $('xbox-connection').textContent = 'TV accepted switch request to ' + preferred.name + ' · Console online status not verified'; }
+        report('Requested switch to ' + preferred.name + '. Confirm on the Samsung TV.');
+      }, function (error) { if (button) { button.disabled = false; } report('The TV could not switch to ' + preferred.name + '.', error); });
+    });
   }
   function renderRecent() {
     var list = $('recent-list'); if (!list) { return; }
@@ -412,7 +483,16 @@
         button.addEventListener('click', function () {
           TizenService.setSource(source, function () { report('Input changed.'); }, function (error) { report('Could not change input.', error); });
         });
-        grid.appendChild(button);
+        if (String(source.type).toUpperCase() === 'HDMI') {
+          var inputCard = document.createElement('div'); inputCard.className = 'input-source-card'; inputCard.appendChild(button);
+          var configureXbox = document.createElement('button'); configureXbox.type = 'button'; configureXbox.className = 'input-xbox-config'; configureXbox.textContent = 'Set as Xbox input'; configureXbox.setAttribute('aria-label', 'Set ' + name + ' as Xbox input');
+          configureXbox.addEventListener('click', function () {
+            try { localStorage.setItem('kipsmthn.xbox-input.v1', JSON.stringify({ type: 'HDMI', number: Number(source.number), name: name })); } catch (error) { report('Xbox input setting could not be saved.', error); return; }
+            if ($('xbox-connection')) { $('xbox-connection').textContent = 'Xbox input set to ' + name + ' · Console online status not verified'; }
+            report(name + ' is configured as the Xbox input.');
+          });
+          inputCard.appendChild(configureXbox); grid.appendChild(inputCard);
+        } else { grid.appendChild(button); }
       });
       initIcons(grid);
       if ($('inputs-empty')) { $('inputs-empty').hidden = grid.children.length > 0; }
@@ -799,9 +879,11 @@
   $('theme-select').addEventListener('change', function () { var nextTheme = this.value === 'midnight' ? 'midnight' : 'cinematic'; if (prefs.theme === 'cinematic' && nextTheme !== 'cinematic' && prefs.background) { themeSnapshot = prefs.background; } prefs.theme = nextTheme; if (nextTheme !== 'cinematic') { prefs.background = ''; applyBackground('', false); } else { prefs.background = themeSnapshot || ''; applyBackground(prefs.background, false); } save(); renderWallpaperChoices(); });
   $('background-apply').addEventListener('click', function () { applyBackground($('background-path-enhanced').value.trim(), true); });
   $('apps-refresh').addEventListener('click', refreshApps);
+  if ($('tv-games-refresh')) { $('tv-games-refresh').addEventListener('click', function () { refreshApps(); }); }
   $('apps-refresh-settings').addEventListener('click', refreshApps);
   $('edit-apps').addEventListener('click', function () { editingApps = !editingApps; this.textContent = editingApps ? 'Done editing' : 'Edit apps'; renderAppsPage(); renderHome(); });
   $('edit-apps-home').addEventListener('click', function () { editingApps = !editingApps; renderHome(); });
+  if ($('tmdb-demo-toggle')) { $('tmdb-demo-toggle').addEventListener('click', function () { window.TMDBContentService.setDemoModeEnabled(!window.TMDBContentService.isDemoModeEnabled()); updateStreamingDemoControl(); renderStreamingPreview(); if (continueWatchingComponent) { continueWatchingComponent.refresh(); } if (!window.TMDBContentService.isDemoModeEnabled() && dynamicWallpaperComponent) { dynamicWallpaperComponent.setDefault(); } }); }
   $('search-input').addEventListener('input', updateSearch);
   $('search-clear').addEventListener('click', function () { $('search-input').value = ''; updateSearch(); $('search-input').focus(); });
   $('clear-recent').addEventListener('click', function () { prefs.recentApps = []; save(); renderRecent(); report('Recent history cleared.'); });
@@ -815,8 +897,26 @@
   $('close-app-settings').addEventListener('click', function () { exitDialog(true); });
   $('exit-cancel').addEventListener('click', function () { exitDialog(false); });
   $('exit-confirm').addEventListener('click', closeLauncher);
-  $('launch-xbox').addEventListener('click', function () { var xbox = allApps.filter(function (app) { return /xbox/i.test(app.name || app.id); })[0]; if (xbox) { launch(xbox.id, xbox.name || 'Xbox'); } else { report('Xbox app was not found.'); } });
-  Array.prototype.forEach.call($$('.carousel-item'), function (button) {
+  $('launch-xbox').addEventListener('click', switchToXboxInput);
+  Array.prototype.forEach.call($$('.streaming-provider-card'), function (button) {
+    function selectProvider() {
+      if (!dynamicWallpaperComponent || !window.TMDBContentService || !window.TMDBContentService.isDemoModeEnabled()) { return; }
+      var providerId = button.getAttribute('data-demo-provider');
+      var provider = window.ContentData && window.ContentData.getProviderConfig(providerId);
+      if (provider) { dynamicWallpaperComponent.setProviderWallpaper(provider); }
+    }
+    button.addEventListener('focus', selectProvider);
+    button.addEventListener('click', selectProvider);
+  });
+  Array.prototype.forEach.call($$('.carousel-item[data-app-id]'), function (button) {
+    button.addEventListener('focus', function () {
+      var id = button.getAttribute('data-app-id'), providerIds = { netflix: 'netflix', prime: 'prime-video', disneyplus: 'disney-plus', appletv: 'apple-tv', showmax: 'showmax' };
+      var providerId = providerIds[id];
+      if (providerId && dynamicWallpaperComponent && window.TMDBContentService && window.TMDBContentService.isDemoModeEnabled()) {
+        var provider = window.ContentData && window.ContentData.getProviderConfig(providerId);
+        if (provider) { dynamicWallpaperComponent.setProviderWallpaper(provider); }
+      }
+    });
     button.addEventListener('click', function () {
       var id = button.getAttribute('data-app-id');
       if (id === 'all-apps') { showPage('apps'); }
@@ -879,7 +979,7 @@
   });
   window.addEventListener('resize', function () { previewNeedsShow = true; syncPreview(); });
 
-  loadPrefs(); applyName(); applyBackground(prefs.background, false); applyExperience(); syncSettingsControls(); renderWallpaperChoices(); applyHomePreferences();
+  loadPrefs(); applyName(); applyBackground(prefs.background, false); applyExperience(); syncSettingsControls(); renderWallpaperChoices(); applyHomePreferences(); updateStreamingDemoControl();
 
   // Initialize streaming visual preview assets
   if (window.streamingAssetService && window.STREAMING_VISUAL_PREVIEW !== false) {

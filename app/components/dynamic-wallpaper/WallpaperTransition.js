@@ -70,6 +70,7 @@
 
   WallpaperTransition.prototype.preloadImage = function (src) {
     return new Promise(function (resolve, reject) {
+      if (!src) { reject(new Error('Missing wallpaper image')); return; }
       var img = new Image();
       img.decoding = 'async';
       img.onload = function () { resolve(); };

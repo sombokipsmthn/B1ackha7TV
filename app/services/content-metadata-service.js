@@ -35,8 +35,18 @@
 
   ContentMetadataService.prototype.loadLocalContent = function () {
     if (window.ContentData && window.ContentData.MOCK_CONTENT) {
+      var tmdbItems = window.TMDB_STREAMING_METADATA && window.TMDB_STREAMING_METADATA.content || [];
+      var tmdbById = new Map();
+      tmdbItems.forEach(function (item) { tmdbById.set(item.id, item); });
       window.ContentData.MOCK_CONTENT.forEach(function (content) {
-        this.contentMap.set(content.id, content);
+        var metadata = tmdbById.get(content.id);
+        this.contentMap.set(content.id, metadata ? Object.assign({}, content, {
+          title: metadata.name || content.title,
+          description: metadata.overview || content.description,
+          releaseYear: metadata.firstAirDate ? Number(metadata.firstAirDate.slice(0, 4)) : content.releaseYear,
+          episodeRunTime: metadata.episodeRunTime || [],
+          trailers: metadata.videos || []
+        }) : content);
       }.bind(this));
     }
   };

@@ -61,17 +61,15 @@
   };
 
   DynamicWallpaperService.prototype.setContentWallpaper = function (content) {
-    if (!content.backdrop) {
-      return this.setDefaultWallpaper();
-    }
-
+    if (!content.backdrop && !content.id) { return this.setDefaultWallpaper(); }
     this.debounceTransition(function () { this.transitionToContent(content); }.bind(this));
   };
 
   DynamicWallpaperService.prototype.setProviderWallpaper = function (provider) {
-    var backdropKey = provider.backdropTheme;
-    var backdropUrl = 'assets/content/providers/' + backdropKey + '.jpg';
-
+    var backdropUrl = provider.backdrop || this.config.defaultBackdrop;
+    var samples = window.TMDBContentService && window.TMDBContentService.isDemoModeEnabled() ? window.TMDBContentService.createDemoContent() : [];
+    var selected = samples.filter(function (item) { return item.providerId === provider.id; })[0];
+    if (selected && selected.backdrop) { backdropUrl = selected.backdrop; }
     this.debounceTransition(function () { this.transitionToProvider(provider, backdropUrl); }.bind(this));
   };
 
@@ -95,7 +93,9 @@
       return; // Already showing this content
     }
 
-    var backdropUrl = window.contentArtworkService.getBackdropUrl(content.backdrop);
+    var backdropUrl = content.backdrop || this.config.defaultBackdrop;
+    if (window.streamingAssetService && content.id) { backdropUrl = window.streamingAssetService.getBackdropUrl(content.id, content.tmdbId, content.type) || backdropUrl; }
+    else if (window.contentArtworkService) { backdropUrl = window.contentArtworkService.getBackdropUrl(backdropUrl); }
     this.performTransition(backdropUrl, WallpaperSource.CONTENT, content.id);
   };
 

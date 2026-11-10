@@ -51,16 +51,16 @@
     ],
     // Sample content for visual preview (not real viewing data)
     sampleContent: [
-      { id: 'ted-lasso', tmdbId: 100088, provider: 'apple-tv' },
-      { id: 'severance', tmdbId: 112807, provider: 'apple-tv' },
-      { id: 'stranger-things', tmdbId: 66732, provider: 'netflix' },
-      { id: 'wednesday', tmdbId: 153001, provider: 'netflix' },
-      { id: 'the-boys', tmdbId: 87113, provider: 'prime-video' },
-      { id: 'reacher', tmdbId: 118422, provider: 'prime-video' },
-      { id: 'the-bear', tmdbId: 137268, provider: 'disney-plus' },
-      { id: 'the-mandalorian', tmdbId: 82856, provider: 'disney-plus' },
-      { id: 'the-crown', tmdbId: 71712, provider: 'netflix' },
-      { id: 'house-of-dragon', tmdbId: 94997, provider: 'disney-plus' }
+      { id: 'ted-lasso', provider: 'apple-tv' },
+      { id: 'stranger-things', provider: 'netflix' },
+      { id: 'the-witcher', provider: 'netflix' },
+      { id: 'wednesday', provider: 'netflix' },
+      { id: 'the-mandalorian', provider: 'disney-plus' },
+      { id: 'reacher', provider: 'prime-video' },
+      { id: 'the-last-of-us', provider: 'showmax' },
+      { id: 'house-of-the-dragon', provider: 'showmax' },
+      { id: 'the-bear', provider: 'disney-plus' },
+      { id: 'severance', provider: 'apple-tv' }
     ]
   };
 
@@ -137,9 +137,10 @@
   StreamingAssetService.prototype.getLocalAssetPath = function (type, identifier, variant) {
     var basePath = this.config.assets.basePath;
     if (type === 'provider') {
-      return basePath + '/providers/' + identifier + (variant ? '-' + variant : '') + '.png';
+      return basePath + '/providers/' + identifier + (variant ? '-' + variant : '') + '.webp';
     } else if (type === 'content') {
-      return basePath + '/content/' + identifier + (variant ? '-' + variant : '') + '.jpg';
+      var extension = variant === 'logo' ? '.png' : '.jpg';
+      return basePath + '/content/' + identifier + (variant ? '-' + variant : '') + extension;
     }
     return basePath + '/' + identifier;
   };
@@ -420,18 +421,12 @@
   };
 
   StreamingAssetService.prototype.getContentArtworkUrls = function (contentId) {
-    // Synchronous version
-    var cacheKey = 'content-artwork:' + contentId;
-    var cached = this.getManifestEntry(cacheKey);
-    if (cached && cached.localPaths) {
-      return cached.localPaths;
-    }
-    return {
-      poster: this.config.assets.fallbackContentPoster,
-      backdrop: this.config.assets.fallbackContentBackdrop,
-      landscape: this.config.assets.fallbackContentLandscape,
-      logo: null
-    };
+    var show = global.TMDBContentService && global.TMDBContentService.getShow(contentId);
+    var assets = show && show.assets;
+    if (assets) { return { poster: assets.poster ? assets.poster.localPath : this.config.assets.fallbackContentPoster, backdrop: assets.backdrop ? assets.backdrop.localPath : this.config.assets.fallbackContentBackdrop, landscape: assets.still ? assets.still.localPath : (assets.backdrop ? assets.backdrop.localPath : this.config.assets.fallbackContentLandscape), logo: null }; }
+    var cached = this.getManifestEntry('content-artwork:' + contentId);
+    if (cached && cached.localPaths) { return cached.localPaths; }
+    return { poster: this.config.assets.fallbackContentPoster, backdrop: this.config.assets.fallbackContentBackdrop, landscape: this.config.assets.fallbackContentLandscape, logo: null };
   };
 
   StreamingAssetService.prototype.getPosterUrl = function (contentId, tmdbId, contentType) {
@@ -456,12 +451,11 @@
 
   StreamingAssetService.prototype.initializePreviewAssets = function () {
     var self = this;
-
-    // Preload provider logos
-    var providerPromise = this.preloadProviderLogos();
-
-    // Preload sample content artwork
-    var contentPromise = this.preloadContentArtwork(this.config.sampleContent);
+    var providerPromise = Promise.resolve([]);
+    var catalogueSamples = global.TMDBContentService ? global.TMDBContentService.getCatalog().map(function (show) { return { id: show.slug, tmdbId: show.tmdbId, provider: '' }; }) : [];
+    var contentPromise = this.config.tmdb.enabled && this.config.tmdb.apiKey
+      ? this.preloadContentArtwork(catalogueSamples)
+      : Promise.resolve([]);
 
     return Promise.all([providerPromise, contentPromise]).then(function () {
       console.info('Streaming visual preview assets initialized');

@@ -100,9 +100,7 @@
     // Try streaming asset service first if enabled and contentId provided
     if (this.config.useStreamingAssets && contentId && window.streamingAssetService) {
       var streamingUrl = window.streamingAssetService.getBackdropUrl(contentId, tmdbId, contentType);
-      if (streamingUrl && streamingUrl !== window.streamingAssetService.config.assets.fallbackContentBackdrop) {
-        return streamingUrl;
-      }
+      if (streamingUrl) { return streamingUrl; }
     }
     return this.getImageUrl(backdrop);
   };
@@ -111,9 +109,7 @@
     // Try streaming asset service first if enabled and contentId provided
     if (this.config.useStreamingAssets && contentId && window.streamingAssetService) {
       var streamingUrl = window.streamingAssetService.getLandscapeStillUrl(contentId, tmdbId, contentType);
-      if (streamingUrl && streamingUrl !== window.streamingAssetService.config.assets.fallbackContentLandscape) {
-        return streamingUrl;
-      }
+      if (streamingUrl) { return streamingUrl; }
     }
     return this.getImageUrl(landscapeStill);
   };
@@ -122,9 +118,7 @@
     // Try streaming asset service first if enabled and contentId provided
     if (this.config.useStreamingAssets && contentId && window.streamingAssetService) {
       var streamingUrl = window.streamingAssetService.getPosterUrl(contentId, tmdbId, contentType);
-      if (streamingUrl && streamingUrl !== window.streamingAssetService.config.assets.fallbackContentPoster) {
-        return streamingUrl;
-      }
+      if (streamingUrl) { return streamingUrl; }
     }
     return this.getImageUrl(poster);
   };
