@@ -25,7 +25,17 @@ const localResources = [
   'icon.png', 'audio-controller.js', 'photo-library.js', 'motion-system.js', 'icon-resolver.js',
   'lib/utils.js', 'components/ui/index.js',
   'assets/audio/navigation.wav', 'assets/audio/selection.wav', 'assets/audio/back.wav', 'assets/audio/error.wav', 'assets/audio/startup.wav',
-  'assets/photos/desert-cinema.jpg', 'assets/photos/evening-sky.jpg', 'assets/photos/lake-dusk.jpg', 'assets/photos/live-music.jpg', 'assets/photos/moody-forest.jpg', 'assets/photos/night-sky.jpg', 'assets/photos/nocturnal-city.jpg', 'assets/photos/photography.jpg', 'assets/photos/quiet-architecture.jpg', 'assets/photos/studio-music.jpg', 'assets/photos/twilight-mountains.jpg', 'assets/photos/video-camera.jpg'
+  'assets/photos/desert-cinema.jpg', 'assets/photos/evening-sky.jpg', 'assets/photos/lake-dusk.jpg', 'assets/photos/live-music.jpg', 'assets/photos/moody-forest.jpg', 'assets/photos/night-sky.jpg', 'assets/photos/nocturnal-city.jpg', 'assets/photos/photography.jpg', 'assets/photos/quiet-architecture.jpg', 'assets/photos/studio-music.jpg', 'assets/photos/twilight-mountains.jpg', 'assets/photos/video-camera.jpg',
+  'data/mock-content.js',
+  'services/content-artwork-service.js',
+  'services/dynamic-wallpaper-service.js',
+  'services/viewing-activity-service.js',
+  'services/content-metadata-service.js',
+  'components/continue-watching/ContinueWatchingCard.js',
+  'components/continue-watching/ContinueWatching.js',
+  'components/dynamic-wallpaper/WallpaperTransition.js',
+  'components/dynamic-wallpaper/DynamicWallpaper.js',
+  'components/content/ContentCard.js'
 ].filter((resource) => !/^(?:https?:|data:|#)/i.test(resource));
 
 for (const resource of localResources) {

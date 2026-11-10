@@ -13,6 +13,19 @@
 <script src="motion-system.js"></script>
 <script src="tizen-service.js" defer></script>
 <script src="icon-resolver.js" defer></script>
+
+<!-- New services for cinematic content experience -->
+<script src="data/mock-content.js"></script>
+<script src="services/content-artwork-service.js"></script>
+<script src="services/dynamic-wallpaper-service.js"></script>
+<script src="services/viewing-activity-service.js"></script>
+<script src="services/content-metadata-service.js"></script>
+<script src="components/continue-watching/ContinueWatchingCard.js"></script>
+<script src="components/continue-watching/ContinueWatching.js"></script>
+<script src="components/dynamic-wallpaper/WallpaperTransition.js"></script>
+<script src="components/dynamic-wallpaper/DynamicWallpaper.js"></script>
+<script src="components/content/ContentCard.js"></script>
+
 <script src="main.js" defer></script>
 </head>
 <body>
@@ -28,7 +41,7 @@
     <li><button class="sidebar-item" data-section="recent" aria-label="Recent"><span class="sidebar-icon" data-lucide="history" aria-hidden="true"></span></button></li>
     <li><button class="sidebar-item" data-section="movies" aria-label="Movies"><span class="sidebar-icon" data-lucide="film" aria-hidden="true"></span></button></li>
     <li><button class="sidebar-item" data-section="media" aria-label="My Media"><span class="sidebar-icon" data-lucide="folder-open" aria-hidden="true"></span></button></li>
-    <li><button class="sidebar-item" data-section="inputs" aria-label="Inputs"><span class="sidebar-icon" data-lucide="tv" aria-hidden="true"></span></button></li>
+    <li><button class="sidebar-item" data-section="inputs" aria-label="Inputs"><span class="sidebar-icon" data-lucide="Tv" aria-hidden="true"></span></button></li>
     <li><button class="sidebar-item" data-section="settings" aria-label="Settings"><span class="sidebar-icon" data-lucide="settings-2" aria-hidden="true"></span></button></li>
   </ul>
 </nav>
@@ -134,15 +147,15 @@
       <button class="carousel-item active" data-app-id="youtube" role="listitem" aria-label="YouTube" aria-selected="true"><div class="app-tile text-app-tile"><span class="app-name">YouTube</span></div></button>
       <button class="carousel-item" data-app-id="netflix" role="listitem" aria-label="Netflix" aria-selected="false"><div class="app-tile text-app-tile"><span class="app-name">Netflix</span></div></button>
       <button class="carousel-item" data-app-id="prime" role="listitem" aria-label="Prime Video" aria-selected="false"><div class="app-tile text-app-tile"><span class="app-name">Prime Video</span></div></button>
+      <button class="carousel-item" data-app-id="tv" role="listitem" aria-label="TV" aria-selected="false"><div class="app-tile input-app-tile"><span class="input-icon" data-lucide="Tv" aria-hidden="true"></span><span class="app-name">TV</span></div></button>
+      <button class="carousel-item" data-app-id="hdmi1" role="listitem" aria-label="HDMI 1" aria-selected="false"><div class="app-tile input-app-tile"><span class="input-icon" data-lucide="Monitor" aria-hidden="true"></span><span class="app-name">HDMI 1</span></div></button>
+      <button class="carousel-item" data-app-id="hdmi2" role="listitem" aria-label="HDMI 2" aria-selected="false"><div class="app-tile input-app-tile"><span class="input-icon" data-lucide="Monitor" aria-hidden="true"></span><span class="app-name">HDMI 2</span></div></button>
       <button class="carousel-item" data-app-id="all-apps" role="listitem" aria-label="All Apps" aria-selected="false"><div class="app-tile text-app-tile"><span class="app-name">Apps</span></div></button>
     </div>
     <section id="library" class="launcher-library" aria-label="Installed application shortcuts"><div class="launcher-library-heading"><div><h3 id="library-title">Your apps</h3><span id="app-count"></span></div><button id="edit-apps-home" class="shadcn-button" aria-label="Edit apps"><span data-lucide="pencil" aria-hidden="true"></span><span>Edit apps</span></button></div><p id="launch-feedback" class="shadcn-card" role="status" hidden></p><p id="edit-hint" class="text-muted-foreground" hidden>Select an app to add or remove its Home shortcut. Your apps stay installed.</p><p id="catalog-mode" class="text-muted-foreground" aria-live="polite"></p><button id="refresh" class="shadcn-button" type="button">Refresh apps</button><div id="apps" class="launcher-app-grid" aria-label="Installed applications"></div><p id="empty" class="text-muted-foreground" hidden></p></section>
     </section>
     <section id="continue-section" class="content-section" aria-labelledby="continue-title"><h2 id="continue-title" class="section-title">Continue watching</h2><div class="carousel" id="continue-carousel" role="list" aria-label="Continue watching">
-      <button class="carousel-item continue-card" data-content-id="last-of-us" role="listitem" aria-label="The Last of Us - Continue S1 E3"><div class="card-bg" data-photo="city"></div><div class="card-overlay"></div><div class="card-content"><h3 class="content-title">The Last of Us</h3><p class="content-meta">Sample artwork · not playable</p><div class="progress-bar"><div class="progress-fill progress-35"></div></div></div></button>
-      <button class="carousel-item continue-card" data-content-id="dune" role="listitem" aria-label="Dune - Continue 1h 42m"><div class="card-bg" data-photo="desert"></div><div class="card-overlay"></div><div class="card-content"><h3 class="content-title">Dune</h3><p class="content-meta">Sample artwork · not playable</p><div class="progress-bar"><div class="progress-fill progress-65"></div></div></div></button>
-      <button class="carousel-item continue-card" data-content-id="ted-lasso" role="listitem" aria-label="Ted Lasso - Continue S3 E6"><div class="card-bg" data-photo="architecture"></div><div class="card-overlay"></div><div class="card-content"><h3 class="content-title">Ted Lasso</h3><p class="content-meta">Sample artwork · not playable</p><div class="progress-bar"><div class="progress-fill progress-45"></div></div></div></button>
-      <button class="carousel-item continue-card" data-content-id="our-planet" role="listitem" aria-label="Our Planet - Continue S1 E4"><div class="card-bg" data-photo="forest"></div><div class="card-overlay"></div><div class="card-content"><h3 class="content-title">Our Planet</h3><p class="content-meta">Sample artwork · not playable</p><div class="progress-bar"><div class="progress-fill progress-25"></div></div></div></button>
+      <!-- Populated dynamically by ContinueWatching component -->
     </div></section>
     <section id="recent-home-section" class="content-section" aria-labelledby="recent-home-title" hidden><h2 id="recent-home-title" class="section-title">Recently launched</h2><div id="recent-home-apps" class="carousel" role="list" aria-label="Recently launched apps"></div></section>
     <section id="trending-section" class="content-section" aria-labelledby="trending-title"><h2 id="trending-title" class="section-title">Trending</h2><div class="carousel" id="trending-carousel" role="list" aria-label="Trending now">

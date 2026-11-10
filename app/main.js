@@ -28,6 +28,10 @@
   var launching = false, previewBlocked = false, previewNeedsShow = true, windowBusy = false, windowVisible = false;
   var returnFocus = null, exitFocus = null, pageFocus = Object.create(null), log = [];
 
+  // New dynamic wallpaper and content components
+  var continueWatchingComponent = null;
+  var dynamicWallpaperComponent = null;
+
   function report(message, error) {
     var suffix = error ? ' [' + (error.name || 'Error') + ': ' + (error.message || 'No details') + ']' : '';
     if ($('status')) { $('status').textContent = message + suffix; }
@@ -126,6 +130,12 @@
     var supported = ['home', 'search', 'apps', 'games', 'recent', 'movies', 'media', 'inputs', 'settings'];
     if (supported.indexOf(page) < 0) { page = 'home'; }
     var pageChanged = currentPage !== page;
+
+    // Cleanup home components if leaving home page
+    if (pageChanged && currentPage === 'home') {
+      cleanupHomeComponents();
+    }
+
     if (pageChanged && document.activeElement && document.activeElement !== document.body) { pageFocus[currentPage] = document.activeElement; }
     currentPage = page;
     updatePreviewPresentation();
@@ -280,6 +290,35 @@
     if ($('app-count')) { $('app-count').textContent = visible.length + (editingApps ? ' available' : ' on Home'); }
     if ($('edit-hint')) { $('edit-hint').hidden = !editingApps; }
     if ($('empty')) { $('empty').hidden = visible.length > 0; if (!visible.length) { $('empty').textContent = 'No apps'; } }
+
+    // Initialize Continue Watching component if not already done
+    if (!continueWatchingComponent && window.ContinueWatching && prefs.showContinue) {
+      var continueContainer = $('continue-section');
+      if (continueContainer) {
+        continueWatchingComponent = window.ContinueWatching.createContinueWatching({
+          container: continueContainer.querySelector('.carousel') || continueContainer,
+          onContentSelect: function(content) {
+            // Handle content selection - could launch the app
+            if (window.AudioController) { window.AudioController.play('select'); }
+            report('Selected: ' + content.title);
+          }
+        });
+      }
+    }
+
+    // Initialize Dynamic Wallpaper component if not already done
+    if (!dynamicWallpaperComponent && window.DynamicWallpaper) {
+      var wallpaperEl = $('wallpaper');
+      if (wallpaperEl) {
+        dynamicWallpaperComponent = window.DynamicWallpaper.createDynamicWallpaper({
+          wallpaperElement: wallpaperEl,
+          defaultBackdrop: 'assets/photos/twilight-mountains.jpg',
+          onWallpaperChange: function(src, source, id) {
+            // Wallpaper changed - could log or trigger other effects
+          }
+        });
+      }
+    }
   }
   function filterApps(apps, query) {
     var term = (query || '').trim().toLowerCase();
@@ -321,6 +360,15 @@
     });
     return count;
   }
+  function getInputIcon(type) {
+    var upper = String(type || '').toUpperCase();
+    if (upper === 'TV') { return 'Tv'; }
+    if (upper === 'HDMI') { return 'Monitor'; }
+    if (upper === 'AV') { return 'AudioLines'; }
+    if (upper === 'CASTING' || upper === 'CAST') { return 'Cast'; }
+    if (upper === 'USB') { return 'Usb'; }
+    return 'Tv';
+  }
   function renderInputs() {
     var grid = $('inputs-grid'); if (!grid) { return; }
     grid.textContent = '';
@@ -328,13 +376,24 @@
       grid.textContent = '';
       (sources || []).forEach(function (source) {
         if (!source || typeof source.type !== 'string') { return; }
-        var isTv = source.type.toUpperCase() === 'TV', name = source.name || source.type + (source.number ? ' ' + source.number : '');
-        var button = document.createElement('button'), icon = document.createElement('span'), label = document.createElement('span');
-        button.type = 'button'; button.className = 'input-tile'; button.setAttribute('role', 'listitem'); button.setAttribute('aria-label', 'Switch to ' + name);
-        icon.className = 'input-icon'; icon.setAttribute('data-lucide', isTv ? 'tv' : 'plug-zap'); icon.setAttribute('aria-hidden', 'true');
-        label.className = 'input-name'; label.textContent = name;
-        button.appendChild(icon); button.appendChild(label);
-        button.addEventListener('click', function () { TizenService.setSource(source, function () { report('Input changed.'); }, function (error) { report('Could not change input.', error); }); });
+        var name = source.name || source.type + (source.number ? ' ' + source.number : '');
+        var button = document.createElement('button');
+        var icon = document.createElement('span');
+        var label = document.createElement('span');
+        button.type = 'button';
+        button.className = 'input-tile';
+        button.setAttribute('role', 'listitem');
+        button.setAttribute('aria-label', 'Switch to ' + name);
+        icon.className = 'input-icon';
+        icon.setAttribute('data-lucide', getInputIcon(source.type));
+        icon.setAttribute('aria-hidden', 'true');
+        label.className = 'input-name';
+        label.textContent = name;
+        button.appendChild(icon);
+        button.appendChild(label);
+        button.addEventListener('click', function () {
+          TizenService.setSource(source, function () { report('Input changed.'); }, function (error) { report('Could not change input.', error); });
+        });
         grid.appendChild(button);
       });
       initIcons(grid);
@@ -422,6 +481,18 @@
       prefs.recentApps.slice(0, 6).forEach(function (id) { var app = allApps.filter(function (entry) { return entry.id === id; })[0]; if (app) { recent.appendChild(createAppButton(app, false, 'app app-grid-item')); } });
     }
     renderHome();
+  }
+
+  // Cleanup components when leaving home page
+  function cleanupHomeComponents() {
+    if (continueWatchingComponent) {
+      continueWatchingComponent.destroy();
+      continueWatchingComponent = null;
+    }
+    if (dynamicWallpaperComponent) {
+      dynamicWallpaperComponent.destroy();
+      dynamicWallpaperComponent = null;
+    }
   }
   function handleSettingControl(control) {
     var key = control.getAttribute('data-pref'); if (!key || !Object.prototype.hasOwnProperty.call(defaults, key)) { return; }
@@ -731,6 +802,7 @@
     button.addEventListener('click', function () {
       var id = button.getAttribute('data-app-id');
       if (id === 'all-apps') { showPage('apps'); }
+      else if (id === 'tv') { TizenService.getSources(function (sources) { var source = sources.filter(function (item) { return item.type === 'TV'; })[0]; if (source) { TizenService.setSource(source, function () { report('Switched to TV'); }, function (error) { report('Could not switch input.', error); }); } else { report('TV input not available.'); } }); }
       else if (id === 'hdmi1' || id === 'hdmi2') { var n = id === 'hdmi1' ? 1 : 2; TizenService.getSources(function (sources) { var source = sources.filter(function (item) { return item.type === 'HDMI' && item.number === n; })[0]; if (source) { TizenService.setSource(source, function () { report('Switched to HDMI ' + n); }, function (error) { report('Could not switch input.', error); }); } }); }
       else { var app = allApps.filter(function (item) { return item.id === id || (id === 'prime' && /prime/i.test(item.name || '')); })[0]; if (app) { launch(app.id, app.name || app.id); } else { report('This shortcut has no matching installed app on this TV.'); } }
     });

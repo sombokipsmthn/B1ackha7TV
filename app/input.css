@@ -236,8 +236,12 @@
   .app:focus-visible, .app-grid-item:focus-visible { transform: scale(1.025); }
   .carousel-item.active { @apply border-border; }
   .app-tile { @apply flex h-full w-full flex-col items-center justify-center gap-3 border p-4; background: var(--glass-bg-subtle); border-radius: var(--glass-radius-sm); }
+  .input-app-tile { @apply flex h-full w-full flex-col items-center justify-center gap-2 border p-3; background: var(--glass-bg-subtle); border-radius: var(--glass-radius-sm); }
   .app-icon { @apply h-12 w-12 text-foreground; }
   .app-tile .app-name { @apply text-2xl font-medium tracking-wide; }
+  .input-app-tile .input-icon { @apply flex items-center justify-center; width: 28px; height: 28px; }
+  .input-app-tile .input-icon svg { width: 24px; height: 24px; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .input-app-tile .app-name { @apply text-sm font-medium; }
   .text-app-tile { @apply border-transparent; }
   .continue-card, .trending-card { @apply h-52 max-w-[32vw] p-0; width: 24rem; }
   .card-bg { @apply absolute inset-0 overflow-hidden bg-muted; }
@@ -250,7 +254,69 @@
   .content-meta { @apply mb-2 mt-1 text-sm text-muted-foreground; }
   .progress-bar { @apply h-1.5 overflow-hidden rounded-full bg-muted; }
   .progress-fill { @apply h-full rounded-full bg-primary; }
-  .progress-25 { width: 25%; } .progress-35 { width: 35%; } .progress-45 { width: 45%; } .progress-65 { width: 65%; }
+  .progress-10 { width: 10%; } .progress-25 { width: 25%; } .progress-35 { width: 35%; } .progress-45 { width: 45%; } .progress-50 { width: 50%; } .progress-65 { width: 65%; } .progress-75 { width: 75%; } .progress-90 { width: 90%; }
+
+  /* Continue Watching Card Styles */
+  .continue-card {
+    @apply h-52 max-w-[32vw] p-0;
+    width: 24rem;
+  }
+  .continue-card .card-header {
+    @apply flex items-center gap-3 mb-2;
+  }
+  .continue-card .provider-logo {
+    @apply h-7 w-auto opacity-80;
+  }
+  .continue-card .continue-badge {
+    @apply inline-block mt-2 px-2 py-0.5 text-xs font-medium text-primary bg-primary/15 rounded-full;
+  }
+  .continue-card .remaining-time {
+    @apply block mt-1 text-xs text-muted-foreground;
+  }
+  .continue-card.focused {
+    @apply border-primary;
+    transform: scale(1.035);
+  }
+
+  /* Content Card Variants */
+  .portrait-card {
+    @apply h-64 w-40;
+  }
+  .landscape-card {
+    @apply h-52 w-[24rem];
+  }
+  .square-card {
+    @apply h-48 w-48;
+  }
+
+  .card-header {
+    @apply flex items-center gap-3 mb-2;
+  }
+  .provider-logo {
+    @apply h-6 w-auto opacity-80;
+  }
+  .card-badges {
+    @apply flex flex-wrap gap-1.5 mt-3;
+  }
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full;
+    background: var(--glass-bg-strong);
+    color: var(--glass-text-secondary);
+    border: 1px solid var(--glass-border-subtle);
+  }
+  .demo-badge {
+    @apply text-amber-400 border-amber-400/30 bg-amber-400/10;
+  }
+  .episode-badge {
+    @apply text-primary bg-primary/15 border-primary/30;
+  }
+
+  /* Wallpaper Transition Styles */
+  #wallpaper.wallpaper-transitioning {
+    @apply transition-[background-image];
+    transition-duration: 800ms;
+    transition-timing-function: ease-in-out;
+  }
 
   .apps-grid, .games-grid, .search-grid { @apply grid grid-cols-[repeat(auto-fill,minmax(var(--tile-width),1fr))] gap-5; }
   .app, .app-grid-item { @apply shadcn-card flex min-h-40 min-w-0 flex-col items-center justify-center gap-3 p-5 text-center transition-colors; }
@@ -290,12 +356,13 @@
   .key-wide { @apply min-w-32; }
   .recent-list { @apply flex flex-col gap-4; }
   .recent-card { @apply shadcn-card flex min-h-24 w-full flex-row items-center justify-start gap-5 p-5 text-left; }
-  .inputs-grid { @apply grid grid-cols-[repeat(auto-fill,minmax(16rem,1fr))] gap-5; }
-  .input-tile { @apply shadcn-card flex min-h-48 flex-col items-center justify-center gap-4 p-6 text-center; }
-  .input-tile:focus-visible { border-color: var(--glass-border-strong); background: var(--accent); transform: scale(1.025); }
-  .input-icon { @apply flex h-20 w-20 items-center justify-center rounded-md bg-secondary text-secondary-foreground; }
-  .input-icon svg { width: 2.5rem; height: 2.5rem; }
-  .input-name { @apply text-xl font-medium; }
+  .inputs-grid { @apply grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-4; }
+  .input-tile { @apply shadcn-card flex flex-col items-center justify-center gap-2 p-4 text-center; min-height: 84px; }
+  .input-tile:focus-visible { border-color: var(--glass-border-strong); background: var(--glass-bg); transform: none; box-shadow: 0 0 0 2px var(--glass-border-strong); }
+  .input-tile.active { border-color: var(--glass-border-strong); background: var(--glass-bg); }
+  .input-icon { @apply flex items-center justify-center; width: 28px; height: 28px; }
+  .input-icon svg { width: 24px; height: 24px; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .input-name { @apply text-sm font-medium; }
   .input-status, .settings-status-pill { @apply border px-3 py-2 text-sm text-muted-foreground; background: var(--glass-bg-subtle); border-color: var(--glass-border-subtle); border-radius: var(--glass-radius-sm); }
   .xbox-feature { @apply flex items-center gap-6 border p-6; background: var(--glass-bg); border-color: var(--glass-border); border-radius: var(--glass-radius-md); box-shadow: var(--glass-shadow-subtle); }
   .xbox-artwork { @apply h-16 w-28 rounded-md bg-secondary; }

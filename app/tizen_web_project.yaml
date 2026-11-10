@@ -57,6 +57,16 @@ files:
   - assets/photos/studio-music.jpg
   - assets/photos/twilight-mountains.jpg
   - assets/photos/video-camera.jpg
+  - data/mock-content.js
+  - services/content-artwork-service.js
+  - services/dynamic-wallpaper-service.js
+  - services/viewing-activity-service.js
+  - services/content-metadata-service.js
+  - components/continue-watching/ContinueWatchingCard.js
+  - components/continue-watching/ContinueWatching.js
+  - components/dynamic-wallpaper/WallpaperTransition.js
+  - components/dynamic-wallpaper/DynamicWallpaper.js
+  - components/content/ContentCard.js
 
 # list of files to exclude based on the matched patterns
 excludes:

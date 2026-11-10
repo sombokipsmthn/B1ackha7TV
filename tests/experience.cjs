@@ -71,7 +71,7 @@ const { pathToFileURL } = require('node:url');
     assert.notEqual(await page.locator('.search-bar').evaluate((el) => getComputedStyle(el).boxShadow), 'none');
     await page.locator('.sidebar-item[data-section="inputs"]').click();
     await page.waitForFunction(() => document.querySelectorAll('#inputs-grid .input-tile').length === 2);
-    assert.deepEqual(await page.locator('#inputs-grid .input-tile .input-icon').evaluateAll((els) => els.map((el) => el.getAttribute('data-lucide'))), ['tv', 'plug-zap']);
+    assert.deepEqual(await page.locator('#inputs-grid .input-tile .input-icon').evaluateAll((els) => els.map((el) => el.getAttribute('data-lucide'))), ['Tv', 'Monitor']);
     await page.locator('#inputs-grid .input-tile').nth(1).click();
     assert.deepEqual(await page.evaluate(() => window.__lastSource), { type: 'HDMI', number: 1, name: 'HDMI 1' }, 'input switching must pass the TV-reported source object');
     await page.locator('.sidebar-item[data-section="settings"]').click();
