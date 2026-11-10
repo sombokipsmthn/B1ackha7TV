@@ -327,6 +327,17 @@
     },
 
     /**
+     * Register multiple hardware keys safely
+     */
+    registerKeys: function (keyNames) {
+      if (!IS_TV || !TV.tvinputdevice) { return; }
+      if (!Array.isArray(keyNames)) { keyNames = [keyNames]; }
+      keyNames.forEach(function (name) {
+        try { TV.tvinputdevice.registerKey(name); } catch (e) {}
+      });
+    },
+
+    /**
      * Get TV window rect (optional diagnostic)
      */
     getTVWindowRect: function (callback, errorCallback, unit, windowType) {

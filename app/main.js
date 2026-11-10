@@ -121,6 +121,31 @@
       if (active) { button.setAttribute('aria-current', 'page'); } else { button.removeAttribute('aria-current'); }
     });
   }
+  function getPrimaryControl(page) {
+    if (page === 'settings') {
+      return document.querySelector('.settings-category.active') || document.querySelector('.settings-category');
+    }
+    if (page === 'search') {
+      return $('search-input');
+    }
+    if (page === 'home') {
+      return $('apps-carousel') ? ($('apps-carousel').querySelector('.carousel-item.active') || $('apps-carousel').querySelector('.carousel-item')) : null;
+    }
+    if (page === 'apps') {
+      return ($('apps-grid') && $('apps-grid').querySelector('.app:not(:disabled)')) || $('apps-refresh');
+    }
+    if (page === 'games') {
+      return $('launch-xbox') || ($('games-grid') && $('games-grid').querySelector('.app:not(:disabled)'));
+    }
+    if (page === 'recent') {
+      return ($('recent-list') && $('recent-list').querySelector('.app:not(:disabled)')) || $('clear-recent');
+    }
+    if (page === 'inputs') {
+      return $('inputs-grid') && $('inputs-grid').querySelector('.input-tile:not(:disabled)');
+    }
+    var pageRoot = $('page-' + page);
+    return pageRoot ? pageRoot.querySelector('button:not(:disabled),input:not(:disabled),select:not(:disabled),[tabindex="0"]') : null;
+  }
   function showPage(page) {
     var supported = ['home', 'search', 'apps', 'games', 'recent', 'inputs', 'settings'];
     if (supported.indexOf(page) < 0) { page = 'home'; }
@@ -140,22 +165,36 @@
     });
     if ($('page-settings')) { $('page-settings').hidden = page !== 'settings'; }
     setActiveNavigation(page);
-    if (page === 'settings') { selectSettingsPanel(currentPanel); var firstCategory = document.querySelector('.settings-category.active'); if (firstCategory && pageChanged) { firstCategory.focus(); } }
-    {
-      var pageRoot = $('page-' + page);
-      if (pageRoot && pageChanged && page !== 'home' && page !== 'search') { var first = pageRoot.querySelector('button,input,select,[tabindex="0"]'); if (first) { first.focus(); } }
-      else if (pageChanged && page !== 'home' && page !== 'search') { var navButton = document.querySelector('.sidebar-item[data-section="' + page + '"]'); if (navButton) { navButton.focus(); } }
-      if (page === 'apps') { renderAppsPage(); }
-      else if (page === 'games') { renderGames(); }
-      else if (page === 'recent') { renderRecent(); }
-      else if (page === 'inputs') { renderInputs(); }
-      else if (page === 'home') { renderHome(); }
-      else if (page === 'search') { updateSearch(); }
+    if (page === 'settings') { selectSettingsPanel(currentPanel); }
+    else if (page === 'apps') { renderAppsPage(); }
+    else if (page === 'games') { renderGames(); }
+    else if (page === 'recent') { renderRecent(); }
+    else if (page === 'inputs') { renderInputs(); }
+    else if (page === 'home') { renderHome(); applyHomePreferences(); }
+    else if (page === 'search') { updateSearch(); }
+
+    var needsInitialFocus = !document.activeElement || document.activeElement === document.body;
+    if (page === 'settings') {
+      var firstCategory = document.querySelector('.settings-category.active');
+      if (firstCategory && (pageChanged || needsInitialFocus)) { firstCategory.focus(); }
+    } else if (page === 'search') {
+      if ($('search-input')) { $('search-input').focus(); }
+    } else if (pageChanged && page === 'home' && returnFocus && returnFocus.focus) {
+      var restore = returnFocus;
+      returnFocus = null;
+      if (restore.getClientRects().length && restore.isConnected) { restore.focus(); }
+      else { var primary = getPrimaryControl(page); if (primary) { primary.focus(); } }
+    } else if (pageFocus[page] && pageFocus[page].isConnected && pageFocus[page].getClientRects().length && !pageFocus[page].disabled) {
+      if (pageChanged || needsInitialFocus) { pageFocus[page].focus(); }
+    } else if (pageFocus[page] && pageFocus[page].getAttribute && pageFocus[page].getAttribute('data-app-id')) {
+      var appId = pageFocus[page].getAttribute('data-app-id');
+      var matchingApp = $('page-' + page) && $('page-' + page).querySelector('[data-app-id="' + appId + '"]:not(:disabled)');
+      if (matchingApp && (pageChanged || needsInitialFocus)) { matchingApp.focus(); }
+      else if (pageChanged || needsInitialFocus) { var primary = getPrimaryControl(page); if (primary) { primary.focus(); } }
+    } else if (pageChanged || needsInitialFocus) {
+      var primary = getPrimaryControl(page);
+      if (primary) { primary.focus(); }
     }
-    if (page === 'search' && $('search-input')) { $('search-input').focus(); }
-    if (page === 'home') { applyHomePreferences(); }
-    if (pageChanged && page !== 'search' && pageFocus[page] && pageFocus[page].isConnected && pageFocus[page].getClientRects().length) { pageFocus[page].focus(); }
-    if (pageChanged && page === 'home' && returnFocus && returnFocus.focus) { var restore = returnFocus; returnFocus = null; if (restore.getClientRects().length) { restore.focus(); } }
   }
   function selectSettingsPanel(name) {
     currentPanel = name;
@@ -690,53 +729,399 @@
     try { TizenService.hidePreview(function () {}, function () {}); } catch (ignore) {}
     try { TizenService.exitApp(); } catch (error) { launching = false; exitDialog(false); report('Could not close the app.', error); syncPreview(); }
   }
+  function isInteractive(el) {
+    if (!el || !el.isConnected || el.disabled) { return false; }
+    if (el.hidden || getComputedStyle(el).visibility === 'hidden' || el.getClientRects().length === 0) { return false; }
+    return true;
+  }
+  function findClosestX(fromEl, candidates) {
+    if (!candidates || !candidates.length) { return null; }
+    var a = fromEl.getBoundingClientRect(), ax = a.left + a.width / 2;
+    var best = null, bestDist = Infinity;
+    candidates.forEach(function (cand) {
+      if (!cand || cand === fromEl || !isInteractive(cand)) { return; }
+      var r = cand.getBoundingClientRect(), cx = r.left + r.width / 2;
+      var dist = Math.abs(cx - ax);
+      if (dist < bestDist) { bestDist = dist; best = cand; }
+    });
+    return best;
+  }
   function visibleControls() {
     var root = !$('exit-dialog').hidden ? $('exit-dialog') : (!$('settings-confirm').hidden ? $('settings-confirm') : $('page-' + currentPage));
     if (!root) { return []; }
-    return Array.prototype.filter.call(root.querySelectorAll('button,input,select,summary'), function (element) {
+    return Array.prototype.filter.call(root.querySelectorAll('button,input,select,summary,[tabindex="0"]'), function (element) {
       return !element.disabled && element.getClientRects().length > 0 && getComputedStyle(element).visibility !== 'hidden';
     });
   }
-  function moveFocus(code) {
-    if (!$('exit-dialog').hidden) { ($('exit-confirm') === document.activeElement ? $('exit-cancel') : $('exit-confirm')).focus(); return; }
-    if (document.activeElement.classList && document.activeElement.classList.contains('sidebar-item')) {
-      var destinations = Array.prototype.slice.call($$('.sidebar-item')), destinationIndex = destinations.indexOf(document.activeElement);
-      if (code === 38 || code === 40) { var destination = destinations[Math.max(0, Math.min(destinations.length - 1, destinationIndex + (code === 38 ? -1 : 1)))]; if (destination) { destination.focus(); } return; }
-      if (code === 39) { var pageControl = visibleControls()[0]; if (pageControl) { pageControl.focus(); } return; }
+  function normalizeKeyEvent(event) {
+    var code = event.keyCode || event.which || 0;
+    var key = event.key || '';
+    if (code === 10009 || code === 27 || key === 'XF86Back' || key === 'Escape' || key === 'Back' || key === 'GoBack' || (code === 10009 && key === 'Return')) {
+      return 'back';
     }
-    if (currentPage === 'search' && document.activeElement === $('search-input') && (code === 38 || code === 40)) {
-      if (code === 40) { var firstSuggestion = $('search-results').querySelector('button:not([hidden])'); if (firstSuggestion) { firstSuggestion.focus(); firstSuggestion.scrollIntoView({ block: 'nearest' }); } }
+    var active = document.activeElement;
+    var isTextInput = active && (active.tagName === 'INPUT' && ['text', 'search', 'url', 'email', 'number'].indexOf(active.type) >= 0 || active.tagName === 'TEXTAREA');
+    if (!isTextInput && (code === 8 || key === 'Backspace')) {
+      return 'back';
+    }
+    if (code === 38 || key === 'ArrowUp' || key === 'Up') { return 'up'; }
+    if (code === 40 || key === 'ArrowDown' || key === 'Down') { return 'down'; }
+    if (code === 37 || key === 'ArrowLeft' || key === 'Left') { return 'left'; }
+    if (code === 39 || key === 'ArrowRight' || key === 'Right') { return 'right'; }
+    if (code === 13 || code === 65379 || key === 'Enter' || key === 'Select' || key === 'Accept' || key === 'Ok') {
+      return 'enter';
+    }
+    if (code === 406 || key === 'ColorF3Blue') {
+      return 'settings';
+    }
+    if (code === 9 || key === 'Tab') {
+      return 'tab';
+    }
+    return null;
+  }
+  function moveFocus(dirOrCode) {
+    var dir = typeof dirOrCode === 'string' ? dirOrCode : (dirOrCode === 37 ? 'left' : dirOrCode === 38 ? 'up' : dirOrCode === 39 ? 'right' : 'down');
+
+    if (!$('exit-dialog').hidden) {
+      ($('exit-confirm') === document.activeElement ? $('exit-cancel') : $('exit-confirm')).focus();
       return;
     }
-    var controls = visibleControls(), active = document.activeElement;
-    if (currentPage === 'settings' && active.classList && active.classList.contains('settings-category') && (code === 38 || code === 40)) { var settingsCategories = Array.prototype.slice.call($$('.settings-category')), settingsIndex = settingsCategories.indexOf(active), settingsNext = settingsCategories[Math.max(0, Math.min(settingsCategories.length - 1, settingsIndex + (code === 38 ? -1 : 1)))]; if (settingsNext) { settingsNext.focus(); } return; }
-    if (controls.indexOf(active) < 0) { if (controls[0]) { controls[0].focus(); } return; }
-    if (currentPage === 'search' && active.closest && active.closest('.search-chip')) {
-      var section = active.closest('.search-section'), chips = Array.prototype.filter.call(section.querySelectorAll('.search-chip'), function (item) { return item.getClientRects().length > 0; }), chipIndex = chips.indexOf(active);
-      if (code === 37 && chipIndex === 0) { var searchNav = document.querySelector('.sidebar-item[data-section="search"]'); if (searchNav) { searchNav.focus(); } return; }
-      if (code === 37 || code === 39) { var chipNext = chips[chipIndex + (code === 37 ? -1 : 1)]; if (chipNext) { chipNext.focus(); } return; }
-      var allSections = Array.prototype.filter.call($$('.search-section'), function (item) { return !item.hidden && item.querySelector('.search-chip, .search-grid button'); }), sectionIndex = allSections.indexOf(section), nextSection = allSections[sectionIndex + (code === 38 ? -1 : 1)];
-      if (nextSection) { var nextTarget = nextSection.querySelector('.search-chip, .search-grid button'); if (nextTarget) { nextTarget.focus(); } }
-      else if (code === 38 && sectionIndex === 0) { $('search-input').focus(); }
+    if (!$('settings-confirm').hidden) {
+      ($('settings-reset-confirm') === document.activeElement ? $('settings-reset-cancel') : $('settings-reset-confirm')).focus();
       return;
     }
-    if (currentPage === 'search' && active.matches && active.matches('#search-apps button')) {
-      if (code === 38) { $('search-input').focus(); return; }
-      if (code === 40) { var nextSearchSection = $('search-quick-section').hidden ? $('search-titles-section') : $('search-quick-section'), nextSearchTarget = nextSearchSection && nextSearchSection.querySelector('.search-chip'); if (nextSearchTarget) { nextSearchTarget.focus(); return; } }
+
+    if (!document.activeElement || document.activeElement === document.body || !isInteractive(document.activeElement)) {
+      var fallback = getPrimaryControl(currentPage) || visibleControls()[0];
+      if (fallback) { fallback.focus(); fallback.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+      return;
     }
-    if (code === 37 && controls[0] === active && currentPage !== 'search') {
-      var activeNav = document.querySelector('.sidebar-item[data-section="' + currentPage + '"]'); if (activeNav) { activeNav.focus(); return; }
+
+    var active = document.activeElement;
+
+    if (active.classList && active.classList.contains('sidebar-item')) {
+      var destinations = Array.prototype.slice.call($$('.sidebar-item'));
+      var destinationIndex = destinations.indexOf(active);
+      if (dir === 'up' || dir === 'down') {
+        var nextDest = destinations[Math.max(0, Math.min(destinations.length - 1, destinationIndex + (dir === 'up' ? -1 : 1)))];
+        if (nextDest) { nextDest.focus(); }
+        return;
+      }
+      if (dir === 'right') {
+        if (currentPage === 'settings') {
+          var activeCategory = document.querySelector('.settings-category.active') || document.querySelector('.settings-category');
+          if (activeCategory) { activeCategory.focus(); return; }
+        }
+        if (pageFocus[currentPage] && isInteractive(pageFocus[currentPage])) {
+          pageFocus[currentPage].focus();
+          pageFocus[currentPage].scrollIntoView({ block: 'nearest', inline: 'nearest' });
+          return;
+        }
+        var pageControl = getPrimaryControl(currentPage) || visibleControls()[0];
+        if (pageControl) {
+          pageControl.focus();
+          pageControl.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        }
+        return;
+      }
+      if (dir === 'left') { return; }
     }
-    if (currentPage === 'settings' && active.closest && active.closest('.settings-panel')) { var panelControls = Array.prototype.filter.call(controls, function (element) { return element.closest('.settings-panel') === active.closest('.settings-panel'); }); var panelIndex = panelControls.indexOf(active); if (panelIndex >= 0 && (code === 38 || code === 40)) { var panelNext = panelControls[panelIndex + (code === 38 ? -1 : 1)]; if (panelNext) { panelNext.focus(); panelNext.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } return; } }
+
+    if (active === $('settings-open') || active === $('preview-retry') || active === $('preview-toggle') || active === $('preview-launcher') || active === $('preview-collapse')) {
+      if (dir === 'left') {
+        if (active === $('preview-toggle') && isInteractive($('preview-retry'))) { $('preview-retry').focus(); return; }
+        if (active === $('preview-retry') && isInteractive($('settings-open'))) { $('settings-open').focus(); return; }
+        var sidebarTarget = document.querySelector('.sidebar-item[data-section="' + currentPage + '"]');
+        if (sidebarTarget) { sidebarTarget.focus(); return; }
+      }
+      if (dir === 'right') {
+        if (active === $('settings-open')) {
+          if (isInteractive($('preview-retry'))) { $('preview-retry').focus(); return; }
+          if (isInteractive($('preview-toggle'))) { $('preview-toggle').focus(); return; }
+        }
+        if (active === $('preview-retry') && isInteractive($('preview-toggle'))) { $('preview-toggle').focus(); return; }
+      }
+      if (dir === 'down') {
+        var firstContent = getPrimaryControl(currentPage) || visibleControls()[0];
+        if (firstContent) { firstContent.focus(); firstContent.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+      }
+      return;
+    }
+
+    if (currentPage === 'search') {
+      if (active === $('search-input')) {
+        if (dir === 'down') {
+          var firstSuggestion = $('search-results').querySelector('button:not([hidden]):not(:disabled)');
+          if (firstSuggestion) { firstSuggestion.focus(); firstSuggestion.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+        }
+        if (dir === 'left') {
+          var searchNav = document.querySelector('.sidebar-item[data-section="search"]');
+          if (searchNav) { searchNav.focus(); return; }
+        }
+        if (dir === 'right') {
+          if ($('search-clear') && !$('search-clear').hidden) { $('search-clear').focus(); return; }
+        }
+        return;
+      }
+      if (active === $('search-clear')) {
+        if (dir === 'left') { $('search-input').focus(); return; }
+        if (dir === 'down') {
+          var firstSuggestion = $('search-results').querySelector('button:not([hidden]):not(:disabled)');
+          if (firstSuggestion) { firstSuggestion.focus(); firstSuggestion.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+        }
+        return;
+      }
+      if (active.closest && active.closest('.search-chip')) {
+        var section = active.closest('.search-section');
+        var chips = Array.prototype.filter.call(section.querySelectorAll('.search-chip'), isInteractive);
+        var chipIndex = chips.indexOf(active);
+        if (dir === 'left') {
+          if (chipIndex === 0) {
+            var searchNav = document.querySelector('.sidebar-item[data-section="search"]');
+            if (searchNav) { searchNav.focus(); return; }
+          }
+          if (chipIndex > 0) { chips[chipIndex - 1].focus(); chips[chipIndex - 1].scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+        }
+        if (dir === 'right') {
+          if (chipIndex < chips.length - 1) { chips[chipIndex + 1].focus(); chips[chipIndex + 1].scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+        }
+        var allSections = Array.prototype.filter.call($$('.search-section'), function (item) { return !item.hidden && item.querySelector('.search-chip, .search-grid button'); });
+        var sectionIndex = allSections.indexOf(section);
+        if (dir === 'up') {
+          if (sectionIndex === 0) {
+            var appTarget = $('search-apps').querySelector('button:not(:disabled)') || $('search-input');
+            if (appTarget) { appTarget.focus(); appTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+          } else if (allSections[sectionIndex - 1]) {
+            var prevTarget = allSections[sectionIndex - 1].querySelector('.search-chip, .search-grid button');
+            if (prevTarget) { prevTarget.focus(); prevTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+          }
+        }
+        if (dir === 'down') {
+          if (sectionIndex < allSections.length - 1 && allSections[sectionIndex + 1]) {
+            var nextTarget = allSections[sectionIndex + 1].querySelector('.search-chip, .search-grid button');
+            if (nextTarget) { nextTarget.focus(); nextTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+          } else if ($('search-keyboard') && !$('search-keyboard').hidden) {
+            var firstKey = $('search-keyboard').querySelector('.key');
+            if (firstKey) { firstKey.focus(); firstKey.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+          }
+        }
+        return;
+      }
+      if (active.matches && active.matches('#search-apps button')) {
+        if (dir === 'up') { $('search-input').focus(); return; }
+        if (dir === 'down') {
+          var nextSearchSection = $('search-quick-section').hidden ? $('search-titles-section') : $('search-quick-section');
+          var nextSearchTarget = nextSearchSection && nextSearchSection.querySelector('.search-chip');
+          if (nextSearchTarget) { nextSearchTarget.focus(); nextSearchTarget.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+        }
+        if (dir === 'left') {
+          var searchButtons = Array.prototype.slice.call($$('#search-apps button'));
+          if (searchButtons.indexOf(active) === 0 || active.getBoundingClientRect().left < searchButtons[0].getBoundingClientRect().left + 20) {
+            var searchNav = document.querySelector('.sidebar-item[data-section="search"]');
+            if (searchNav) { searchNav.focus(); return; }
+          }
+        }
+      }
+    }
+
+    if (currentPage === 'settings') {
+      if (active.classList && active.classList.contains('settings-category')) {
+        var categories = Array.prototype.slice.call($$('.settings-category'));
+        var catIndex = categories.indexOf(active);
+        if (dir === 'up' || dir === 'down') {
+          var nextCat = categories[Math.max(0, Math.min(categories.length - 1, catIndex + (dir === 'up' ? -1 : 1)))];
+          if (nextCat) { nextCat.focus(); }
+          return;
+        }
+        if (dir === 'left') {
+          var settingsNav = document.querySelector('.sidebar-item[data-section="settings"]');
+          if (settingsNav) { settingsNav.focus(); }
+          return;
+        }
+        if (dir === 'right') {
+          var panelEl = $('settings-panel-' + currentPanel);
+          var panelControl = panelEl && panelEl.querySelector('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]');
+          if (panelControl) { panelControl.focus(); panelControl.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+          return;
+        }
+      }
+
+      if (active.closest && active.closest('.settings-panel')) {
+        var currentPanelEl = $('settings-panel-' + currentPanel);
+
+        if (active.id === 'sound-volume') {
+          if (dir === 'left') {
+            prefs.soundVolume = Math.max(0, prefs.soundVolume - 5);
+            active.value = String(prefs.soundVolume);
+            active.dispatchEvent(new Event('input', { bubbles: true }));
+            active.dispatchEvent(new Event('change', { bubbles: true }));
+            return;
+          }
+          if (dir === 'right') {
+            prefs.soundVolume = Math.min(100, prefs.soundVolume + 5);
+            active.value = String(prefs.soundVolume);
+            active.dispatchEvent(new Event('input', { bubbles: true }));
+            active.dispatchEvent(new Event('change', { bubbles: true }));
+            return;
+          }
+        }
+
+        if (dir === 'left') {
+          var choices = Array.prototype.slice.call($$('.settings-wallpaper-choice', currentPanelEl));
+          var cIdx = choices.indexOf(active);
+          if (cIdx >= 0 && cIdx % 3 !== 0) {
+            choices[cIdx - 1].focus(); choices[cIdx - 1].scrollIntoView({ block: 'nearest', inline: 'nearest' }); return;
+          }
+          if (active.id === 'name-reset') { $('name-save').focus(); return; }
+          if (active.id === 'name-save') { $('launcher-name').focus(); return; }
+          if (active.id === 'background-apply') { $('background-path-enhanced').focus(); return; }
+          if (active.id === 'manage-visibility') { $('apps-refresh-settings').focus(); return; }
+
+          var activeCategory = document.querySelector('.settings-category.active');
+          if (activeCategory) { activeCategory.focus(); return; }
+        }
+
+        if (dir === 'right') {
+          var choices = Array.prototype.slice.call($$('.settings-wallpaper-choice', currentPanelEl));
+          var cIdx = choices.indexOf(active);
+          if (cIdx >= 0) {
+            if (cIdx % 3 !== 2 && cIdx + 1 < choices.length) {
+              choices[cIdx + 1].focus(); choices[cIdx + 1].scrollIntoView({ block: 'nearest', inline: 'nearest' }); return;
+            }
+            return;
+          }
+          if (active.id === 'launcher-name') { $('name-save').focus(); return; }
+          if (active.id === 'name-save') { $('name-reset').focus(); return; }
+          if (active.id === 'background-path-enhanced') { $('background-apply').focus(); return; }
+          if (active.id === 'apps-refresh-settings') { $('manage-visibility').focus(); return; }
+        }
+
+        var choices = Array.prototype.slice.call($$('.settings-wallpaper-choice', currentPanelEl));
+        var cIdx = choices.indexOf(active);
+        if (cIdx >= 0) {
+          if (dir === 'up') {
+            if (cIdx >= 3) {
+              choices[cIdx - 3].focus(); choices[cIdx - 3].scrollIntoView({ block: 'nearest', inline: 'nearest' }); return;
+            } else {
+              $('theme-select').focus(); $('theme-select').scrollIntoView({ block: 'nearest', inline: 'nearest' }); return;
+            }
+          }
+          if (dir === 'down') {
+            if (cIdx < 3 && cIdx + 3 < choices.length) {
+              choices[cIdx + 3].focus(); choices[cIdx + 3].scrollIntoView({ block: 'nearest', inline: 'nearest' }); return;
+            } else {
+              $('background-path-enhanced').focus(); $('background-path-enhanced').scrollIntoView({ block: 'nearest', inline: 'nearest' }); return;
+            }
+          }
+        }
+      }
+    }
+
+    var carousel = active.closest('.carousel, .games-carousel');
+    if (carousel) {
+      var items = Array.prototype.filter.call(carousel.querySelectorAll('.carousel-item, .app, .trending-card'), isInteractive);
+      var itemIndex = items.indexOf(active);
+      if (dir === 'left') {
+        if (itemIndex === 0) {
+          var activeNav = document.querySelector('.sidebar-item[data-section="' + currentPage + '"]');
+          if (activeNav) { activeNav.focus(); return; }
+        } else if (itemIndex > 0) {
+          items[itemIndex - 1].focus(); items[itemIndex - 1].scrollIntoView({ block: 'nearest', inline: 'nearest' }); return;
+        }
+      }
+      if (dir === 'right') {
+        if (itemIndex < items.length - 1) {
+          items[itemIndex + 1].focus(); items[itemIndex + 1].scrollIntoView({ block: 'nearest', inline: 'nearest' }); return;
+        }
+        return;
+      }
+      if (dir === 'up') {
+        if (carousel.id === 'apps-carousel' && isInteractive($('settings-open'))) {
+          $('settings-open').focus(); return;
+        }
+        if (carousel.id === 'trending-carousel') {
+          var libraryApps = Array.prototype.slice.call($$('#apps .app'));
+          var bestApp = findClosestX(active, libraryApps);
+          if (bestApp) { bestApp.focus(); bestApp.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+        }
+      }
+      if (dir === 'down') {
+        if (carousel.id === 'apps-carousel') {
+          var libraryApps = Array.prototype.slice.call($$('#apps .app'));
+          var bestApp = findClosestX(active, libraryApps);
+          if (bestApp) { bestApp.focus(); bestApp.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+          if (isInteractive($('edit-apps-home'))) { $('edit-apps-home').focus(); return; }
+        }
+      }
+    }
+
+    if (active.closest && active.closest('#apps')) {
+      var appsInGrid = Array.prototype.slice.call($$('#apps .app'));
+      if (dir === 'left') {
+        var isLeftEdge = !appsInGrid.some(function (el) { return el !== active && el.getBoundingClientRect().right < active.getBoundingClientRect().left - 10; });
+        if (isLeftEdge) {
+          var homeNav = document.querySelector('.sidebar-item[data-section="home"]');
+          if (homeNav) { homeNav.focus(); return; }
+        }
+      }
+      if (dir === 'up') {
+        var isTopRow = !appsInGrid.some(function (el) { return el !== active && el.getBoundingClientRect().bottom < active.getBoundingClientRect().top - 10; });
+        if (isTopRow) {
+          var carouselItems = Array.prototype.slice.call($$('#apps-carousel .carousel-item'));
+          var bestItem = findClosestX(active, carouselItems);
+          if (bestItem) { bestItem.focus(); bestItem.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+        }
+      }
+      if (dir === 'down') {
+        var isBottomRow = !appsInGrid.some(function (el) { return el !== active && el.getBoundingClientRect().top > active.getBoundingClientRect().bottom + 10; });
+        if (isBottomRow) {
+          var trendingCards = Array.prototype.slice.call($$('#trending-carousel .trending-card'));
+          var bestCard = findClosestX(active, trendingCards);
+          if (bestCard) { bestCard.focus(); bestCard.scrollIntoView({ block: 'nearest', inline: 'nearest' }); return; }
+        }
+      }
+    }
+
+    var controls = visibleControls();
+    if (controls.indexOf(active) < 0) {
+      if (controls[0]) { controls[0].focus(); controls[0].scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+      return;
+    }
+
+    if (dir === 'left') {
+      var hasControlLeft = controls.some(function (el) {
+        if (el === active) { return false; }
+        var r = el.getBoundingClientRect(), act = active.getBoundingClientRect();
+        return r.right < act.left - 5 && Math.abs((r.top + r.height / 2) - (act.top + act.height / 2)) < Math.max(r.height, act.height) * 2;
+      });
+      if (!hasControlLeft) {
+        var navButton = document.querySelector('.sidebar-item[data-section="' + currentPage + '"]');
+        if (navButton) { navButton.focus(); return; }
+      }
+    }
+
     var a = active.getBoundingClientRect(), x = a.left + a.width / 2, y = a.top + a.height / 2;
-    var horizontal = code === 37 || code === 39, sign = code === 37 || code === 38 ? -1 : 1, chosen = null, best = Infinity;
+    var horizontal = dir === 'left' || dir === 'right', sign = (dir === 'left' || dir === 'up') ? -1 : 1;
+    var chosen = null, best = Infinity;
+
     controls.forEach(function (element) {
-      if (element === active) { return; }
+      if (element === active || !isInteractive(element)) { return; }
       var r = element.getBoundingClientRect(), dx = r.left + r.width / 2 - x, dy = r.top + r.height / 2 - y;
-      var forward = (horizontal ? dx : dy) * sign, side = Math.abs(horizontal ? dy : dx);
-      if (forward > 2 && forward + side * 4 < best) { chosen = element; best = forward + side * 4; }
+      var forward = (horizontal ? dx : dy) * sign;
+      var side = Math.abs(horizontal ? dy : dx);
+      if (forward < 2) { return; }
+      var overlap = horizontal ? (Math.max(a.top, r.top) < Math.min(a.bottom, r.bottom)) : (Math.max(a.left, r.left) < Math.min(a.right, r.right));
+      var score = forward + side * (overlap ? 1.0 : 4.0);
+      if (score < best) {
+        chosen = element;
+        best = score;
+      }
     });
-    if (chosen) { chosen.focus(); chosen.scrollIntoView({ block: 'nearest', inline: 'nearest' }); }
+
+    if (chosen) {
+      chosen.focus();
+      chosen.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    }
   }
 
   Array.prototype.forEach.call($$('.sidebar-item'), function (button) { button.addEventListener('click', function () { showPage(button.getAttribute('data-section')); }); });
@@ -814,30 +1199,112 @@
   }, true);
   document.addEventListener('keydown', function (event) {
     keyboardNavigation = true;
+    document.body.classList.add('keyboard-mode');
     clearTimeout(keyboardNavigationTimer);
-    keyboardNavigationTimer = setTimeout(function () { keyboardNavigation = false; }, 500);
-    var code = event.keyCode || event.which;
-    if (code === 10009 || code === 27 || code === 8) {
+    keyboardNavigationTimer = setTimeout(function () {
+      keyboardNavigation = false;
+      if (!TizenService.isTV()) { document.body.classList.remove('keyboard-mode'); }
+    }, 1500);
+
+    var action = normalizeKeyEvent(event);
+
+    if (action === 'back') {
       event.preventDefault();
       if (window.AudioController) { window.AudioController.play('back'); }
       if (!$('exit-dialog').hidden) { exitDialog(false); }
       else if (!$('settings-confirm').hidden) { closeSettingsDialog(); }
       else if (currentPage !== 'home' && previewFloatExpanded) { $('preview-collapse').click(); }
-      else if (currentPage === 'settings') { showPage('home'); if (returnFocus && returnFocus.focus && returnFocus.getClientRects().length) { returnFocus.focus(); returnFocus = null; } }
-      else if (editingApps) { editingApps = false; renderCurrentPage(); }
-      else if (currentPage !== 'home') { showPage('home'); }
-      else { exitDialog(true); }
-    } else if (code === 406) { event.preventDefault(); showPage('settings'); var category = document.querySelector('.settings-category.active'); if (category) { category.focus(); } }
-    else if (document.activeElement.tagName === 'INPUT' && document.activeElement.type === 'search' && (code === 37 || code === 39)) { /* Keep native search caret editing. */ }
-    else if (document.activeElement.tagName === 'INPUT' && document.activeElement.type === 'search' && (code === 37 || code === 39)) { /* Keep native search caret editing. */ }
-    else if (currentPage === 'settings' && code === 39 && document.activeElement.classList.contains('settings-category')) { event.preventDefault(); var panelControl = $('settings-panel-' + currentPanel).querySelector('button:not(:disabled),input:not(:disabled),select:not(:disabled),summary,[tabindex="0"]'); if (panelControl) { panelControl.focus(); } }
-    else if (currentPage === 'settings' && code === 37 && $('settings-panel-' + currentPanel).contains(document.activeElement)) { event.preventDefault(); var activeCategory = document.querySelector('.settings-category.active'); if (activeCategory) { activeCategory.focus(); } }
-    else if (currentPage === 'settings' && (code === 38 || code === 40) && document.activeElement.classList.contains('settings-category')) { event.preventDefault(); moveFocus(code); }
-    else if (code >= 37 && code <= 40 && !(document.activeElement.tagName === 'INPUT' && (code === 37 || code === 39))) { event.preventDefault(); moveFocus(code); }
-    else if (code === 13 && document.activeElement.tagName === 'BUTTON' && !event.repeat) { event.preventDefault(); document.activeElement.click(); }
-    else if (code === 9) {
-      var list = visibleControls(), index = list.indexOf(document.activeElement);
-      if (list.length) { event.preventDefault(); list[Math.max(0, Math.min(list.length - 1, index + (event.shiftKey ? -1 : 1)))].focus(); }
+      else if (editingApps) {
+        editingApps = false;
+        renderCurrentPage();
+        var editBtn = $('edit-apps-home') || $('edit-apps');
+        if (editBtn) { editBtn.focus(); }
+      }
+      else if (currentPage === 'settings') {
+        showPage('home');
+        if (returnFocus && returnFocus.focus && returnFocus.isConnected && returnFocus.getClientRects().length) {
+          returnFocus.focus();
+          returnFocus = null;
+        }
+      }
+      else if (currentPage !== 'home') {
+        showPage('home');
+      }
+      else {
+        exitDialog(true);
+      }
+      return;
+    }
+
+    if (action === 'settings') {
+      event.preventDefault();
+      returnFocus = document.activeElement;
+      currentPanel = 'appearance';
+      showPage('settings');
+      var category = document.querySelector('.settings-category.active');
+      if (category) { category.focus(); }
+      return;
+    }
+
+    if (action === 'up' || action === 'down' || action === 'left' || action === 'right') {
+      var active = document.activeElement;
+      var isTextInput = active && (active.tagName === 'INPUT' && ['text', 'search', 'url', 'email', 'number'].indexOf(active.type) >= 0 || active.tagName === 'TEXTAREA');
+
+      if (isTextInput) {
+        if (action === 'up' || action === 'down') {
+          event.preventDefault();
+          moveFocus(action);
+          return;
+        }
+        if (action === 'left') {
+          var atStart = (typeof active.selectionStart === 'number') && active.selectionStart === 0 && active.selectionEnd === 0;
+          if (atStart) {
+            event.preventDefault();
+            moveFocus('left');
+          }
+          return;
+        }
+        if (action === 'right') {
+          var atEnd = (typeof active.selectionStart === 'number') && active.selectionStart === active.value.length && active.selectionEnd === active.value.length;
+          if (atEnd) {
+            event.preventDefault();
+            moveFocus('right');
+          }
+          return;
+        }
+        return;
+      }
+
+      event.preventDefault();
+      moveFocus(action);
+      return;
+    }
+
+    if (action === 'enter') {
+      var active = document.activeElement;
+      if (!active || active === document.body) { return; }
+      if (active.tagName === 'INPUT' && active.type !== 'button' && active.type !== 'submit') {
+        if (active.id === 'launcher-name') { event.preventDefault(); $('name-save').click(); return; }
+        if (active.id === 'background-path-enhanced') { event.preventDefault(); $('background-apply').click(); return; }
+        if (active.id === 'search-input') { event.preventDefault(); updateSearch(); return; }
+        return;
+      }
+      if (active.tagName === 'BUTTON' || active.tagName === 'A' || active.tagName === 'SUMMARY' || active.getAttribute('role') === 'button' || active.hasAttribute('tabindex')) {
+        if (!event.repeat) {
+          event.preventDefault();
+          active.click();
+        }
+        return;
+      }
+    }
+
+    if (action === 'tab') {
+      var list = visibleControls();
+      var index = list.indexOf(document.activeElement);
+      if (list.length) {
+        event.preventDefault();
+        list[Math.max(0, Math.min(list.length - 1, index + (event.shiftKey ? -1 : 1)))].focus();
+      }
     }
   });
   document.addEventListener('visibilitychange', function () {
@@ -852,7 +1319,13 @@
   $('theme-select').value = prefs.theme; $('background-path-enhanced').value = prefs.background;
   $('system-toggle').setAttribute('aria-pressed', String(prefs.system)); $('system-toggle').textContent = prefs.system ? 'On' : 'Off';
   updatePreviewToggle(); clock(); setInterval(clock, 30000); initIcons(); updateDiagnostics();
-  if (TizenService.isTV()) { TizenService.registerKey('ColorF3Blue'); }
+  if (TizenService.isTV()) {
+    document.body.classList.add('keyboard-mode');
+    TizenService.registerKey('ColorF3Blue');
+    if (typeof TizenService.registerKeys === 'function') {
+      TizenService.registerKeys(['ColorF0Red', 'ColorF1Green', 'ColorF2Yellow', 'ColorF3Blue', 'MediaPlay', 'MediaPause', 'MediaStop', 'MediaFastForward', 'MediaRewind', 'MediaPlayPause']);
+    }
+  }
   refreshApps(); readCurrentSource(); setHomeDestination();
   requestAnimationFrame(function () { requestAnimationFrame(function () { syncPreview(); }); });
 }());

@@ -5,11 +5,15 @@
   "description": "Kipsmthn TV launcher for Samsung Tizen with browser regression tests",
   "license": "MIT",
   "scripts": {
+    "serve": "serve -s app -l 8082",
+
     "build:css": "tailwindcss -c app/tailwind.config.js -i app/input.css -o app/css/cinematic.css --minify",
-    "test": "node tests/project-structure.cjs && node tests/security-packaging.cjs && node tests/experience.cjs && node tests/settings.cjs && node tests/dedup.cjs && node tests/exit.cjs && node tests/tv-settings.cjs && node tests/background.cjs && node tests/launch.cjs && node tests/name.cjs && node tests/visual-regression.cjs",
+    "test": "node tests/project-structure.cjs && node tests/security-packaging.cjs && node tests/experience.cjs && node tests/settings.cjs && node tests/dedup.cjs && node tests/exit.cjs && node tests/tv-settings.cjs && node tests/background.cjs && node tests/launch.cjs && node tests/name.cjs && node tests/visual-regression.cjs && node tests/remote-navigation.cjs",
     "test:visual": "node tests/visual-regression.cjs"
   },
   "devDependencies": {
+    "serve": "^14.2.0",
+
     "autoprefixer": "^10.6.2",
     "playwright": "^1.56.0",
     "postcss": "^8.5.32",

@@ -115,19 +115,20 @@
   html { @apply bg-background text-foreground; background-color: #090909; }
   body { @apply m-0 h-screen overflow-hidden bg-background font-sans text-foreground antialiased; background-color: transparent; }
   button, input, select, textarea { @apply font-sans text-foreground; }
-  button { @apply cursor-pointer; }
-  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible { @apply outline-none ring-2 ring-ring ring-offset-4 ring-offset-background; }
-  :focus:not(:focus-visible) { @apply outline-none; }
+  button { cursor: default; }
+  button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, summary:focus-visible, [tabindex="0"]:focus-visible,
+  body.keyboard-mode button:focus, body.keyboard-mode a:focus, body.keyboard-mode input:focus, body.keyboard-mode select:focus, body.keyboard-mode summary:focus, body.keyboard-mode [tabindex="0"]:focus { @apply outline-none; }
+  body:not(.keyboard-mode) :focus:not(:focus-visible) { @apply outline-none; }
   [hidden] { display: none !important; }
   ::selection { @apply bg-accent text-accent-foreground; }
 }
 
 @layer components {
   .shadcn-button { @apply inline-flex min-h-14 items-center justify-center gap-3 whitespace-nowrap border border-input px-5 py-3 text-base font-medium text-secondary-foreground shadow-sm transition-colors; border-radius: 10px; background: var(--glass-bg-subtle); }
-  .shadcn-button:hover { @apply bg-accent text-accent-foreground; }
+  .shadcn-button:hover { }
   .shadcn-button:disabled { @apply pointer-events-none opacity-50; }
   .shadcn-button-primary { @apply border-primary bg-primary text-primary-foreground; }
-  .shadcn-button-primary:hover { @apply bg-primary/90 text-primary-foreground; }
+  .shadcn-button-primary:hover { }
   .shadcn-button-ghost { @apply border-transparent bg-transparent shadow-none; }
   .shadcn-button-destructive { @apply border-destructive bg-destructive text-destructive-foreground; }
   .shadcn-card { @apply border text-card-foreground; border-color: var(--glass-border); border-radius: var(--glass-radius-md); background: var(--glass-bg); box-shadow: var(--glass-shadow-subtle); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
@@ -176,7 +177,7 @@
   .sidebar-item.active { @apply border-border; }
   .sidebar-icon, [data-lucide] { @apply inline-flex h-7 w-7 shrink-0 items-center justify-center; }
   [data-lucide] svg { @apply h-full w-full; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
-  .sidebar-item:focus-visible { @apply z-10; }
+  .sidebar-item:focus-visible, body.keyboard-mode .sidebar-item:focus { @apply z-10; transform: scale(1.08); box-shadow: 0 4px 20px rgba(255,255,255,.10); border-color: rgba(255,255,255,.18); }
 
   #content { @apply absolute inset-y-0 right-0 flex flex-col gap-10 overflow-x-hidden overflow-y-auto; left: var(--sidebar-width); padding: var(--safe-area-y) var(--safe-area-x); }
   #content[data-home-view="true"] { padding-top: clamp(19rem, 36vh, 29rem); }
@@ -240,12 +241,12 @@
   .hero { @apply pointer-events-none min-h-24; }
   .content-section { @apply mb-2; }
   .section-title { @apply mb-5 text-2xl font-semibold tracking-tight; }
-  .carousel { @apply flex gap-5 overflow-x-auto overflow-y-hidden py-2 pr-2; }
+  .carousel { @apply flex gap-5 overflow-x-auto overflow-y-hidden py-3 pr-2; }
   .carousel-item { @apply relative flex h-36 w-64 shrink-0 items-center justify-center overflow-hidden border-2 border-transparent p-3 text-left transition-colors; background: var(--glass-bg-subtle); border-radius: var(--glass-radius-md); box-shadow: var(--glass-shadow-subtle); backdrop-filter: blur(var(--glass-blur-subtle)); -webkit-backdrop-filter: blur(var(--glass-blur-subtle)); }
-  .carousel-item:focus-visible { @apply border-primary; transform: scale(1.035); }
-  .carousel-item { transition: transform var(--motion-focus) var(--motion-ease-enter), opacity var(--motion-focus) var(--motion-ease-standard), border-color var(--motion-focus) var(--motion-ease-standard), background-color var(--motion-focus) var(--motion-ease-standard); transform-origin: center; }
-  .app, .app-grid-item { transition: transform var(--motion-focus) var(--motion-ease-enter), opacity var(--motion-focus) var(--motion-ease-standard), border-color var(--motion-focus) var(--motion-ease-standard), background-color var(--motion-focus) var(--motion-ease-standard); transform-origin: center; }
-  .app:focus-visible, .app-grid-item:focus-visible { transform: scale(1.025); }
+  .carousel-item:focus-visible, body.keyboard-mode .carousel-item:focus { transform: scale(1.04); box-shadow: 0 8px 30px rgba(255,255,255,.12), 0 0 0 1px rgba(255,255,255,.15); border-color: rgba(255,255,255,.2); }
+  .carousel-item { transition: transform 300ms cubic-bezier(0.2, 0, 0, 1), opacity 300ms ease, box-shadow 300ms ease, border-color 300ms ease, background-color 300ms ease; transform-origin: center; }
+  .app, .app-grid-item { transition: transform 300ms cubic-bezier(0.2, 0, 0, 1), opacity 300ms ease, box-shadow 300ms ease, border-color 300ms ease, background-color 300ms ease; transform-origin: center; }
+  .app:focus-visible, .app-grid-item:focus-visible, body.keyboard-mode .app:focus, body.keyboard-mode .app-grid-item:focus { transform: scale(1.04); box-shadow: 0 8px 30px rgba(255,255,255,.12), 0 0 0 1px rgba(255,255,255,.15); border-color: rgba(255,255,255,.2); background-color: rgba(255,255,255,.06); }
   .carousel-item.active { @apply border-border; }
   .app-tile { @apply flex h-full w-full flex-col items-center justify-center gap-3 border p-4; background: var(--glass-bg-subtle); border-radius: var(--glass-radius-sm); }
   .input-app-tile { @apply flex h-full w-full flex-col items-center justify-center gap-2 border p-3; background: var(--glass-bg-subtle); border-radius: var(--glass-radius-sm); }
@@ -351,14 +352,14 @@
   .search-icon { @apply h-7 w-7 text-muted-foreground; }
   .search-bar input { @apply min-h-14 min-w-0 flex-1 border-0 bg-transparent p-0 text-xl text-foreground placeholder:text-muted-foreground; outline: none; box-shadow: none; }
   .search-bar:focus-within { border-color: var(--glass-border-strong); box-shadow: 0 0 0 2px var(--glass-highlight), var(--glass-shadow-subtle); }
-  .search-bar input:focus-visible { outline: none; box-shadow: none; }
+  .search-bar input:focus-visible, .search-bar input:focus, body.keyboard-mode .search-bar input:focus { outline: none !important; box-shadow: none !important; }
   .search-clear { @apply shadcn-button h-12 w-12 min-h-12 p-3; }
   .search-results { @apply mx-auto w-full max-w-6xl; }
   .search-section { @apply mb-8; }
   .search-section-title { @apply mb-4 text-xl font-semibold; }
   .search-disclaimer { @apply -mt-2 mb-4 text-sm text-muted-foreground; }
   .search-chip { @apply shadcn-button rounded-full; min-width: 8rem; min-height: 4rem; }
-  .search-chip:focus-visible { border-color: var(--glass-border-strong); background: var(--glass-bg); transform: scale(1.025); }
+  .search-chip:focus-visible { border-color: rgba(255,255,255,.2); background: var(--glass-bg); transform: scale(1.04); box-shadow: 0 6px 24px rgba(255,255,255,.10), 0 0 0 1px rgba(255,255,255,.15); }
   .search-empty, .empty-state { @apply flex min-h-40 items-center justify-center text-center text-lg text-muted-foreground; }
   .search-chips { @apply flex flex-wrap gap-4; }
   .search-chip { @apply shadcn-button rounded-full; }
@@ -370,7 +371,7 @@
   .recent-card { @apply shadcn-card flex min-h-24 w-full flex-row items-center justify-start gap-5 p-5 text-left; }
   .inputs-grid { @apply grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-4; }
   .input-tile { @apply shadcn-card flex flex-col items-center justify-center gap-2 p-4 text-center; min-height: 84px; }
-  .input-tile:focus-visible { border-color: var(--glass-border-strong); background: var(--glass-bg); transform: none; box-shadow: 0 0 0 2px var(--glass-border-strong); }
+  .input-tile:focus-visible { border-color: rgba(255,255,255,.2); background: var(--glass-bg); transform: scale(1.04); box-shadow: 0 6px 24px rgba(255,255,255,.10), 0 0 0 1px rgba(255,255,255,.15); }
   .input-tile.active { border-color: var(--glass-border-strong); background: var(--glass-bg); }
   .input-icon { @apply flex items-center justify-center; width: 28px; height: 28px; }
   .input-icon svg { width: 24px; height: 24px; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
@@ -443,7 +444,8 @@
   .settings-dialog h2 { @apply mt-0 text-2xl font-semibold; }
   .settings-dialog p { @apply text-base leading-7 text-muted-foreground; }
   .settings-dialog > div { @apply flex justify-end gap-4; }
-  .settings-panel :focus-visible, .settings-category:focus-visible, .settings-wallpaper-choice:focus-visible { outline: 2px solid var(--glass-text-primary); outline-offset: 3px; }
+  .settings-panel :focus-visible, .settings-category:focus-visible, .settings-wallpaper-choice:focus-visible,
+  body.keyboard-mode .settings-panel :focus, body.keyboard-mode .settings-category:focus, body.keyboard-mode .settings-wallpaper-choice:focus { outline: none; box-shadow: 0 4px 20px rgba(255,255,255,.08), 0 0 0 1px rgba(255,255,255,.18); border-color: rgba(255,255,255,.2); }
   .settings-category svg, .settings-category [data-lucide] { width: 1.1rem; height: 1.1rem; stroke-width: var(--icon-stroke); }
   .filter-btn svg.lucide, .setting-btn svg.lucide, .primary-btn svg.lucide, .xbox-launch-btn svg.lucide, .search-clear svg.lucide, .icon-btn svg.lucide, .shadcn-button svg.lucide, .key svg.lucide, .preview-launcher svg.lucide, .preview-collapse svg.lucide { width: var(--icon-control-size); height: var(--icon-control-size); stroke-width: var(--icon-stroke); }
   svg.lucide.sidebar-icon { width: var(--icon-navigation-size); height: var(--icon-navigation-size); stroke-width: var(--icon-stroke); }
